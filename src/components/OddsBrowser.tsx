@@ -12,7 +12,13 @@ import {
   getSelectedSport,
   setSelectedSport,
 } from '../utils/storage';
-import type { HedgePrefill } from '../App';
+interface HedgePrefill {
+  originalLabel: string;
+  hedgeLabel: string;
+  originalOdds: string;
+  hedgeOdds: string;
+  hedgeBookName?: string;
+}
 
 function formatOdds(price: number): string {
   return price > 0 ? `+${price}` : `${price}`;

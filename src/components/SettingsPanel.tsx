@@ -1,17 +1,47 @@
 import { useState, useEffect } from 'react';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
-import { getApiKey, setApiKey, getSelectedBooks, setSelectedBooks } from '../utils/storage';
+import {
+  getApiKey, setApiKey,
+  getSelectedBooks, setSelectedBooks,
+  getNotificationsEnabled, setNotificationsEnabled,
+} from '../utils/storage';
+import { requestNotificationPermission, canNotify } from '../utils/hedgeMonitor';
 
 export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
   const [apiKey, setApiKeyState] = useState('');
   const [selectedBooks, setSelectedBooksState] = useState<string[]>([]);
+  const [notificationsOn, setNotificationsOn] = useState(false);
+  const [notifStatus, setNotifStatus] = useState<'idle' | 'requesting' | 'denied'>('idle');
   const [saved, setSaved] = useState(false);
   const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
     setApiKeyState(getApiKey());
     setSelectedBooksState(getSelectedBooks());
+    setNotificationsOn(getNotificationsEnabled());
   }, []);
+
+  async function handleNotifToggle() {
+    if (notificationsOn) {
+      setNotificationsOn(false);
+      setNotificationsEnabled(false);
+      return;
+    }
+    if (canNotify()) {
+      setNotificationsOn(true);
+      setNotificationsEnabled(true);
+      return;
+    }
+    setNotifStatus('requesting');
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      setNotificationsOn(true);
+      setNotificationsEnabled(true);
+      setNotifStatus('idle');
+    } else {
+      setNotifStatus('denied');
+    }
+  }
 
   function toggleBook(key: string) {
     setSelectedBooksState((prev) =>
@@ -30,14 +60,59 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
   const isReady = apiKey.trim().length > 0 && selectedBooks.length > 0;
 
   return (
-    <div className="space-y-6 px-4 pt-2 pb-32">
+    <div className="space-y-5 px-4 pt-2 pb-32">
+
+      {/* Notifications */}
+      <div className="card p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-200">Hedge alerts</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Get notified the moment a guaranteed profit appears
+            </p>
+          </div>
+          <button
+            onClick={handleNotifToggle}
+            disabled={notifStatus === 'requesting'}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ${
+              notificationsOn ? 'bg-emerald-500 border-emerald-500' : 'bg-[#1A2A40] border-[#1A2A40]'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 mt-0.5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
+                notificationsOn ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
+
+        {notifStatus === 'denied' && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+            <p className="text-xs text-red-400">
+              Notifications blocked. Go to your browser settings → site permissions → allow notifications for this site, then try again.
+            </p>
+          </div>
+        )}
+
+        {notificationsOn && (
+          <div className="flex items-center gap-2 text-xs text-emerald-400">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M4 6l1.5 1.5L8 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            You'll be notified when it's time to place your hedge
+          </div>
+        )}
+      </div>
+
       {/* API Key */}
       <div className="card p-5 space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-200">Odds API Key</h2>
           <p className="text-xs text-slate-500 mt-1">
-            Required to fetch live odds. Get a free key (500 requests/month) at{' '}
+            Required to fetch live odds. Get a free key at{' '}
             <span className="text-emerald-400">the-odds-api.com</span>
+            {' '}(500 requests/month free)
           </p>
         </div>
         <div className="relative">
@@ -71,9 +146,9 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       {/* Sportsbook selection */}
       <div className="card p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-200">Your Sportsbooks</h2>
+          <h2 className="text-sm font-semibold text-slate-200">Your Betting Apps</h2>
           <p className="text-xs text-slate-500 mt-1">
-            Select the apps you have accounts with. Odds will be compared across these books.
+            Select every app you have an account with — the more you pick, the better your chances of finding a guaranteed profit.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -110,7 +185,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         </div>
         {selectedBooks.length > 0 && (
           <p className="text-xs text-slate-600">
-            {selectedBooks.length} book{selectedBooks.length !== 1 ? 's' : ''} selected
+            {selectedBooks.length} app{selectedBooks.length !== 1 ? 's' : ''} selected
           </p>
         )}
       </div>
@@ -127,16 +202,16 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
               : 'bg-[#132035] text-slate-600 cursor-not-allowed'
         }`}
       >
-        {saved ? '✓ Settings saved' : isReady ? 'Save & Go to Live Odds' : 'Enter API key and select books to continue'}
+        {saved ? '✓ Settings saved' : isReady ? 'Save Settings' : 'Enter API key and select apps to continue'}
       </button>
 
       {!isReady && (
         <div className="card p-4 border-amber-500/20 bg-amber-500/5 space-y-1">
-          <p className="text-xs font-semibold text-amber-400">To get live odds:</p>
+          <p className="text-xs font-semibold text-amber-400">To find live hedge opportunities:</p>
           <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
-            <li>Sign up at <span className="text-emerald-400">the-odds-api.com</span> — free</li>
-            <li>Copy your API key from the dashboard</li>
-            <li>Paste it above and select your sportsbooks</li>
+            <li>Go to <span className="text-emerald-400">the-odds-api.com</span> — it's free</li>
+            <li>Sign up and copy your API key</li>
+            <li>Paste it above and pick your betting apps</li>
           </ol>
         </div>
       )}

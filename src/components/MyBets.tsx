@@ -1,0 +1,463 @@
+import { useState, useEffect, useCallback } from 'react';
+import {
+  getAllBets,
+  deleteBet,
+  markHedged,
+  updateBet,
+  type TrackedBet,
+  type HedgeOpportunity,
+} from '../utils/storage';
+import { checkMonitoredBets } from '../utils/hedgeMonitor';
+import { calcLiveHedge } from '../utils/arb';
+import { US_SPORTSBOOKS } from '../utils/sportsbooks';
+import AddBetWizard from './AddBetWizard';
+
+// ─── Hedge Action Card ────────────────────────────────────────────────────────
+
+function HedgeActionCard({
+  bet,
+  opp,
+  onDone,
+}: {
+  bet: TrackedBet;
+  opp: HedgeOpportunity;
+  onDone: () => void;
+}) {
+  const [confirmed, setConfirmed] = useState(false);
+
+  function handleDone() {
+    markHedged(bet.id);
+    setConfirmed(true);
+    setTimeout(onDone, 1500);
+  }
+
+  if (confirmed) {
+    return (
+      <div className="rounded-2xl bg-emerald-500/15 border border-emerald-500/40 p-5 text-center space-y-1 animate-fade-in">
+        <p className="text-2xl">✓</p>
+        <p className="text-emerald-400 font-bold">Hedge placed!</p>
+        <p className="text-xs text-slate-400">You've locked in your profit. Nice work.</p>
+      </div>
+    );
+  }
+
+  const bookName = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'your sportsbook';
+
+  return (
+    <div className="rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/50 p-5 space-y-4 animate-slide-up">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30">
+          <span className="text-lg">💰</span>
+        </div>
+        <div>
+          <p className="font-bold text-emerald-400 text-base">Time to lock in your profit!</p>
+          <p className="text-xs text-slate-400 mt-0.5">Do this right now to guarantee your winnings</p>
+        </div>
+      </div>
+
+      <div className="bg-[#080E1A] rounded-xl p-4 space-y-3">
+        <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">What to do</p>
+        <div className="space-y-2">
+          <div className="flex items-start gap-3">
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <p className="text-sm text-white">Open <span className="font-bold text-emerald-400">{bookName}</span></p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <p className="text-sm text-white">
+              Bet <span className="font-bold text-emerald-400 font-mono">${opp.hedgeStake.toFixed(2)}</span>{' '}
+              on <span className="font-bold">{opp.hedgeTeam}</span>
+            </p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <p className="text-sm text-white">Come back here and tap "Done"</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center py-1">
+        <p className="text-slate-400 text-xs mb-1">No matter what happens, you'll make</p>
+        <p className="text-4xl font-bold text-emerald-400">+${opp.guaranteedProfit.toFixed(2)}</p>
+        <p className="text-slate-500 text-xs mt-1">guaranteed profit</p>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={handleDone}
+          className="flex-1 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+        >
+          I did it — done ✓
+        </button>
+        <button
+          onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
+          className="py-3.5 px-4 rounded-xl border border-[#1A2A40] text-slate-400 text-sm hover:border-slate-600 transition-colors"
+        >
+          Later
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Manual Hedge Input ───────────────────────────────────────────────────────
+
+function ManualHedgePanel({
+  bet,
+  onFound,
+}: {
+  bet: TrackedBet;
+  onFound: (opp: HedgeOpportunity) => void;
+}) {
+  const [winback, setWinback] = useState('');
+  const [teamName, setTeamName] = useState(bet.opposingTeam ?? '');
+  const [bookKey, setBookKey] = useState('');
+
+  const parsed = parseFloat(winback);
+  const per100 = !isNaN(parsed) && parsed > 100 ? parsed : null;
+  const calc =
+    per100
+      ? calcLiveHedge(bet.stake, bet.potentialPayout, per100 / 100)
+      : null;
+
+  function handleSave() {
+    if (!calc || !teamName || !bookKey) return;
+    const dec = (per100 ?? 0) / 100;
+    const americanOdds = dec >= 2 ? Math.round((dec - 1) * 100) : Math.round(-100 / (dec - 1));
+    onFound({
+      hedgeTeam: teamName,
+      hedgeBook: US_SPORTSBOOKS.find(b => b.key === bookKey)?.name ?? bookKey,
+      hedgeBookKey: bookKey,
+      hedgeStake: calc.hedgeStake,
+      hedgeOdds: americanOdds,
+      guaranteedProfit: calc.guaranteedProfit,
+      foundAt: Date.now(),
+    });
+  }
+
+  return (
+    <div className="card p-4 space-y-4 border-blue-500/20 bg-blue-500/5">
+      <p className="text-xs font-semibold text-blue-300 uppercase tracking-widest">Find your hedge manually</p>
+      <p className="text-xs text-slate-400">
+        Open any sportsbook, find the opposite outcome from your bet, and answer:
+      </p>
+
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <p className="text-xs text-slate-400">What outcome are you hedging? (the opposite of your bet)</p>
+          <input
+            type="text"
+            placeholder={bet.opposingTeam ?? 'e.g. Eagles to win'}
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+            className="input-field text-sm"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <p className="text-xs text-slate-400">
+            If you bet $100 on that outcome, how much total would you get back?
+          </p>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
+            <input
+              type="number"
+              placeholder="195"
+              value={winback}
+              onChange={(e) => setWinback(e.target.value)}
+              className="input-field pl-8 text-sm"
+              min="100"
+            />
+          </div>
+          <p className="text-xs text-slate-600">Must be more than $100 (your bet back + profit)</p>
+        </div>
+
+        {calc && calc.guaranteedProfit > 0 && (
+          <>
+            <div className="space-y-1.5">
+              <p className="text-xs text-slate-400">Which app did you find these odds on?</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {US_SPORTSBOOKS.slice(0, 6).map(b => (
+                  <button key={b.key} onClick={() => setBookKey(b.key)}
+                    className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
+                      bookKey === b.key
+                        ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+                        : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                    }`}>
+                    {b.shortName}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-emerald-500/10 rounded-xl p-3 text-center space-y-0.5">
+              <p className="text-xs text-emerald-400 font-semibold">Hedge this to guarantee</p>
+              <p className="text-2xl font-bold text-emerald-400">+${calc.guaranteedProfit.toFixed(2)}</p>
+              <p className="text-xs text-slate-500">by betting ${calc.hedgeStake.toFixed(2)} on the opposite outcome</p>
+            </div>
+
+            <button
+              onClick={handleSave}
+              disabled={!bookKey}
+              className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
+                bookKey
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-400'
+                  : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              Show me exactly what to do
+            </button>
+          </>
+        )}
+
+        {calc && calc.guaranteedProfit <= 0 && (
+          <div className="card p-3 border-amber-500/30 bg-amber-500/5">
+            <p className="text-xs text-amber-400">
+              At those odds, hedging would result in a small loss. Try checking other sportsbooks for better odds on the opposing outcome.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Bet Card ─────────────────────────────────────────────────────────────────
+
+function BetCard({
+  bet,
+  onDelete,
+  onRefresh,
+}: {
+  bet: TrackedBet;
+  onDelete: () => void;
+  onRefresh: () => void;
+}) {
+  const [expanded, setExpanded] = useState(bet.status === 'hedge_ready');
+  const [showManual, setShowManual] = useState(false);
+  const bookName = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
+  const profit = bet.potentialPayout - bet.stake;
+
+  const statusDot =
+    bet.status === 'hedge_ready'
+      ? 'bg-emerald-500 animate-pulse'
+      : bet.status === 'hedged'
+        ? 'bg-blue-500'
+        : bet.status === 'monitoring'
+          ? 'bg-amber-400'
+          : 'bg-slate-500';
+
+  const statusLabel =
+    bet.status === 'hedge_ready'
+      ? 'Hedge now!'
+      : bet.status === 'hedged'
+        ? 'Hedged ✓'
+        : bet.status === 'monitoring'
+          ? 'Watching…'
+          : 'Settled';
+
+  function handleOppFound(opp: HedgeOpportunity) {
+    updateBet(bet.id, { status: 'hedge_ready', hedgeOpportunity: opp });
+    setShowManual(false);
+    onRefresh();
+  }
+
+  return (
+    <div className={`card overflow-hidden transition-all ${
+      bet.status === 'hedge_ready' ? 'border-emerald-500/40' : ''
+    }`}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full p-4 flex items-center gap-3 text-left"
+      >
+        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDot}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{bet.label}</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            ${bet.stake.toFixed(2)} at {bookName} · win +${profit.toFixed(2)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`text-xs font-semibold ${
+            bet.status === 'hedge_ready' ? 'text-emerald-400' :
+            bet.status === 'hedged' ? 'text-blue-400' :
+            bet.status === 'monitoring' ? 'text-amber-400' : 'text-slate-500'
+          }`}>
+            {statusLabel}
+          </span>
+          <svg
+            width="14" height="14" viewBox="0 0 14 14" fill="none"
+            className={`text-slate-600 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          >
+            <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3 animate-fade-in border-t border-[#1A2A40] pt-3">
+          {/* Hedge action card */}
+          {bet.status === 'hedge_ready' && bet.hedgeOpportunity && (
+            <HedgeActionCard
+              bet={bet}
+              opp={bet.hedgeOpportunity}
+              onDone={onRefresh}
+            />
+          )}
+
+          {/* Manual hedge for monitoring bets */}
+          {bet.status === 'monitoring' && !showManual && (
+            <button
+              onClick={() => setShowManual(true)}
+              className="w-full py-3 rounded-xl border border-[#1A2A40] text-slate-400 text-sm hover:border-emerald-500/40 hover:text-emerald-400 transition-all"
+            >
+              Check if I can hedge now →
+            </button>
+          )}
+
+          {bet.status === 'monitoring' && showManual && (
+            <ManualHedgePanel bet={bet} onFound={handleOppFound} />
+          )}
+
+          {bet.status === 'hedged' && (
+            <div className="text-center py-2 space-y-0.5">
+              <p className="text-emerald-400 font-bold">Bet successfully hedged! 🎉</p>
+              <p className="text-xs text-slate-500">Your profit is locked in no matter the outcome.</p>
+            </div>
+          )}
+
+          {/* Delete */}
+          {bet.status !== 'hedged' && (
+            <button
+              onClick={onDelete}
+              className="w-full py-2 text-xs text-slate-600 hover:text-red-400 transition-colors"
+            >
+              Remove this bet
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── My Bets Screen ───────────────────────────────────────────────────────────
+
+export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: number) => void }) {
+  const [bets, setBets] = useState<TrackedBet[]>([]);
+  const [showWizard, setShowWizard] = useState(false);
+
+  const refresh = useCallback(() => {
+    const all = getAllBets();
+    setBets(all);
+    const readyCount = all.filter(b => b.status === 'hedge_ready').length;
+    onBadgeChange?.(readyCount);
+  }, [onBadgeChange]);
+
+  useEffect(() => {
+    refresh();
+    const interval = setInterval(() => checkMonitoredBets(refresh), 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refresh]);
+
+  const hedgeReady = bets.filter(b => b.status === 'hedge_ready');
+  const active = bets.filter(b => b.status === 'monitoring');
+  const done = bets.filter(b => b.status === 'hedged' || b.status === 'settled');
+
+  return (
+    <div className="pb-32">
+      {/* No bets empty state */}
+      {bets.length === 0 && (
+        <div className="flex flex-col items-center justify-center px-6 py-20 text-center space-y-5">
+          <div className="w-20 h-20 rounded-3xl bg-[#132035] flex items-center justify-center">
+            <span className="text-4xl">🎯</span>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xl font-bold">No bets yet</p>
+            <p className="text-slate-400 text-sm max-w-xs">
+              Add any bet you've placed and we'll watch it and tell you exactly when and how to hedge it.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowWizard(true)}
+            className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            Add my first bet
+          </button>
+        </div>
+      )}
+
+      {bets.length > 0 && (
+        <div className="px-4 pt-4 space-y-5">
+          {/* Hedge alerts section */}
+          {hedgeReady.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+                  Hedge now!
+                </p>
+              </div>
+              {hedgeReady.map(bet => (
+                <BetCard key={bet.id} bet={bet}
+                  onDelete={() => { deleteBet(bet.id); refresh(); }}
+                  onRefresh={refresh}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Active monitoring */}
+          {active.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-400" />
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  Watching for hedge opportunities
+                </p>
+              </div>
+              {active.map(bet => (
+                <BetCard key={bet.id} bet={bet}
+                  onDelete={() => { deleteBet(bet.id); refresh(); }}
+                  onRefresh={refresh}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Completed */}
+          {done.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest">Completed</p>
+              {done.map(bet => (
+                <BetCard key={bet.id} bet={bet}
+                  onDelete={() => { deleteBet(bet.id); refresh(); }}
+                  onRefresh={refresh}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Floating add button */}
+      {bets.length > 0 && (
+        <button
+          onClick={() => setShowWizard(true)}
+          className="fixed bottom-24 right-5 w-14 h-14 bg-emerald-500 hover:bg-emerald-400 rounded-full shadow-xl shadow-emerald-500/30 flex items-center justify-center transition-all active:scale-95 z-40"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+      )}
+
+      {showWizard && (
+        <AddBetWizard
+          onClose={() => setShowWizard(false)}
+          onAdded={() => { setShowWizard(false); refresh(); }}
+        />
+      )}
+    </div>
+  );
+}
