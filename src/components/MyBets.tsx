@@ -19,6 +19,8 @@ import PortfolioView from './PortfolioView';
 
 // ─── Hedge Action Card ────────────────────────────────────────────────────────
 
+function fmtOdds(o: number) { return o > 0 ? `+${o}` : `${o}`; }
+
 function HedgeActionCard({
   bet,
   opp,
@@ -29,78 +31,87 @@ function HedgeActionCard({
   onDone: () => void;
 }) {
   const [confirmed, setConfirmed] = useState(false);
+  const betABook = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
+  const betBBook = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'Sportsbook';
+  const betBUrl = US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.url;
 
   function handleDone() {
     markHedged(bet.id);
     setConfirmed(true);
-    setTimeout(onDone, 1500);
+    setTimeout(onDone, 1200);
   }
 
   if (confirmed) {
     return (
       <div className="rounded-2xl bg-purple-500/15 border border-purple-500/40 p-5 text-center space-y-1 animate-fade-in">
         <p className="text-2xl">✓</p>
-        <p className="text-purple-400 font-bold">Hedge placed!</p>
-        <p className="text-xs text-slate-400">You've locked in your profit. Nice work.</p>
+        <p className="text-purple-400 font-bold">Both bets placed!</p>
+        <p className="text-xs text-slate-400">+${opp.guaranteedProfit.toFixed(2)} profit locked in.</p>
       </div>
     );
   }
 
-  const bookName = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'your sportsbook';
-
   return (
-    <div className="rounded-2xl bg-purple-500/10 border-2 border-purple-500/50 p-5 space-y-4 animate-slide-up">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
-          <span className="text-lg">💰</span>
+    <div className="space-y-3 animate-slide-up">
+      {/* Bet A pill */}
+      <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
+            <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Original Bet</span>
+          </div>
+          <span className="text-[10px] font-mono text-slate-500">Already placed ✓</span>
         </div>
-        <div>
-          <p className="font-bold text-purple-400 text-base">Time to lock in your profit!</p>
-          <p className="text-xs text-slate-400 mt-0.5">Do this right now to guarantee your winnings</p>
+        <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
+        <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {betABook}</p>
+      </div>
+
+      {/* Bet B pill */}
+      <div className="rounded-xl bg-purple-500/10 border-2 border-purple-500/40 p-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">B</span>
+            <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider">Hedge Bet — Place Now</span>
+          </div>
+          <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shrink-0" />
+        </div>
+        <p className="text-sm font-bold text-white">{opp.hedgeTeam}</p>
+        <p className="text-xs text-slate-400 font-mono mt-1">
+          {fmtOdds(opp.hedgeOdds)} · ${opp.hedgeStake.toFixed(2)} · {betBBook}
+        </p>
+        <div className="flex gap-2 mt-3">
+          {betBUrl && (
+            <a
+              href={betBUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-purple-500/40 hover:text-purple-300 transition-colors"
+            >
+              Open {betBBook} ↗
+            </a>
+          )}
+          <button
+            onClick={handleDone}
+            className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-colors shadow-lg shadow-purple-500/20"
+          >
+            Done ✓
+          </button>
         </div>
       </div>
 
-      <div className="bg-[#09000F] rounded-xl p-4 space-y-3">
-        <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">What to do</p>
-        <div className="space-y-2">
-          <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-            <p className="text-sm text-white">Open <span className="font-bold text-purple-400">{bookName}</span></p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
-            <p className="text-sm text-white">
-              Bet <span className="font-bold text-purple-400 font-mono">${opp.hedgeStake.toFixed(2)}</span>{' '}
-              on <span className="font-bold">{opp.hedgeTeam}</span>
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
-            <p className="text-sm text-white">Come back here and tap "Done"</p>
-          </div>
-        </div>
+      {/* Guaranteed profit */}
+      <div className="text-center py-2">
+        <p className="text-xs text-slate-500 mb-0.5">No matter who wins</p>
+        <p className="text-3xl font-bold text-purple-400 font-mono">+${opp.guaranteedProfit.toFixed(2)}</p>
+        <p className="text-xs text-slate-500 mt-0.5">guaranteed profit</p>
       </div>
 
-      <div className="text-center py-1">
-        <p className="text-slate-400 text-xs mb-1">No matter what happens, you'll make</p>
-        <p className="text-4xl font-bold text-purple-400">+${opp.guaranteedProfit.toFixed(2)}</p>
-        <p className="text-slate-500 text-xs mt-1">guaranteed profit</p>
-      </div>
-
-      <div className="flex gap-3">
-        <button
-          onClick={handleDone}
-          className="flex-1 py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all shadow-lg shadow-purple-500/20"
-        >
-          I did it — done ✓
-        </button>
-        <button
-          onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
-          className="py-3.5 px-4 rounded-xl border border-[#3D1A6E] text-slate-400 text-sm hover:border-slate-600 transition-colors"
-        >
-          Later
-        </button>
-      </div>
+      <button
+        onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
+        className="w-full py-2 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+      >
+        Save for later
+      </button>
     </div>
   );
 }
@@ -359,6 +370,15 @@ function BetCard({
   const isActive = bet.status === 'monitoring' || bet.status === 'hedge_ready';
   const noEventLinked = isActive && !bet.eventId;
 
+  const isHedgeView = bet.opposingTeam && (bet.status === 'hedge_ready' || bet.status === 'hedged');
+  const headerTitle = isHedgeView
+    ? `${bet.myTeam} vs ${bet.opposingTeam}`
+    : bet.label;
+  const eventTime = bet.hedgeOpportunity?.eventTime;
+  const headerSub = isHedgeView && eventTime
+    ? new Date(eventTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    : `$${bet.stake.toFixed(2)} at ${bookName} · win +$${profit.toFixed(2)}`;
+
   return (
     <>
       {showLink && (
@@ -379,14 +399,12 @@ function BetCard({
           <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDot}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold text-white truncate">{bet.label}</p>
+              <p className="text-sm font-semibold text-white truncate">{headerTitle}</p>
               {bet.isParlay && (
                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">PARLAY</span>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              ${bet.stake.toFixed(2)} at {bookName} · win +${profit.toFixed(2)}
-            </p>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">{headerSub}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={`text-xs font-semibold ${
@@ -447,15 +465,47 @@ function BetCard({
 
             {bet.status === 'hedged' && (
               <div className="space-y-3">
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-1">
-                  <p className="text-blue-400 font-bold text-sm">Both bets placed ✓</p>
-                  <p className="text-xs text-slate-500">Profit locked in — waiting for the game to resolve.</p>
+                {/* Bet A pill — completed */}
+                <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
+                      <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Original Bet</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-green-400">✓ Done</span>
+                  </div>
+                  <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
+                  <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {bookName}</p>
+                </div>
+
+                {/* Bet B pill — completed */}
+                {bet.hedgeOpportunity && (
+                  <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">B</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Hedge Bet</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-green-400">✓ Done</span>
+                    </div>
+                    <p className="text-sm font-bold text-white">{bet.hedgeOpportunity.hedgeTeam}</p>
+                    <p className="text-xs text-slate-400 font-mono mt-1">
+                      {fmtOdds(bet.hedgeOpportunity.hedgeOdds)} · ${bet.hedgeOpportunity.hedgeStake.toFixed(2)} · {bet.hedgeOpportunity.hedgeBook}
+                    </p>
+                  </div>
+                )}
+
+                {/* Locked profit */}
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-0.5">
+                  <p className="text-blue-400 font-semibold text-sm">Profit locked in — awaiting payout</p>
                   {bet.hedgeOpportunity && (
-                    <p className="text-xl font-bold font-mono text-purple-400 mt-1.5">
-                      +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)} guaranteed
+                    <p className="text-2xl font-bold font-mono text-purple-400 mt-1">
+                      +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)}
                     </p>
                   )}
+                  <p className="text-xs text-slate-500">guaranteed no matter who wins</p>
                 </div>
+
                 <button
                   onClick={() => { settleBet(bet.id, 'hedged'); onRefresh(); }}
                   className="w-full py-3 rounded-xl bg-[#180032] border border-[#3D1A6E] text-slate-400 text-sm font-semibold hover:text-white hover:border-slate-500 transition-colors"

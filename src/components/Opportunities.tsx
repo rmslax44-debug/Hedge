@@ -360,6 +360,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
                         hedgeOdds: a.oddsB,
                         guaranteedProfit: scaledProfit,
                         foundAt: Date.now(),
+                        eventTime: a.event.commence_time,
                       },
                     });
                     onSwitchToMyBets?.();

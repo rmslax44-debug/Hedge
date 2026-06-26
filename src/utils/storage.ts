@@ -55,6 +55,7 @@ export interface HedgeOpportunity {
   hedgeOdds: number; // American
   guaranteedProfit: number;
   foundAt: number;
+  eventTime?: string; // ISO string of game start time
 }
 
 export interface TrackedBet {
@@ -144,7 +145,7 @@ export function deleteBet(id: string) {
 }
 
 export function markHedged(id: string) {
-  updateBet(id, { status: 'hedged', hedgeOpportunity: undefined });
+  updateBet(id, { status: 'hedged' });
 }
 
 export function settleBet(id: string, result: BetResult) {
