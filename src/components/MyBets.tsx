@@ -55,7 +55,7 @@ function HedgeActionCard({
 
   if (confirmed) {
     return (
-      <div className="rounded-2xl bg-purple-500/15 border border-purple-500/40 p-5 text-center space-y-1 animate-fade-in">
+      <div className="rounded-2xl bg-purple-500/15 border border-purple-500/50 p-5 text-center space-y-1 animate-fade-in shadow-[0_0_28px_rgba(168,85,247,0.35)]">
         <p className="text-2xl">✓</p>
         <p className="text-purple-400 font-bold">Both bets placed!</p>
         <p className="text-xs text-slate-400">+${opp.guaranteedProfit.toFixed(2)} profit locked in.</p>
@@ -66,15 +66,19 @@ function HedgeActionCard({
   return (
     <div className="space-y-3 animate-slide-up">
       {/* Bet A pill */}
-      <div className={`rounded-xl p-4 border-2 transition-colors ${betADone ? 'bg-green-500/5 border-green-500/30' : 'bg-[#100020] border-[#3D1A6E]'}`}>
+      <div className={`rounded-xl p-4 border-2 transition-all duration-300 ${
+        betADone
+          ? 'bg-green-500/5 border-green-500/40 shadow-[0_0_14px_rgba(34,197,94,0.18)]'
+          : 'pill-glow-white'
+      }`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betADone ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-200'}`}>
+            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betADone ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white border border-white/20'}`}>
               {betADone ? '✓' : 'A'}
             </span>
-            <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Original Bet</span>
+            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
           </div>
-          {betADone && <span className="text-[10px] font-mono text-green-400">Placed ✓</span>}
+          {betADone && <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>}
         </div>
         <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
         <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {betABook}</p>
@@ -85,14 +89,14 @@ function HedgeActionCard({
                 href={betAUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-slate-500 hover:text-white transition-colors"
+                className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/80 text-xs font-semibold text-center hover:border-white/40 hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.12)] transition-all"
               >
                 Open {betABook} ↗
               </a>
             )}
             <button
               onClick={markA}
-              className="flex-1 py-2.5 rounded-lg border border-slate-500/40 text-slate-300 text-xs font-bold hover:bg-slate-500/10 transition-colors"
+              className="flex-1 py-2.5 rounded-lg bg-white/10 border border-white/25 text-white text-xs font-bold hover:bg-white/15 hover:shadow-[0_0_10px_rgba(255,255,255,0.15)] transition-all"
             >
               Done ✓
             </button>
@@ -101,17 +105,25 @@ function HedgeActionCard({
       </div>
 
       {/* Bet B pill */}
-      <div className={`rounded-xl p-4 border-2 transition-colors ${betBDone ? 'bg-green-500/5 border-green-500/30' : 'bg-purple-500/10 border-purple-500/40'}`}>
+      <div className={`rounded-xl p-4 border-2 transition-all duration-300 ${
+        betBDone
+          ? 'bg-green-500/5 border-green-500/40 shadow-[0_0_14px_rgba(34,197,94,0.18)]'
+          : 'pill-glow-purple glow-ring'
+      }`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betBDone ? 'bg-green-500/20 text-green-400' : 'bg-purple-500 text-white'}`}>
+            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+              betBDone
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)]'
+            }`}>
               {betBDone ? '✓' : 'B'}
             </span>
-            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${betBDone ? 'text-slate-500' : 'text-purple-400'}`}>Hedge Bet</span>
+            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${betBDone ? 'text-slate-500' : 'text-purple-300'}`}>Hedge Bet</span>
           </div>
           {betBDone
-            ? <span className="text-[10px] font-mono text-green-400">Placed ✓</span>
-            : <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shrink-0" />
+            ? <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>
+            : <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shrink-0 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
           }
         </div>
         <p className="text-sm font-bold text-white">{opp.hedgeTeam}</p>
@@ -125,14 +137,14 @@ function HedgeActionCard({
                 href={betBUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-purple-500/40 hover:text-purple-300 transition-colors"
+                className="flex-1 py-2.5 rounded-lg border border-purple-500/40 text-purple-300 text-xs font-semibold text-center hover:border-purple-500/70 hover:shadow-[0_0_12px_rgba(168,85,247,0.25)] transition-all"
               >
                 Open {betBBook} ↗
               </a>
             )}
             <button
               onClick={markB}
-              className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-colors shadow-lg shadow-purple-500/20"
+              className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-all btn-glow"
             >
               Done ✓
             </button>
@@ -141,9 +153,9 @@ function HedgeActionCard({
       </div>
 
       {/* Guaranteed profit */}
-      <div className="text-center py-2">
+      <div className="text-center py-3 bg-purple-500/8 rounded-xl border border-purple-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]">
         <p className="text-xs text-slate-500 mb-0.5">No matter who wins</p>
-        <p className="text-3xl font-bold text-purple-400 font-mono">+${opp.guaranteedProfit.toFixed(2)}</p>
+        <p className="text-3xl font-bold text-purple-400 font-mono drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">+${opp.guaranteedProfit.toFixed(2)}</p>
         <p className="text-xs text-slate-500 mt-0.5">guaranteed profit</p>
       </div>
 
@@ -297,11 +309,11 @@ function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => voi
       hedged: 'Mark as HEDGED?',
     };
     return (
-      <div className="bg-[#09000F] rounded-xl p-3 space-y-2">
+      <div className="bg-[#09000F] rounded-xl p-3 space-y-2 border border-purple-500/20">
         <p className="text-xs text-slate-400 text-center">{labels[confirming]}</p>
         <div className="flex gap-2">
-          <button onClick={() => doSettle(confirming)} className="flex-1 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold">Confirm</button>
-          <button onClick={() => setConfirming(null)} className="flex-1 py-2 rounded-lg border border-[#3D1A6E] text-slate-400 text-xs">Cancel</button>
+          <button onClick={() => doSettle(confirming)} className="flex-1 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold btn-glow">Confirm</button>
+          <button onClick={() => setConfirming(null)} className="flex-1 py-2 rounded-lg border border-white/15 text-slate-400 text-xs hover:border-white/30 transition-all">Cancel</button>
         </div>
       </div>
     );
@@ -311,9 +323,9 @@ function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => voi
     <div className="space-y-1.5">
       <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Settle bet</p>
       <div className="grid grid-cols-3 gap-1.5">
-        <button onClick={() => setConfirming('win')} className="py-2 rounded-lg border border-purple-500/30 text-purple-400 text-xs font-semibold hover:bg-purple-500/10 transition-all">Won ✓</button>
-        <button onClick={() => setConfirming('loss')} className="py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/10 transition-all">Lost ✗</button>
-        <button onClick={() => setConfirming('push')} className="py-2 rounded-lg border border-[#3D1A6E] text-slate-400 text-xs font-semibold hover:border-slate-600 transition-all">Push</button>
+        <button onClick={() => setConfirming('win')} className="py-2 rounded-lg border border-purple-500/40 text-purple-300 text-xs font-semibold bg-purple-500/8 hover:bg-purple-500/15 hover:border-purple-500/70 hover:shadow-[0_0_10px_rgba(168,85,247,0.25)] transition-all">Won ✓</button>
+        <button onClick={() => setConfirming('loss')} className="py-2 rounded-lg border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/10 hover:shadow-[0_0_8px_rgba(239,68,68,0.2)] transition-all">Lost ✗</button>
+        <button onClick={() => setConfirming('push')} className="py-2 rounded-lg border border-white/15 text-slate-400 text-xs font-semibold hover:border-white/30 transition-all">Push</button>
       </div>
     </div>
   );
@@ -431,7 +443,11 @@ function BetCard({
       )}
 
       <div className={`card overflow-hidden transition-all ${
-        bet.status === 'hedge_ready' ? 'border-purple-500/40' : ''
+        bet.status === 'hedge_ready'
+          ? 'border-purple-500/50 shadow-[0_0_22px_rgba(168,85,247,0.22)] glow-ring'
+          : bet.status === 'hedged'
+            ? 'border-blue-500/30 shadow-[0_0_14px_rgba(59,130,246,0.12)]'
+            : ''
       }`}>
         <button
           onClick={() => setExpanded(e => !e)}
@@ -484,7 +500,7 @@ function BetCard({
             {noEventLinked && (
               <button
                 onClick={() => setShowLink(true)}
-                className="w-full py-2.5 rounded-xl border border-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500/5 transition-all"
+                className="w-full py-2.5 rounded-xl border border-blue-500/30 text-blue-400 text-xs font-semibold hover:border-blue-500/60 hover:bg-blue-500/5 hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all"
               >
                 Link to Live Game → enable auto-monitoring
               </button>
@@ -494,7 +510,7 @@ function BetCard({
             {bet.status === 'monitoring' && !showManual && (
               <button
                 onClick={() => setShowManual(true)}
-                className="w-full py-3 rounded-xl border border-[#3D1A6E] text-slate-400 text-sm hover:border-purple-500/40 hover:text-purple-400 transition-all"
+                className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-400 text-sm hover:border-purple-500/60 hover:shadow-[0_0_14px_rgba(168,85,247,0.22)] transition-all"
               >
                 Check if I can hedge now →
               </button>
@@ -507,13 +523,13 @@ function BetCard({
             {bet.status === 'hedged' && (
               <div className="space-y-3">
                 {/* Bet A pill — completed */}
-                <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+                <div className="rounded-xl p-4 pill-glow-white">
                   <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
-                      <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Original Bet</span>
+                      <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
                     </div>
-                    <span className="text-[10px] font-mono text-green-400">✓ Done</span>
+                    <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
                   </div>
                   <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
                   <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {bookName}</p>
@@ -521,13 +537,13 @@ function BetCard({
 
                 {/* Bet B pill — completed */}
                 {bet.hedgeOpportunity && (
-                  <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+                  <div className="rounded-xl p-4 pill-glow-purple">
                     <div className="flex items-center justify-between mb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">B</span>
-                        <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Hedge Bet</span>
+                        <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.5)]">B</span>
+                        <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">Hedge Bet</span>
                       </div>
-                      <span className="text-[10px] font-mono text-green-400">✓ Done</span>
+                      <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
                     </div>
                     <p className="text-sm font-bold text-white">{bet.hedgeOpportunity.hedgeTeam}</p>
                     <p className="text-xs text-slate-400 font-mono mt-1">
@@ -537,10 +553,10 @@ function BetCard({
                 )}
 
                 {/* Locked profit */}
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-0.5">
-                  <p className="text-blue-400 font-semibold text-sm">Profit locked in — awaiting payout</p>
+                <div className="bg-purple-500/8 border border-purple-500/30 rounded-xl p-4 text-center space-y-0.5 shadow-[0_0_18px_rgba(168,85,247,0.2)]">
+                  <p className="text-purple-300 font-semibold text-sm">Profit locked in — awaiting payout</p>
                   {bet.hedgeOpportunity && (
-                    <p className="text-2xl font-bold font-mono text-purple-400 mt-1">
+                    <p className="text-2xl font-bold font-mono text-purple-400 mt-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
                       +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)}
                     </p>
                   )}
@@ -549,7 +565,7 @@ function BetCard({
 
                 <button
                   onClick={() => { settleBet(bet.id, 'hedged'); onRefresh(); }}
-                  className="w-full py-3 rounded-xl bg-[#180032] border border-[#3D1A6E] text-slate-400 text-sm font-semibold hover:text-white hover:border-slate-500 transition-colors"
+                  className="w-full py-3 rounded-xl bg-purple-500/10 border border-purple-500/40 text-purple-300 text-sm font-semibold hover:bg-purple-500/20 hover:border-purple-500/60 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)] transition-all"
                 >
                   Payout received — move to history ✓
                 </button>
@@ -627,7 +643,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
           </div>
           <button
             onClick={() => setShowWizard(true)}
-            className="bg-purple-500 hover:bg-purple-400 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-purple-500/20 transition-all"
+            className="bg-purple-500 hover:bg-purple-400 text-white font-bold py-4 px-8 rounded-2xl transition-all btn-glow"
           >
             Add my first bet
           </button>
@@ -738,7 +754,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
       {bets.length > 0 && (
         <button
           onClick={() => setShowWizard(true)}
-          className="fixed bottom-24 right-5 w-14 h-14 bg-purple-500 hover:bg-purple-400 rounded-full shadow-xl shadow-purple-500/30 flex items-center justify-center transition-all active:scale-95 z-40"
+          className="fixed bottom-24 right-5 w-14 h-14 bg-purple-500 hover:bg-purple-400 rounded-full flex items-center justify-center transition-all active:scale-95 z-40 shadow-[0_0_28px_rgba(168,85,247,0.55),0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.7),0_8px_24px_rgba(0,0,0,0.5)]"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round" />

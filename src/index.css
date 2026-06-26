@@ -52,8 +52,30 @@
 
   /* Futuristic glow card variant */
   .card-glow {
-    @apply bg-[#100020] border border-purple-500/40 rounded-2xl;
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.08), inset 0 1px 0 rgba(168, 85, 247, 0.1);
+    @apply bg-[#100020] border border-purple-500/50 rounded-2xl;
+    box-shadow: 0 0 24px rgba(168, 85, 247, 0.2), 0 0 8px rgba(168, 85, 247, 0.1), inset 0 1px 0 rgba(168, 85, 247, 0.12);
+  }
+
+  /* Pill with purple glow — mirrors API notification pill pattern */
+  .pill-glow-purple {
+    border: 1.5px solid rgba(168, 85, 247, 0.45);
+    background: rgba(168, 85, 247, 0.08);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.22), inset 0 1px 0 rgba(168, 85, 247, 0.1);
+  }
+
+  /* Pill with white/neutral glow */
+  .pill-glow-white {
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Primary button glow */
+  .btn-glow {
+    box-shadow: 0 0 22px rgba(168, 85, 247, 0.45), 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  .btn-glow:hover {
+    box-shadow: 0 0 32px rgba(168, 85, 247, 0.65), 0 4px 20px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -93,11 +115,19 @@ input[type='range']::-moz-range-thumb {
   cursor: pointer;
 }
 
-/* Scanline glow effect on key sections */
+/* Glow pulse on cards/pills */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(168, 85, 247, 0.2); }
-  50% { box-shadow: 0 0 16px rgba(168, 85, 247, 0.4); }
+  0%, 100% { box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+  50% { box-shadow: 0 0 22px rgba(168, 85, 247, 0.5); }
 }
 .pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes glow-ring {
+  0%, 100% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(168, 85, 247, 0.1); }
+  50% { box-shadow: 0 0 28px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(168, 85, 247, 0.15); }
+}
+.glow-ring {
+  animation: glow-ring 2.5s ease-in-out infinite;
 }

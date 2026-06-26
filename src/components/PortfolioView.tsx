@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { getAllBets, getPortfolioStats, deleteBet, type TrackedBet, type BetResult } from '../utils/storage';
 
 function resultBadge(result: BetResult | undefined, status: string) {
-  if (status === 'hedged' || result === 'hedged') return { label: 'HEDGED', cls: 'bg-blue-500/20 text-blue-400' };
-  if (result === 'win') return { label: 'WIN', cls: 'bg-purple-500/20 text-purple-400' };
-  if (result === 'loss') return { label: 'LOSS', cls: 'bg-red-500/20 text-red-400' };
-  if (result === 'push') return { label: 'PUSH', cls: 'bg-slate-500/20 text-slate-400' };
-  return { label: 'SETTLED', cls: 'bg-slate-500/20 text-slate-400' };
+  if (status === 'hedged' || result === 'hedged') return { label: 'HEDGED', cls: 'bg-blue-500/15 text-blue-400 border border-blue-500/30 shadow-[0_0_8px_rgba(59,130,246,0.18)]' };
+  if (result === 'win') return { label: 'WIN', cls: 'bg-purple-500/15 text-purple-300 border border-purple-500/40 shadow-[0_0_8px_rgba(168,85,247,0.25)]' };
+  if (result === 'loss') return { label: 'LOSS', cls: 'bg-red-500/15 text-red-400 border border-red-500/30' };
+  if (result === 'push') return { label: 'PUSH', cls: 'bg-slate-500/15 text-slate-400 border border-white/10' };
+  return { label: 'SETTLED', cls: 'bg-slate-500/15 text-slate-400 border border-white/10' };
 }
 
 function pnlColor(pnl: number | undefined) {
@@ -79,15 +79,15 @@ export default function PortfolioView() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#09000F] rounded-xl p-3 space-y-0.5">
+          <div className={`rounded-xl p-3 space-y-0.5 border ${stats.totalPnl >= 0 ? 'bg-purple-500/5 border-purple-500/25 shadow-[0_0_14px_rgba(168,85,247,0.15)]' : 'bg-red-500/5 border-red-500/20'}`}>
             <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Total P&L</p>
-            <p className={`text-2xl font-bold font-mono ${pnlColor(stats.totalPnl)}`}>
+            <p className={`text-2xl font-bold font-mono ${pnlColor(stats.totalPnl)} ${stats.totalPnl > 0 ? 'drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]' : ''}`}>
               {stats.totalPnl >= 0 ? '+' : ''}${stats.totalPnl.toFixed(2)}
             </p>
           </div>
-          <div className="bg-[#09000F] rounded-xl p-3 space-y-0.5">
+          <div className={`rounded-xl p-3 space-y-0.5 border ${stats.roi >= 0 ? 'bg-purple-500/5 border-purple-500/25 shadow-[0_0_14px_rgba(168,85,247,0.15)]' : 'bg-red-500/5 border-red-500/20'}`}>
             <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">ROI</p>
-            <p className={`text-2xl font-bold font-mono ${pnlColor(stats.roi)}`}>
+            <p className={`text-2xl font-bold font-mono ${pnlColor(stats.roi)} ${stats.roi > 0 ? 'drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]' : ''}`}>
               {stats.roi >= 0 ? '+' : ''}{stats.roi.toFixed(1)}%
             </p>
           </div>
@@ -95,12 +95,12 @@ export default function PortfolioView() {
 
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Won', value: stats.wins, cls: 'text-purple-400' },
-            { label: 'Lost', value: stats.losses, cls: 'text-red-400' },
-            { label: 'Hedged', value: stats.hedged, cls: 'text-blue-400' },
-            { label: 'Push', value: stats.pushes, cls: 'text-slate-400' },
-          ].map(({ label, value, cls }) => (
-            <div key={label} className="bg-[#09000F] rounded-xl p-2.5 text-center space-y-0.5">
+            { label: 'Won', value: stats.wins, cls: 'text-purple-400', border: 'border-purple-500/25 shadow-[0_0_8px_rgba(168,85,247,0.12)]' },
+            { label: 'Lost', value: stats.losses, cls: 'text-red-400', border: 'border-red-500/20' },
+            { label: 'Hedged', value: stats.hedged, cls: 'text-blue-400', border: 'border-blue-500/20' },
+            { label: 'Push', value: stats.pushes, cls: 'text-slate-400', border: 'border-white/8' },
+          ].map(({ label, value, cls, border }) => (
+            <div key={label} className={`bg-[#09000F] rounded-xl p-2.5 text-center space-y-0.5 border ${border}`}>
               <p className={`text-lg font-bold font-mono ${cls}`}>{value}</p>
               <p className="text-[10px] font-mono text-slate-600">{label}</p>
             </div>

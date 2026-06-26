@@ -38,7 +38,7 @@ function ArbCard({
   const profit = opp.guaranteedProfit * multiplier;
 
   return (
-    <div className="card overflow-hidden border-purple-500/30 bg-purple-500/5">
+    <div className="card overflow-hidden border-purple-500/50 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.18)]">
       <button onClick={() => setExpanded(e => !e)} className="w-full p-4 text-left space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -61,18 +61,18 @@ function ArbCard({
 
         {/* Quick preview */}
         <div className="flex gap-2 text-xs font-mono">
-          <div className="flex-1 bg-[#100020] rounded-lg px-3 py-2 space-y-0.5">
+          <div className="flex-1 rounded-lg px-3 py-2 space-y-0.5 pill-glow-white">
             <p className="text-slate-500">Bet A</p>
             <p className="text-white font-semibold">{opp.teamA.split(' ').slice(-1)[0]}</p>
-            <p className="text-purple-400">{formatOdds(opp.oddsA)}</p>
+            <p className="text-white font-bold">{formatOdds(opp.oddsA)}</p>
             <p className="text-slate-500 text-[10px]">{opp.bookAName}</p>
           </div>
           <div className="flex items-center text-slate-600 font-sans text-xs">+</div>
-          <div className="flex-1 bg-[#100020] rounded-lg px-3 py-2 space-y-0.5">
-            <p className="text-slate-500">Bet B</p>
+          <div className="flex-1 rounded-lg px-3 py-2 space-y-0.5 pill-glow-purple">
+            <p className="text-purple-400/70">Bet B</p>
             <p className="text-white font-semibold">{opp.teamB.split(' ').slice(-1)[0]}</p>
-            <p className="text-purple-400">{formatOdds(opp.oddsB)}</p>
-            <p className="text-slate-500 text-[10px]">{opp.bookBName}</p>
+            <p className="text-purple-300 font-bold">{formatOdds(opp.oddsB)}</p>
+            <p className="text-purple-400/50 text-[10px]">{opp.bookBName}</p>
           </div>
         </div>
       </button>
@@ -110,10 +110,10 @@ function ArbCard({
             <div className="space-y-3">
               <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Exactly what to do</p>
               <div className="space-y-2">
-                <div className="flex items-start gap-3 bg-[#180032] rounded-xl p-3">
-                  <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                <div className="flex items-start gap-3 rounded-xl p-3 pill-glow-white">
+                  <span className="w-6 h-6 rounded-full bg-white/10 border border-white/25 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(255,255,255,0.15)]">1</span>
                   <div className="text-sm">
-                    <p className="text-white">Open <span className="text-purple-400 font-bold">{opp.bookAName}</span></p>
+                    <p className="text-white">Open <span className="text-white font-bold">{opp.bookAName}</span></p>
                     <p className="text-slate-400 text-xs mt-0.5">
                       Bet <span className="text-white font-bold font-mono">${stakeA.toFixed(2)}</span> on{' '}
                       <span className="text-white font-semibold">{opp.teamA}</span>{' '}
@@ -121,10 +121,10 @@ function ArbCard({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 bg-[#180032] rounded-xl p-3">
-                  <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                <div className="flex items-start gap-3 rounded-xl p-3 pill-glow-purple">
+                  <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.6)]">2</span>
                   <div className="text-sm">
-                    <p className="text-white">Open <span className="text-blue-400 font-bold">{opp.bookBName}</span></p>
+                    <p className="text-white">Open <span className="text-purple-300 font-bold">{opp.bookBName}</span></p>
                     <p className="text-slate-400 text-xs mt-0.5">
                       Bet <span className="text-white font-bold font-mono">${stakeB.toFixed(2)}</span> on{' '}
                       <span className="text-white font-semibold">{opp.teamB}</span>{' '}
@@ -132,27 +132,27 @@ function ArbCard({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 bg-[#180032] rounded-xl p-3">
-                  <span className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                <div className="flex items-start gap-3 bg-[#180032] border border-purple-500/15 rounded-xl p-3">
+                  <span className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold flex items-center justify-center shrink-0">3</span>
                   <div className="text-sm">
                     <p className="text-white">Sit back and collect 💰</p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Guaranteed <span className="text-purple-400 font-bold">+${profit.toFixed(2)}</span>{' '}
+                      Guaranteed <span className="text-purple-300 font-bold drop-shadow-[0_0_6px_rgba(168,85,247,0.6)]">+${profit.toFixed(2)}</span>{' '}
                       profit no matter what happens
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="text-center py-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
-                <p className="text-xs text-slate-400">Total invested: <span className="text-white">${parsed.toFixed(2)}</span></p>
-                <p className="text-2xl font-bold text-purple-400 mt-1">+${profit.toFixed(2)}</p>
+              <div className="text-center py-3 bg-purple-500/8 rounded-xl border border-purple-500/35 shadow-[0_0_18px_rgba(168,85,247,0.22)]">
+                <p className="text-xs text-slate-400">Total invested: <span className="text-white font-mono">${parsed.toFixed(2)}</span></p>
+                <p className="text-2xl font-bold text-purple-400 mt-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">+${profit.toFixed(2)}</p>
                 <p className="text-xs text-slate-500">guaranteed return</p>
               </div>
 
               <button
                 onClick={() => onAddToTracker(stakeA, stakeB, profit)}
-                className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all shadow-lg shadow-purple-500/20"
+                className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all btn-glow"
               >
                 Add both bets to my tracker →
               </button>
@@ -297,7 +297,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
           <button
             onClick={scan}
             disabled={loading}
-            className="text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+            className="text-xs text-purple-300 hover:text-white border border-purple-500/40 px-3 py-1.5 rounded-lg transition-all hover:border-purple-500/70 hover:shadow-[0_0_10px_rgba(168,85,247,0.3)] disabled:opacity-50"
           >
             {loading ? '…' : '↺ Scan'}
           </button>

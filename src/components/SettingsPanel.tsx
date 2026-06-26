@@ -160,8 +160,8 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
                 onClick={() => toggleBook(book.key)}
                 className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-150 ${
                   selected
-                    ? 'bg-purple-500/10 border-purple-500/40 text-purple-300'
-                    : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-slate-600'
+                    ? 'bg-purple-500/12 border-purple-500/50 text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
+                    : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-purple-500/30 hover:text-slate-300'
                 }`}
               >
                 <div
@@ -196,9 +196,9 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         disabled={!isReady}
         className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-150 ${
           saved
-            ? 'bg-purple-600 text-white'
+            ? 'bg-purple-600 text-white shadow-[0_0_24px_rgba(168,85,247,0.4)]'
             : isReady
-              ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+              ? 'bg-purple-500 hover:bg-purple-400 text-white btn-glow'
               : 'bg-[#180032] text-slate-600 cursor-not-allowed'
         }`}
       >
