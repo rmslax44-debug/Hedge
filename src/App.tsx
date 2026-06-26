@@ -2,10 +2,11 @@ import { useState, useCallback } from 'react';
 import BottomNav from './components/BottomNav';
 import MyBets from './components/MyBets';
 import Opportunities from './components/Opportunities';
+import ProSection from './components/ProSection';
 import SettingsPanel from './components/SettingsPanel';
 import { getApiKey, getSelectedBooks } from './utils/storage';
 
-export type Tab = 'bets' | 'opportunities' | 'settings';
+export type Tab = 'bets' | 'opportunities' | 'pro' | 'settings';
 
 function isConfigured(): boolean {
   return getApiKey().length > 0 && getSelectedBooks().length > 0;
@@ -32,6 +33,10 @@ export default function App() {
 
         {tab === 'opportunities' && (
           <Opportunities />
+        )}
+
+        {tab === 'pro' && (
+          <ProSection />
         )}
 
         {tab === 'settings' && (
