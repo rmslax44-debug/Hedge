@@ -446,9 +446,22 @@ function BetCard({
             )}
 
             {bet.status === 'hedged' && (
-              <div className="text-center py-2 space-y-0.5">
-                <p className="text-purple-400 font-bold">Bet successfully hedged! 🎉</p>
-                <p className="text-xs text-slate-500">Your profit is locked in no matter the outcome.</p>
+              <div className="space-y-3">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center space-y-1">
+                  <p className="text-blue-400 font-bold text-sm">Both bets placed ✓</p>
+                  <p className="text-xs text-slate-500">Profit locked in — waiting for the game to resolve.</p>
+                  {bet.hedgeOpportunity && (
+                    <p className="text-xl font-bold font-mono text-purple-400 mt-1.5">
+                      +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)} guaranteed
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => { settleBet(bet.id, 'hedged'); onRefresh(); }}
+                  className="w-full py-3 rounded-xl bg-[#180032] border border-[#3D1A6E] text-slate-400 text-sm font-semibold hover:text-white hover:border-slate-500 transition-colors"
+                >
+                  Payout received — move to history ✓
+                </button>
               </div>
             )}
 
@@ -468,14 +481,12 @@ function BetCard({
             )}
 
             {/* Delete */}
-            {bet.status !== 'hedged' && (
-              <button
-                onClick={onDelete}
-                className="w-full py-2 text-xs text-slate-600 hover:text-red-400 transition-colors"
-              >
-                Remove this bet
-              </button>
-            )}
+            <button
+              onClick={onDelete}
+              className="w-full py-2 text-xs text-slate-600 hover:text-red-400 transition-colors"
+            >
+              Remove this bet
+            </button>
           </div>
         )}
       </div>
@@ -505,7 +516,8 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
 
   const hedgeReady = bets.filter(b => b.status === 'hedge_ready');
   const active = bets.filter(b => b.status === 'monitoring');
-  const done = bets.filter(b => b.status === 'hedged' || b.status === 'settled');
+  const hedged = bets.filter(b => b.status === 'hedged');
+  const done = bets.filter(b => b.status === 'settled');
   const hasHistory = done.length > 0;
 
   return (
@@ -544,9 +556,9 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               }`}
             >
               Active
-              {hedgeReady.length + active.length > 0 && (
+              {hedgeReady.length + active.length + hedged.length > 0 && (
                 <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
-                  {hedgeReady.length + active.length}
+                  {hedgeReady.length + active.length + hedged.length}
                 </span>
               )}
             </button>
@@ -585,6 +597,24 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                 </div>
               )}
 
+              {/* Hedged — awaiting payout */}
+              {hedged.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest">
+                      Hedged — awaiting payout
+                    </p>
+                  </div>
+                  {hedged.map(bet => (
+                    <BetCard key={bet.id} bet={bet}
+                      onDelete={() => { deleteBet(bet.id); refresh(); }}
+                      onRefresh={refresh}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Active monitoring */}
               {active.length > 0 && (
                 <div className="space-y-3">
@@ -603,7 +633,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                 </div>
               )}
 
-              {hedgeReady.length === 0 && active.length === 0 && (
+              {hedgeReady.length === 0 && active.length === 0 && hedged.length === 0 && (
                 <div className="card p-8 text-center mt-4">
                   <p className="text-xs text-slate-600">No active bets — tap + to add one.</p>
                 </div>

@@ -22,7 +22,7 @@ function fmtDate(ts: number) {
 
 function MiniPnlChart({ bets }: { bets: TrackedBet[] }) {
   const recent = bets
-    .filter((b) => b.settledPnl !== undefined || b.status === 'hedged')
+    .filter((b) => b.settledPnl !== undefined)
     .sort((a, b) => (a.settledAt ?? a.createdAt) - (b.settledAt ?? b.createdAt))
     .slice(-15);
 
@@ -65,7 +65,7 @@ export default function PortfolioView() {
   }
 
   const history: TrackedBet[] = allBets
-    .filter((b) => b.status === 'settled' || b.status === 'hedged')
+    .filter((b) => b.status === 'settled')
     .sort((a, b) => (b.settledAt ?? b.createdAt) - (a.settledAt ?? a.createdAt));
 
   return (
