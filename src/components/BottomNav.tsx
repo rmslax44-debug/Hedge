@@ -32,6 +32,18 @@ const TABS: {
     ),
   },
   {
+    key: 'pro',
+    label: 'Pro',
+    icon: (a) => (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M3 16l5-5 4 4 7-8"
+          stroke={a ? '#10b981' : 'currentColor'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M3 19h16"
+          stroke={a ? '#10b981' : 'currentColor'} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     key: 'settings',
     label: 'Settings',
     icon: (a) => (

@@ -37,6 +37,15 @@ export function setNotificationsEnabled(v: boolean) {
 // ─── Tracked bets ─────────────────────────────────────────────────────────────
 
 export type BetStatus = 'monitoring' | 'hedge_ready' | 'hedged' | 'settled';
+export type BetResult = 'win' | 'loss' | 'push' | 'hedged';
+
+export interface ParlayLeg {
+  id: string;
+  label: string;
+  sport?: string;
+  eventId?: string;
+  status: 'pending' | 'won' | 'lost' | 'push';
+}
 
 export interface HedgeOpportunity {
   hedgeTeam: string;
@@ -61,6 +70,25 @@ export interface TrackedBet {
   opposingTeam?: string;
   status: BetStatus;
   hedgeOpportunity?: HedgeOpportunity;
+  // Parlay fields
+  isParlay?: boolean;
+  legs?: ParlayLeg[];
+  // Settlement fields
+  result?: BetResult;
+  settledAt?: number;
+  settledPnl?: number; // actual realized P&L
+}
+
+export interface PortfolioStats {
+  totalBets: number;
+  activeBets: number;
+  wins: number;
+  losses: number;
+  hedged: number;
+  pushes: number;
+  totalStaked: number;
+  totalPnl: number;
+  roi: number;
 }
 
 function loadBets(): TrackedBet[] {
@@ -102,4 +130,65 @@ export function deleteBet(id: string) {
 
 export function markHedged(id: string) {
   updateBet(id, { status: 'hedged', hedgeOpportunity: undefined });
+}
+
+export function settleBet(id: string, result: BetResult) {
+  const bet = loadBets().find((b) => b.id === id);
+  if (!bet) return;
+  let pnl: number;
+  if (result === 'win') {
+    pnl = bet.potentialPayout - bet.stake;
+  } else if (result === 'loss') {
+    pnl = -bet.stake;
+  } else if (result === 'push') {
+    pnl = 0;
+  } else {
+    pnl = bet.hedgeOpportunity?.guaranteedProfit ?? 0;
+  }
+  updateBet(id, { status: 'settled', result, settledAt: Date.now(), settledPnl: pnl });
+}
+
+export function updateParlayLeg(betId: string, legId: string, status: ParlayLeg['status']) {
+  const bets = loadBets();
+  const bet = bets.find((b) => b.id === betId);
+  if (!bet?.legs) return;
+  bet.legs = bet.legs.map((l) => (l.id === legId ? { ...l, status } : l));
+  saveBets(bets);
+}
+
+export function getPortfolioStats(): PortfolioStats {
+  const bets = loadBets();
+  const settled = bets.filter((b) => b.status === 'settled' || b.status === 'hedged');
+  const active = bets.filter((b) => b.status === 'monitoring' || b.status === 'hedge_ready');
+
+  let wins = 0, losses = 0, hedged = 0, pushes = 0;
+  let totalPnl = 0;
+  let totalStaked = 0;
+
+  for (const b of bets) {
+    totalStaked += b.stake;
+  }
+
+  for (const b of settled) {
+    const pnl = b.settledPnl ?? 0;
+    totalPnl += pnl;
+    if (b.result === 'win') wins++;
+    else if (b.result === 'loss') losses++;
+    else if (b.result === 'hedged' || b.status === 'hedged') hedged++;
+    else if (b.result === 'push') pushes++;
+  }
+
+  const roi = totalStaked > 0 ? (totalPnl / totalStaked) * 100 : 0;
+
+  return {
+    totalBets: bets.length,
+    activeBets: active.length,
+    wins,
+    losses,
+    hedged,
+    pushes,
+    totalStaked,
+    totalPnl,
+    roi,
+  };
 }

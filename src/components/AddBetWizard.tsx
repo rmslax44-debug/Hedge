@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
-import { addBet } from '../utils/storage';
+import { addBet, type ParlayLeg } from '../utils/storage';
 
 interface Props {
   onClose: () => void;
   onAdded: () => void;
-  // Pre-filled from opportunities screen
   prefill?: {
     label?: string;
     myTeam?: string;
@@ -23,6 +22,9 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   // Step 1
   const [label, setLabel] = useState(prefill?.label ?? '');
   const [sport, setSport] = useState(prefill?.sport ?? '');
+  const [isParlay, setIsParlay] = useState(false);
+  const [legs, setLegs] = useState<ParlayLeg[]>([]);
+  const [legInput, setLegInput] = useState('');
 
   // Step 2
   const [stake, setStake] = useState(prefill?.stake ? String(prefill.stake) : '');
@@ -35,6 +37,17 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   const parsedPayout = parseFloat(payout);
   const payoutProfit = !isNaN(parsedPayout) && !isNaN(parsedStake) ? parsedPayout - parsedStake : null;
 
+  function addLeg() {
+    const t = legInput.trim();
+    if (!t) return;
+    setLegs(prev => [...prev, { id: crypto.randomUUID(), label: t, sport: sport || undefined, status: 'pending' }]);
+    setLegInput('');
+  }
+
+  function removeLeg(id: string) {
+    setLegs(prev => prev.filter(l => l.id !== id));
+  }
+
   function handleAdd() {
     if (!label || isNaN(parsedStake) || isNaN(parsedPayout) || !sportsbook) return;
     addBet({
@@ -46,11 +59,13 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
       sport: sport || 'americanfootball_nfl',
       eventId: prefill?.eventId,
       opposingTeam: prefill?.opposingTeam,
+      isParlay,
+      legs: isParlay && legs.length ? legs : undefined,
     });
     onAdded();
   }
 
-  const step1Valid = label.trim().length > 0;
+  const step1Valid = label.trim().length > 0 && (!isParlay || legs.length >= 2);
   const step2Valid = !isNaN(parsedStake) && parsedStake > 0 && !isNaN(parsedPayout) && parsedPayout > parsedStake;
   const step3Valid = sportsbook.length > 0;
 
@@ -93,17 +108,75 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               <p className="text-slate-400 text-sm">Describe it in plain words — no need for odds</p>
             </div>
 
+            {/* Parlay toggle */}
+            <div className="flex items-center justify-between card p-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-200">Parlay bet</p>
+                <p className="text-xs text-slate-500 mt-0.5">Multiple legs that all need to win</p>
+              </div>
+              <button
+                onClick={() => setIsParlay(p => !p)}
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ${
+                  isParlay ? 'bg-amber-500 border-amber-500' : 'bg-[#1A2A40] border-[#1A2A40]'
+                }`}
+              >
+                <span className={`pointer-events-none inline-block h-5 w-5 mt-0.5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
+                  isParlay ? 'translate-x-5' : 'translate-x-0.5'
+                }`} />
+              </button>
+            </div>
+
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder='e.g. "Chiefs to win" or "Patriots -3.5"'
+                placeholder={isParlay ? 'Parlay name (e.g. "3-team NFL parlay")' : 'e.g. "Chiefs to win" or "Patriots -3.5"'}
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 className="input-field text-base"
                 autoFocus
               />
-              <p className="text-xs text-slate-600 pl-1">Just describe what you need to happen to win your bet</p>
+              <p className="text-xs text-slate-600 pl-1">
+                {isParlay ? 'A name for this parlay' : 'Just describe what you need to happen to win your bet'}
+              </p>
             </div>
+
+            {/* Parlay legs entry */}
+            {isParlay && (
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Legs ({legs.length} added — min 2)</p>
+                {legs.length > 0 && (
+                  <div className="space-y-1.5">
+                    {legs.map((leg, i) => (
+                      <div key={leg.id} className="flex items-center gap-2 bg-[#0D1B2E] rounded-xl px-3 py-2.5">
+                        <span className="text-xs font-mono text-slate-500 w-5 text-center">{i + 1}</span>
+                        <span className="text-sm text-slate-300 flex-1">{leg.label}</span>
+                        <button onClick={() => removeLeg(leg.id)} className="text-slate-600 hover:text-red-400 transition-colors text-xs">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder='e.g. "Chiefs ML" or "Over 47.5"'
+                    value={legInput}
+                    onChange={(e) => setLegInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addLeg()}
+                    className="input-field text-sm flex-1"
+                  />
+                  <button
+                    onClick={addLeg}
+                    disabled={!legInput.trim()}
+                    className="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-sm font-semibold disabled:opacity-40 hover:bg-amber-500/25 transition-all"
+                  >
+                    + Add
+                  </button>
+                </div>
+                {legs.length < 2 && (
+                  <p className="text-xs text-slate-600 pl-1">Add at least 2 legs to continue</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sport (optional)</p>
@@ -233,7 +306,14 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             {step3Valid && (
               <div className="card p-4 space-y-2 border-emerald-500/20 bg-emerald-500/5">
                 <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Your bet summary</p>
-                <p className="text-sm text-white font-medium">{label}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-white font-medium">{label}</p>
+                  {isParlay && (
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">
+                      {legs.length}-LEG PARLAY
+                    </span>
+                  )}
+                </div>
                 <div className="flex gap-4 text-xs text-slate-400 font-mono">
                   <span>Bet: <span className="text-white">${parsedStake.toFixed(2)}</span></span>
                   <span>Win: <span className="text-emerald-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
