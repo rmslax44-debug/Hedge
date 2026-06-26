@@ -12,7 +12,7 @@ interface ResultsSectionProps {
 
 function ProfitValue({ value, size = 'md' }: { value: number; size?: 'sm' | 'md' | 'lg' }) {
   const isPositive = value >= 0;
-  const color = isPositive ? 'text-emerald-400' : 'text-red-400';
+  const color = isPositive ? 'text-purple-400' : 'text-red-400';
   const sizeClass = size === 'lg' ? 'text-3xl font-bold' : size === 'md' ? 'text-base font-semibold' : 'text-sm font-medium';
   return (
     <span className={`${color} ${sizeClass} font-mono tabular-nums`}>
@@ -36,8 +36,8 @@ function OutcomeCard({
   profit: number;
   accent: 'emerald' | 'blue';
 }) {
-  const accentColor = accent === 'emerald' ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-blue-500/40 bg-blue-500/5';
-  const dotColor = accent === 'emerald' ? 'bg-emerald-500' : 'bg-blue-500';
+  const accentColor = accent === 'emerald' ? 'border-purple-500/40 bg-purple-500/5' : 'border-blue-500/40 bg-blue-500/5';
+  const dotColor = accent === 'emerald' ? 'bg-purple-500' : 'bg-blue-500';
 
   return (
     <div className={`rounded-xl border p-4 space-y-3 ${accentColor}`}>
@@ -57,7 +57,7 @@ function OutcomeCard({
           <span>Total invested</span>
           <span className="text-red-400">-{formatCurrency(totalInvested)}</span>
         </div>
-        <div className="border-t border-[#1A2A40] pt-1.5 flex justify-between">
+        <div className="border-t border-[#3D1A6E] pt-1.5 flex justify-between">
           <span className="font-semibold text-slate-300">Net profit</span>
           <ProfitValue value={profit} size="sm" />
         </div>
@@ -131,7 +131,7 @@ export default function ResultsSection({
         </div>
 
         {/* Recommended hedge amount */}
-        <div className="bg-[#132035] rounded-xl p-4">
+        <div className="bg-[#180032] rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-400 mb-1">
@@ -144,7 +144,7 @@ export default function ResultsSection({
             {isCustom && (
               <button
                 onClick={() => setCustomHedge(null)}
-                className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:border-purple-500/60 px-3 py-1.5 rounded-lg transition-colors"
               >
                 Reset to optimal
               </button>
@@ -152,7 +152,7 @@ export default function ResultsSection({
           </div>
           <div className="mt-3 flex gap-4 text-xs text-slate-500 font-mono">
             <span>Total invested: <span className="text-slate-300">{formatCurrency(displayResult.totalInvested)}</span></span>
-            <span>ROI: <span className={displayResult.roi >= 0 ? 'text-emerald-400' : 'text-red-400'}>{formatPercent(displayResult.roi)}</span></span>
+            <span>ROI: <span className={displayResult.roi >= 0 ? 'text-purple-400' : 'text-red-400'}>{formatPercent(displayResult.roi)}</span></span>
           </div>
         </div>
       </div>
@@ -182,48 +182,48 @@ export default function ResultsSection({
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
           Scenario Comparison
         </h3>
-        <div className="overflow-hidden rounded-xl border border-[#1A2A40]">
+        <div className="overflow-hidden rounded-xl border border-[#3D1A6E]">
           <table className="w-full text-xs font-mono">
             <thead>
-              <tr className="bg-[#132035] text-slate-500">
+              <tr className="bg-[#180032] text-slate-500">
                 <th className="text-left px-4 py-2.5 font-medium">Scenario</th>
                 <th className="text-right px-4 py-2.5 font-medium">{origLabel} wins</th>
                 <th className="text-right px-4 py-2.5 font-medium">{hLabel} wins</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1A2A40]">
-              <tr className="bg-transparent hover:bg-[#132035]/50 transition-colors">
+            <tbody className="divide-y divide-[#3D1A6E]">
+              <tr className="bg-transparent hover:bg-[#180032]/50 transition-colors">
                 <td className="px-4 py-3 text-slate-400">No hedge</td>
                 <td className="px-4 py-3 text-right">
-                  <span className="text-emerald-400">{formatProfit(result.noHedgeProfitIfWins)}</span>
+                  <span className="text-purple-400">{formatProfit(result.noHedgeProfitIfWins)}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="text-red-400">{formatProfit(result.noHedgeLossIfLoses)}</span>
                 </td>
               </tr>
-              <tr className="bg-transparent hover:bg-[#132035]/50 transition-colors">
+              <tr className="bg-transparent hover:bg-[#180032]/50 transition-colors">
                 <td className="px-4 py-3 text-slate-300 font-semibold">Optimal hedge</td>
                 <td className="px-4 py-3 text-right">
-                  <span className={result.profitIfOriginalWins >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                  <span className={result.profitIfOriginalWins >= 0 ? 'text-purple-400' : 'text-red-400'}>
                     {formatProfit(result.profitIfOriginalWins)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span className={result.profitIfHedgeWins >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                  <span className={result.profitIfHedgeWins >= 0 ? 'text-purple-400' : 'text-red-400'}>
                     {formatProfit(result.profitIfHedgeWins)}
                   </span>
                 </td>
               </tr>
               {isCustom && (
-                <tr className="bg-[#132035]/30 hover:bg-[#132035]/50 transition-colors">
+                <tr className="bg-[#180032]/30 hover:bg-[#180032]/50 transition-colors">
                   <td className="px-4 py-3 text-slate-300">Custom hedge</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={displayResult.profitIfOriginalWins >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                    <span className={displayResult.profitIfOriginalWins >= 0 ? 'text-purple-400' : 'text-red-400'}>
                       {formatProfit(displayResult.profitIfOriginalWins)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={displayResult.profitIfHedgeWins >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                    <span className={displayResult.profitIfHedgeWins >= 0 ? 'text-purple-400' : 'text-red-400'}>
                       {formatProfit(displayResult.profitIfHedgeWins)}
                     </span>
                   </td>
@@ -268,7 +268,7 @@ export default function ResultsSection({
                   value={sliderValue}
                   onChange={(e) => setCustomHedge(parseFloat(e.target.value))}
                   style={{
-                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${(sliderValue / sliderMax) * 100}%, #1A2A40 ${(sliderValue / sliderMax) * 100}%, #1A2A40 100%)`,
+                    background: `linear-gradient(to right, #A855F7 0%, #A855F7 ${(sliderValue / sliderMax) * 100}%, #3D1A6E ${(sliderValue / sliderMax) * 100}%, #3D1A6E 100%)`,
                   }}
                 />
                 {/* Optimal marker */}
@@ -285,11 +285,11 @@ export default function ResultsSection({
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-              <div className="bg-[#132035] rounded-xl p-3 text-center">
+              <div className="bg-[#180032] rounded-xl p-3 text-center">
                 <p className="text-slate-500 mb-1">If original wins</p>
                 <ProfitValue value={displayResult.profitIfOriginalWins} />
               </div>
-              <div className="bg-[#132035] rounded-xl p-3 text-center">
+              <div className="bg-[#180032] rounded-xl p-3 text-center">
                 <p className="text-slate-500 mb-1">If hedge wins</p>
                 <ProfitValue value={displayResult.profitIfHedgeWins} />
               </div>

@@ -93,9 +93,9 @@ function EventDetailModal({
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-lg bg-[#0D1625] rounded-t-3xl border-t border-x border-[#1A2A40] p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg bg-[#100020] rounded-t-3xl border-t border-x border-[#3D1A6E] p-6 space-y-5 max-h-[90vh] overflow-y-auto">
         {/* Handle */}
-        <div className="w-10 h-1 bg-[#1A2A40] rounded-full mx-auto -mt-2" />
+        <div className="w-10 h-1 bg-[#2D0060] rounded-full mx-auto -mt-2" />
 
         {/* Matchup */}
         <div className="text-center">
@@ -106,23 +106,23 @@ function EventDetailModal({
 
         {/* Odds table */}
         {booksWithOdds.length > 0 && (
-          <div className="overflow-hidden rounded-xl border border-[#1A2A40]">
+          <div className="overflow-hidden rounded-xl border border-[#3D1A6E]">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="bg-[#132035] text-slate-500">
+                <tr className="bg-[#180032] text-slate-500">
                   <th className="text-left px-3 py-2 font-medium">Book</th>
                   <th className="text-right px-3 py-2 font-medium truncate max-w-[80px]">{event.away_team.split(' ').pop()}</th>
                   <th className="text-right px-3 py-2 font-medium truncate max-w-[80px]">{event.home_team.split(' ').pop()}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1A2A40]">
+              <tbody className="divide-y divide-[#3D1A6E]">
                 {booksWithOdds.map((b) => (
-                  <tr key={b.key} className="hover:bg-[#132035]/50">
+                  <tr key={b.key} className="hover:bg-[#180032]/50">
                     <td className="px-3 py-2.5 text-slate-400">{b.name}</td>
-                    <td className={`px-3 py-2.5 text-right ${b.awayOdds && b.awayOdds > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+                    <td className={`px-3 py-2.5 text-right ${b.awayOdds && b.awayOdds > 0 ? 'text-purple-400' : 'text-slate-300'}`}>
                       {b.awayOdds !== null ? formatOdds(b.awayOdds) : '—'}
                     </td>
-                    <td className={`px-3 py-2.5 text-right ${b.homeOdds && b.homeOdds > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+                    <td className={`px-3 py-2.5 text-right ${b.homeOdds && b.homeOdds > 0 ? 'text-purple-400' : 'text-slate-300'}`}>
                       {b.homeOdds !== null ? formatOdds(b.homeOdds) : '—'}
                     </td>
                   </tr>
@@ -148,8 +148,8 @@ function EventDetailModal({
                     onClick={() => { setMyTeam(side); setMyOddsOverride(''); }}
                     className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all ${
                       myTeam === side
-                        ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                        : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                        ? 'bg-purple-500/15 border-purple-500/50 text-purple-300'
+                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
                     }`}
                   >
                     {name}
@@ -172,7 +172,7 @@ function EventDetailModal({
                     className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
                       myBookKey === key
                         ? 'bg-blue-500/15 border-blue-500/50 text-blue-300'
-                        : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
                     }`}
                   >
                     {info?.shortName ?? key}
@@ -199,11 +199,11 @@ function EventDetailModal({
 
         {/* Hedge recommendation */}
         {bestHedge && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 space-y-1">
-            <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wide">Best available hedge</p>
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 space-y-1">
+            <p className="text-xs text-purple-400 font-semibold uppercase tracking-wide">Best available hedge</p>
             <p className="text-sm text-white">
               Bet <span className="font-bold">{hedgeTeamName}</span> at{' '}
-              <span className="font-bold font-mono text-emerald-400">{formatOdds(bestHedge.price)}</span>
+              <span className="font-bold font-mono text-purple-400">{formatOdds(bestHedge.price)}</span>
             </p>
             <p className="text-xs text-slate-400">via {bestHedge.bookName}</p>
           </div>
@@ -212,7 +212,7 @@ function EventDetailModal({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3.5 rounded-xl border border-[#1A2A40] text-slate-400 text-sm font-medium hover:border-slate-600 transition-colors"
+            className="flex-1 py-3.5 rounded-xl border border-[#3D1A6E] text-slate-400 text-sm font-medium hover:border-slate-600 transition-colors"
           >
             Cancel
           </button>
@@ -221,8 +221,8 @@ function EventDetailModal({
             disabled={!canHedge}
             className={`flex-1 py-3.5 rounded-xl text-sm font-semibold transition-all ${
               canHedge
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+                ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-[#180032] text-slate-600 cursor-not-allowed'
             }`}
           >
             Calculate hedge →
@@ -251,7 +251,7 @@ function GameCard({
   return (
     <button
       onClick={onClick}
-      className="card w-full p-4 text-left hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-150 active:scale-[0.99]"
+      className="card w-full p-4 text-left hover:border-purple-500/30 hover:bg-purple-500/5 transition-all duration-150 active:scale-[0.99]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 space-y-2">
@@ -268,15 +268,15 @@ function GameCard({
         <div className="text-right space-y-2 shrink-0">
           <p className="text-[10px] text-slate-600 uppercase tracking-wide">Best odds</p>
           <div className="space-y-1">
-            <p className={`text-sm font-mono font-semibold ${bestAway && bestAway.price > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+            <p className={`text-sm font-mono font-semibold ${bestAway && bestAway.price > 0 ? 'text-purple-400' : 'text-slate-300'}`}>
               {bestAway ? formatOdds(bestAway.price) : '—'}
             </p>
             <div className="h-px" />
-            <p className={`text-sm font-mono font-semibold ${bestHome && bestHome.price > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+            <p className={`text-sm font-mono font-semibold ${bestHome && bestHome.price > 0 ? 'text-purple-400' : 'text-slate-300'}`}>
               {bestHome ? formatOdds(bestHome.price) : '—'}
             </p>
           </div>
-          <p className="text-[10px] text-emerald-500">Tap to hedge →</p>
+          <p className="text-[10px] text-purple-500">Tap to hedge →</p>
         </div>
       </div>
     </button>
@@ -322,7 +322,7 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
   if (!isConfigured) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-20 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-[#132035] flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-[#180032] flex items-center justify-center">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="text-slate-500">
             <circle cx="14" cy="14" r="5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M14 3v2M14 23v2M3 14h2M23 14h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -334,7 +334,7 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
             Add your free Odds API key and select your sportsbooks in Settings to see real-time odds here.
           </p>
         </div>
-        <div className="text-xs text-emerald-400 font-medium">↓ Tap Settings below</div>
+        <div className="text-xs text-purple-400 font-medium">↓ Tap Settings below</div>
       </div>
     );
   }
@@ -350,8 +350,8 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
               onClick={() => handleSportChange(s.key)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
                 sport === s.key
-                  ? 'bg-emerald-500 border-emerald-500 text-white'
-                  : 'bg-[#132035] border-[#1A2A40] text-slate-400 hover:border-slate-600'
+                  ? 'bg-purple-500 border-purple-500 text-white'
+                  : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-slate-600'
               }`}
             >
               <span>{s.emoji}</span>
@@ -367,7 +367,7 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
           {userBookKeys.map((key) => {
             const info = US_SPORTSBOOKS.find((b) => b.key === key);
             return (
-              <span key={key} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#132035] text-slate-500 border border-[#1A2A40]">
+              <span key={key} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#180032] text-slate-500 border border-[#3D1A6E]">
                 {info?.shortName ?? key}
               </span>
             );
@@ -379,7 +379,7 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
       <div className="px-4 pt-2 space-y-3">
         {loading && (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
           </div>
         )}
 
@@ -399,7 +399,7 @@ export default function OddsBrowser({ onHedge }: { onHedge: (prefill: HedgePrefi
           <div className="card p-8 text-center space-y-2">
             <p className="text-slate-400 text-sm">No upcoming games right now</p>
             <p className="text-slate-600 text-xs">Try a different sport or check back later</p>
-            <button onClick={load} className="text-xs text-emerald-400 hover:text-emerald-300 mt-2">
+            <button onClick={load} className="text-xs text-purple-400 hover:text-purple-300 mt-2">
               Refresh
             </button>
           </div>

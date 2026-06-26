@@ -29,19 +29,19 @@ export default function ProSection() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="px-5 pt-14 border-b border-[#1A2A40]">
+      <div className="px-5 pt-14 border-b border-[#3D1A6E]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold tracking-tight text-white font-mono">HEDGE PRO</h1>
-            <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold tracking-widest">v2</span>
+            <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold tracking-widest">v2</span>
           </div>
           {/* Global odds format toggle always visible */}
-          <div className="flex gap-0.5 bg-[#0D1625] rounded-lg p-0.5">
+          <div className="flex gap-0.5 bg-[#100020] rounded-lg p-0.5">
             {(['american', 'decimal'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFmt(f)}
-                className={`text-[10px] px-2.5 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#132035] text-white' : 'text-slate-600 hover:text-slate-400'}`}
+                className={`text-[10px] px-2.5 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-600 hover:text-slate-400'}`}
               >
                 {f === 'american' ? 'AM' : 'DEC'}
               </button>
@@ -56,12 +56,12 @@ export default function ProSection() {
               key={t.key}
               onClick={() => setSubTab(t.key)}
               className={`flex-1 py-2.5 text-[11px] font-mono font-bold tracking-widest transition-colors relative ${
-                subTab === t.key ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
+                subTab === t.key ? 'text-purple-400' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               {t.label}
               {subTab === t.key && (
-                <span className="absolute bottom-0 left-0 right-0 h-px bg-emerald-500" />
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-purple-500" />
               )}
             </button>
           ))}

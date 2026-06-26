@@ -3,7 +3,7 @@ import { getAllBets, getPortfolioStats, type TrackedBet, type BetResult } from '
 
 function resultBadge(result: BetResult | undefined, status: string) {
   if (status === 'hedged' || result === 'hedged') return { label: 'HEDGED', cls: 'bg-blue-500/20 text-blue-400' };
-  if (result === 'win') return { label: 'WIN', cls: 'bg-emerald-500/20 text-emerald-400' };
+  if (result === 'win') return { label: 'WIN', cls: 'bg-purple-500/20 text-purple-400' };
   if (result === 'loss') return { label: 'LOSS', cls: 'bg-red-500/20 text-red-400' };
   if (result === 'push') return { label: 'PUSH', cls: 'bg-slate-500/20 text-slate-400' };
   return { label: 'SETTLED', cls: 'bg-slate-500/20 text-slate-400' };
@@ -11,7 +11,7 @@ function resultBadge(result: BetResult | undefined, status: string) {
 
 function pnlColor(pnl: number | undefined) {
   if (pnl === undefined) return 'text-slate-400';
-  if (pnl > 0) return 'text-emerald-400';
+  if (pnl > 0) return 'text-purple-400';
   if (pnl < 0) return 'text-red-400';
   return 'text-slate-400';
 }
@@ -40,7 +40,7 @@ function MiniPnlChart({ bets }: { bets: TrackedBet[] }) {
           return (
             <div key={i} className="flex-1 flex flex-col justify-end items-center gap-0.5">
               <div
-                className={`w-full rounded-sm transition-all ${v >= 0 ? 'bg-emerald-500/70' : 'bg-red-500/60'}`}
+                className={`w-full rounded-sm transition-all ${v >= 0 ? 'bg-purple-500/70' : 'bg-red-500/60'}`}
                 style={{ height: `${heightPct}%` }}
               />
             </div>
@@ -70,13 +70,13 @@ export default function PortfolioView() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#080E1A] rounded-xl p-3 space-y-0.5">
+          <div className="bg-[#09000F] rounded-xl p-3 space-y-0.5">
             <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Total P&L</p>
             <p className={`text-2xl font-bold font-mono ${pnlColor(stats.totalPnl)}`}>
               {stats.totalPnl >= 0 ? '+' : ''}${stats.totalPnl.toFixed(2)}
             </p>
           </div>
-          <div className="bg-[#080E1A] rounded-xl p-3 space-y-0.5">
+          <div className="bg-[#09000F] rounded-xl p-3 space-y-0.5">
             <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">ROI</p>
             <p className={`text-2xl font-bold font-mono ${pnlColor(stats.roi)}`}>
               {stats.roi >= 0 ? '+' : ''}{stats.roi.toFixed(1)}%
@@ -86,19 +86,19 @@ export default function PortfolioView() {
 
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Won', value: stats.wins, cls: 'text-emerald-400' },
+            { label: 'Won', value: stats.wins, cls: 'text-purple-400' },
             { label: 'Lost', value: stats.losses, cls: 'text-red-400' },
             { label: 'Hedged', value: stats.hedged, cls: 'text-blue-400' },
             { label: 'Push', value: stats.pushes, cls: 'text-slate-400' },
           ].map(({ label, value, cls }) => (
-            <div key={label} className="bg-[#080E1A] rounded-xl p-2.5 text-center space-y-0.5">
+            <div key={label} className="bg-[#09000F] rounded-xl p-2.5 text-center space-y-0.5">
               <p className={`text-lg font-bold font-mono ${cls}`}>{value}</p>
               <p className="text-[10px] font-mono text-slate-600">{label}</p>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[#1A2A40] pt-3 flex justify-between text-xs font-mono text-slate-600">
+        <div className="border-t border-[#3D1A6E] pt-3 flex justify-between text-xs font-mono text-slate-600">
           <span>Staked: <span className="text-slate-400">${stats.totalStaked.toFixed(2)}</span></span>
           <span>Active: <span className="text-slate-400">{stats.activeBets}</span></span>
         </div>

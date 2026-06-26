@@ -25,7 +25,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080E1A]">
+    <div className="min-h-screen bg-[#09000F]">
       <main className="max-w-2xl mx-auto">
         {tab === 'bets' && (
           <MyBets onBadgeChange={handleBadgeChange} />
@@ -41,7 +41,7 @@ export default function App() {
 
         {tab === 'settings' && (
           <div className="pt-14 pb-4">
-            <div className="px-5 pb-4 border-b border-[#1A2A40] mb-5">
+            <div className="px-5 pb-4 border-b border-[#3D1A6E] mb-5">
               <h1 className="text-lg font-bold text-white">Settings</h1>
               <p className="text-xs text-slate-500 mt-0.5">Configure your alerts and betting apps</p>
             </div>

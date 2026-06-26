@@ -125,16 +125,16 @@ export default function HedgeSimulator() {
         <div className="card p-4 flex gap-4">
           <div className="flex-1 text-center">
             <p className="text-xs text-slate-500">Total P&L</p>
-            <p className={`text-lg font-bold ${totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <p className={`text-lg font-bold ${totalPnL >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
               {totalPnL >= 0 ? '+' : ''}${totalPnL.toFixed(0)}
             </p>
           </div>
-          <div className="w-px bg-[#1A2A40]" />
+          <div className="w-px bg-[#2D0060]" />
           <div className="flex-1 text-center">
             <p className="text-xs text-slate-500">Simulations</p>
             <p className="text-lg font-bold text-white">{history.length}</p>
           </div>
-          <div className="w-px bg-[#1A2A40]" />
+          <div className="w-px bg-[#2D0060]" />
           <div className="flex-1 text-center">
             <p className="text-xs text-slate-500">Hedged</p>
             <p className="text-lg font-bold text-white">{hedgedRuns}/{history.length}</p>
@@ -154,7 +154,7 @@ export default function HedgeSimulator() {
             <button
               key={s.id}
               onClick={() => pickScenario(s)}
-              className="card p-4 w-full text-left space-y-2 hover:border-emerald-500/30 transition-all active:scale-[0.99]"
+              className="card p-4 w-full text-left space-y-2 hover:border-purple-500/30 transition-all active:scale-[0.99]"
             >
               <div className="flex items-center gap-2">
                 <span className="text-xl">{s.emoji}</span>
@@ -163,7 +163,7 @@ export default function HedgeSimulator() {
               <p className="text-sm text-slate-200">{s.story}</p>
               <div className="flex gap-3 text-xs text-slate-500 font-mono">
                 <span>Stake: <span className="text-white">${s.originalStake}</span></span>
-                <span>To win: <span className="text-emerald-400">+${(s.originalPayout - s.originalStake).toFixed(0)}</span></span>
+                <span>To win: <span className="text-purple-400">+${(s.originalPayout - s.originalStake).toFixed(0)}</span></span>
               </div>
             </button>
           ))}
@@ -176,7 +176,7 @@ export default function HedgeSimulator() {
                   <span className="text-slate-400">
                     {r.scenario.emoji} {r.hedged ? 'Hedged' : 'No hedge'} — {r.originalWon ? `${r.scenario.myTeam.split(' ')[0]} won` : 'other side won'}
                   </span>
-                  <span className={r.profit >= 0 ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold'}>
+                  <span className={r.profit >= 0 ? 'text-purple-400 font-semibold' : 'text-red-400 font-semibold'}>
                     {r.profit >= 0 ? '+' : ''}${r.profit.toFixed(0)}
                   </span>
                 </div>
@@ -201,7 +201,7 @@ export default function HedgeSimulator() {
             <p className="text-sm text-white">{scenario.situation}</p>
           </div>
 
-          <div className="bg-[#0D1625] rounded-2xl p-4 space-y-3">
+          <div className="bg-[#100020] rounded-2xl p-4 space-y-3">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Your position</p>
             <div className="flex gap-4 text-sm">
               <div>
@@ -210,13 +210,13 @@ export default function HedgeSimulator() {
               </div>
               <div>
                 <p className="text-slate-500 text-xs">If they win, you get</p>
-                <p className="text-emerald-400 font-bold text-lg">${scenario.originalPayout}</p>
+                <p className="text-purple-400 font-bold text-lg">${scenario.originalPayout}</p>
               </div>
             </div>
           </div>
 
-          <div className="card p-4 space-y-2 border-emerald-500/20 bg-emerald-500/5">
-            <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">
+          <div className="card p-4 space-y-2 border-purple-500/20 bg-purple-500/5">
+            <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest">
               {result.isGuaranteedProfit ? 'Hedge opportunity available' : 'Hedge to reduce risk'}
             </p>
             <p className="text-sm text-slate-300">
@@ -225,10 +225,10 @@ export default function HedgeSimulator() {
             </p>
             <div className="flex gap-4 text-xs text-slate-400 mt-1">
               <span>If {scenario.myTeam.split(' ')[0]} wins:
-                <span className={result.profitIfOriginalWins >= 0 ? ' text-emerald-400' : ' text-red-400'}> {result.profitIfOriginalWins >= 0 ? '+' : ''}${result.profitIfOriginalWins.toFixed(0)}</span>
+                <span className={result.profitIfOriginalWins >= 0 ? ' text-purple-400' : ' text-red-400'}> {result.profitIfOriginalWins >= 0 ? '+' : ''}${result.profitIfOriginalWins.toFixed(0)}</span>
               </span>
               <span>If {scenario.otherTeam.split(' ')[0]} wins:
-                <span className={result.profitIfHedgeWins >= 0 ? ' text-emerald-400' : ' text-red-400'}> {result.profitIfHedgeWins >= 0 ? '+' : ''}${result.profitIfHedgeWins.toFixed(0)}</span>
+                <span className={result.profitIfHedgeWins >= 0 ? ' text-purple-400' : ' text-red-400'}> {result.profitIfHedgeWins >= 0 ? '+' : ''}${result.profitIfHedgeWins.toFixed(0)}</span>
               </span>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function HedgeSimulator() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => resolve(true)}
-              className="py-4 rounded-2xl font-semibold text-sm bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20 transition-all"
+              className="py-4 rounded-2xl font-semibold text-sm bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20 transition-all"
             >
               Lock in the hedge
               <span className="block text-xs font-normal opacity-75 mt-0.5">
@@ -247,7 +247,7 @@ export default function HedgeSimulator() {
             </button>
             <button
               onClick={() => resolve(false)}
-              className="py-4 rounded-2xl font-semibold text-sm bg-[#132035] border border-[#1A2A40] text-slate-300 hover:border-slate-500 transition-all"
+              className="py-4 rounded-2xl font-semibold text-sm bg-[#180032] border border-[#3D1A6E] text-slate-300 hover:border-slate-500 transition-all"
             >
               Let it ride
               <span className="block text-xs font-normal opacity-75 mt-0.5">
@@ -264,7 +264,7 @@ export default function HedgeSimulator() {
           {/* Outcome banner */}
           <div className={`rounded-2xl p-6 text-center space-y-2 ${
             originalWon
-              ? 'bg-emerald-500/10 border border-emerald-500/20'
+              ? 'bg-purple-500/10 border border-purple-500/20'
               : 'bg-slate-500/10 border border-slate-500/20'
           }`}>
             <p className="text-3xl">{originalWon ? '🎉' : '😬'}</p>
@@ -287,17 +287,17 @@ export default function HedgeSimulator() {
                   <span className="text-slate-400">Hedge stake you just placed</span>
                   <span className="text-red-400">-${result.optimalHedgeStake.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm border-t border-[#1A2A40] pt-2">
+                <div className="flex justify-between text-sm border-t border-[#3D1A6E] pt-2">
                   <span className="text-slate-300">
                     {originalWon ? `${scenario.myTeam.split(' ')[0]} won → original payout` : `${scenario.otherTeam.split(' ')[0]} won → hedge payout`}
                   </span>
                   <span className="text-white">+${scenario.originalPayout.toFixed(0)}</span>
                 </div>
-                <div className="flex justify-between text-base font-bold border-t border-[#1A2A40] pt-2">
+                <div className="flex justify-between text-base font-bold border-t border-[#3D1A6E] pt-2">
                   <span className="text-white">Your profit</span>
                   <span className={
                     (originalWon ? result.profitIfOriginalWins : result.profitIfHedgeWins) >= 0
-                      ? 'text-emerald-400' : 'text-red-400'
+                      ? 'text-purple-400' : 'text-red-400'
                   }>
                     {(originalWon ? result.profitIfOriginalWins : result.profitIfHedgeWins) >= 0 ? '+' : ''}
                     ${(originalWon ? result.profitIfOriginalWins : result.profitIfHedgeWins).toFixed(0)}
@@ -316,9 +316,9 @@ export default function HedgeSimulator() {
                     <span className="text-white">+${scenario.originalPayout.toFixed(0)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold border-t border-[#1A2A40] pt-2">
+                <div className="flex justify-between text-base font-bold border-t border-[#3D1A6E] pt-2">
                   <span className="text-white">Your profit</span>
-                  <span className={originalWon ? 'text-emerald-400' : 'text-red-400'}>
+                  <span className={originalWon ? 'text-purple-400' : 'text-red-400'}>
                     {originalWon ? `+$${result.noHedgeProfitIfWins.toFixed(0)}` : `-$${scenario.originalStake.toFixed(0)}`}
                   </span>
                 </div>
@@ -328,8 +328,8 @@ export default function HedgeSimulator() {
 
           {/* Comparison callout */}
           {hedged ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 space-y-1">
-              <p className="text-xs font-semibold text-emerald-400">The hedge worked exactly as planned</p>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 space-y-1">
+              <p className="text-xs font-semibold text-purple-400">The hedge worked exactly as planned</p>
               <p className="text-xs text-slate-400">
                 Whether the game went your way or not, you walked away with the same profit.{' '}
                 {originalWon
@@ -338,8 +338,8 @@ export default function HedgeSimulator() {
               </p>
             </div>
           ) : originalWon ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 space-y-1">
-              <p className="text-xs font-semibold text-emerald-400">It paid off this time!</p>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 space-y-1">
+              <p className="text-xs font-semibold text-purple-400">It paid off this time!</p>
               <p className="text-xs text-slate-400">
                 You made +${result.noHedgeProfitIfWins.toFixed(0)} vs the hedged +${result.guaranteedProfit.toFixed(0)}.{' '}
                 The extra risk was worth it here — but next time it might not be.
@@ -358,13 +358,13 @@ export default function HedgeSimulator() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={reset}
-              className="py-4 rounded-2xl font-semibold text-sm bg-emerald-500 hover:bg-emerald-400 text-white transition-all"
+              className="py-4 rounded-2xl font-semibold text-sm bg-purple-500 hover:bg-purple-400 text-white transition-all"
             >
               Try another
             </button>
             <button
               onClick={() => pickScenario(scenario)}
-              className="py-4 rounded-2xl font-semibold text-sm bg-[#132035] border border-[#1A2A40] text-slate-300 hover:border-slate-500 transition-all"
+              className="py-4 rounded-2xl font-semibold text-sm bg-[#180032] border border-[#3D1A6E] text-slate-300 hover:border-slate-500 transition-all"
             >
               Replay this one
             </button>

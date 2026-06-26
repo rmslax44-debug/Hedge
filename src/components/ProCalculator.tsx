@@ -97,20 +97,20 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
     <div className="px-4 pt-2 pb-32 space-y-3">
 
       {prefill && (
-        <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
-          <p className="text-xs text-emerald-400 font-mono">PRE-FILLED FROM {prefill.hedgeBook ? 'RADAR' : 'LINES'}</p>
+        <div className="flex items-center justify-between bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-purple-400 font-mono">PRE-FILLED FROM {prefill.hedgeBook ? 'RADAR' : 'LINES'}</p>
           <button onClick={onClearPrefill} className="text-[10px] text-slate-500 hover:text-slate-300 font-mono uppercase">Clear</button>
         </div>
       )}
 
       {/* Odds format + parlay toggle */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-0.5 bg-[#0D1625] rounded-lg p-0.5">
+        <div className="flex gap-0.5 bg-[#100020] rounded-lg p-0.5">
           {(['american', 'decimal'] as const).map((f) => (
             <button
               key={f}
               onClick={() => { onFmtChange(f); setOrigOdds(''); setHedgeOdds(''); }}
-              className={`text-[11px] px-3 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#132035] text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`text-[11px] px-3 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               {f === 'american' ? 'AM' : 'DEC'}
             </button>
@@ -118,7 +118,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
         <button
           onClick={() => setIsParlay((v) => !v)}
-          className={`text-[11px] px-3 py-1 rounded-lg font-mono font-bold tracking-wider border transition-colors ${isParlay ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-[#1A2A40] text-slate-500 hover:text-slate-300'}`}
+          className={`text-[11px] px-3 py-1 rounded-lg font-mono font-bold tracking-wider border transition-colors ${isParlay ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-[#3D1A6E] text-slate-500 hover:text-slate-300'}`}
         >
           PARLAY
         </button>
@@ -175,9 +175,9 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
           )}
         </div>
         {parsedPayout !== null && !isNaN(parsedPayout) && parsedPayout > parsedStake && (
-          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#1A2A40] pt-2">
+          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
             <span>PAYOUT <span className="text-slate-300">${parsedPayout.toFixed(2)}</span></span>
-            <span>NET <span className="text-emerald-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
+            <span>NET <span className="text-purple-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
             {implOrig && <span>IMPL <span className="text-slate-300">{implOrig.toFixed(1)}%</span></span>}
           </div>
         )}
@@ -221,7 +221,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
           <select
             value={hedgeBook}
             onChange={(e) => setHedgeBook(e.target.value)}
-            className="input-field text-sm font-mono bg-[#132035]"
+            className="input-field text-sm font-mono bg-[#180032]"
           >
             <option value="">— select book —</option>
             {US_SPORTSBOOKS.map((b) => (
@@ -231,7 +231,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
 
         {(implHedge || hold !== null) && (
-          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#1A2A40] pt-2">
+          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
             {implHedge && <span>IMPL <span className="text-slate-300">{implHedge.toFixed(1)}%</span></span>}
             {hold !== null && (
               <span>
@@ -249,13 +249,13 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         <>
           {/* Main metrics 2×2 */}
           <div className="grid grid-cols-2 gap-2">
-            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/20'}`}>
+            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-purple-500/30 bg-purple-500/5' : 'border-amber-500/20'}`}>
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Optimal Hedge</p>
               <p className="text-lg font-bold font-mono text-white">${result.optimalHedgeStake.toFixed(2)}</p>
             </div>
-            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
+            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-purple-500/30 bg-purple-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Guaranteed P&L</p>
-              <p className={`text-lg font-bold font-mono ${result.isGuaranteedProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+              <p className={`text-lg font-bold font-mono ${result.isGuaranteedProfit ? 'text-purple-400' : 'text-red-400'}`}>
                 {result.guaranteedProfit >= 0 ? '+' : ''}${result.guaranteedProfit.toFixed(2)}
               </p>
             </div>
