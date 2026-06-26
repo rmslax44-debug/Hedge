@@ -1,332 +1,328 @@
-import { useState } from 'react';
-import { calculate, parseOdds } from '../utils/odds';
+import { useState, useEffect } from 'react';
+import { calculate, parseOdds, decimalToAmerican } from '../utils/odds';
+import { US_SPORTSBOOKS } from '../utils/sportsbooks';
 
-function ProbabilityBar({ label, pct, color }: { label: string; pct: number; color: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
-        <span className="font-bold" style={{ color }}>~{pct}%</span>
-      </div>
-      <div className="h-2 bg-[#1A2A40] rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, backgroundColor: color }}
-        />
-      </div>
-    </div>
-  );
+export type OddsFormat = 'american' | 'decimal';
+
+export interface CalcPrefill {
+  originalOdds?: string;    // raw string in current format
+  originalStake?: string;
+  originalPayout?: string;  // parlay total payout
+  hedgeOdds?: string;
+  hedgeBook?: string;
+  isParlay?: boolean;
 }
 
-export default function ProCalculator() {
-  const [stake, setStake] = useState('');
-  const [payout, setPayout] = useState('');
-  const [hedgeMode, setHedgeMode] = useState<'payout' | 'american'>('payout');
-  const [hedgeInput, setHedgeInput] = useState('');
-  const [hedgePct, setHedgePct] = useState(100);
+interface Props {
+  prefill?: CalcPrefill | null;
+  onClearPrefill?: () => void;
+  fmt: OddsFormat;
+  onFmtChange: (f: OddsFormat) => void;
+}
 
-  const parsedStake = parseFloat(stake);
-  const parsedPayout = parseFloat(payout);
+function impliedPct(decOdds: number) { return (1 / decOdds) * 100; }
+function holdPct(d1: number, d2: number) { return (1 / d1 + 1 / d2 - 1) * 100; }
+function noVigLine(impl1: number, impl2: number, target: number): number {
+  return 100 / ((target / (impl1 + impl2)) * 100);
+}
 
-  let hedgeDecOdds: number | null = null;
-  if (hedgeMode === 'payout') {
-    const v = parseFloat(hedgeInput);
-    if (!isNaN(v) && v > 100) hedgeDecOdds = v / 100;
-  } else {
-    hedgeDecOdds = parseOdds(hedgeInput, 'american');
-  }
+export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChange }: Props) {
+  const [origOdds, setOrigOdds] = useState('');
+  const [origStake, setOrigStake] = useState('');
+  const [origPayout, setOrigPayout] = useState('');
+  const [isParlay, setIsParlay] = useState(false);
+  const [hedgeOdds, setHedgeOdds] = useState('');
+  const [hedgeStakeOverride, setHedgeStakeOverride] = useState('');
+  const [hedgeBook, setHedgeBook] = useState('');
+
+  useEffect(() => {
+    if (!prefill) return;
+    if (prefill.originalOdds !== undefined) setOrigOdds(prefill.originalOdds);
+    if (prefill.originalStake !== undefined) setOrigStake(prefill.originalStake);
+    if (prefill.originalPayout !== undefined) setOrigPayout(prefill.originalPayout);
+    if (prefill.hedgeOdds !== undefined) setHedgeOdds(prefill.hedgeOdds);
+    if (prefill.hedgeBook !== undefined) setHedgeBook(prefill.hedgeBook);
+    if (prefill.isParlay !== undefined) setIsParlay(prefill.isParlay);
+  }, [prefill]);
+
+  // Parse original side
+  const origDecOdds = isParlay ? null : parseOdds(origOdds, fmt);
+  const parsedStake = parseFloat(origStake);
+  const parsedPayoutInput = parseFloat(origPayout);
+  const parsedPayout = isParlay
+    ? (!isNaN(parsedPayoutInput) ? parsedPayoutInput : null)
+    : (origDecOdds && !isNaN(parsedStake) ? parsedStake * origDecOdds : null);
+
+  // Parse hedge side
+  const hedgeDecOdds = parseOdds(hedgeOdds, fmt);
+  const hedgeStake = parseFloat(hedgeStakeOverride) || undefined;
 
   const valid =
     !isNaN(parsedStake) && parsedStake > 0 &&
-    !isNaN(parsedPayout) && parsedPayout > parsedStake &&
+    parsedPayout !== null && parsedPayout > parsedStake &&
     hedgeDecOdds !== null && hedgeDecOdds > 1;
 
-  const optResult = valid ? calculate(parsedStake, parsedPayout, hedgeDecOdds!) : null;
+  const result = valid ? calculate(parsedStake, parsedPayout!, hedgeDecOdds!, hedgeStake) : null;
 
-  const hedgeStakeAtPct = optResult
-    ? Math.max(0.01, (hedgePct / 100) * optResult.optimalHedgeStake)
-    : 0;
+  // Analytics
+  const hold = (!isParlay && origDecOdds && hedgeDecOdds)
+    ? holdPct(origDecOdds, hedgeDecOdds) : null;
 
-  const curResult = valid && optResult && hedgePct > 0
-    ? calculate(parsedStake, parsedPayout, hedgeDecOdds!, hedgeStakeAtPct)
-    : null;
+  const implOrig = origDecOdds ? impliedPct(origDecOdds) : null;
+  const implHedge = hedgeDecOdds ? impliedPct(hedgeDecOdds) : null;
 
-  const noHedgeWin = valid ? parsedPayout - parsedStake : 0;
-  const noHedgeLose = valid ? -parsedStake : 0;
-  const displayWin = curResult ? curResult.profitIfOriginalWins : (hedgePct === 0 ? noHedgeWin : 0);
-  const displayLose = curResult ? curResult.profitIfHedgeWins : (hedgePct === 0 ? noHedgeLose : 0);
+  // No-vig fair lines
+  let fairOrigAm: string | null = null;
+  let fairHedgeAm: string | null = null;
+  if (implOrig && implHedge) {
+    const total = implOrig + implHedge;
+    fairOrigAm = decimalToAmerican(noVigLine(implOrig, implHedge, implOrig) * (total / 100));
+    fairHedgeAm = decimalToAmerican(noVigLine(implHedge, implOrig, implHedge) * (total / 100));
+    // Simpler: fair dec = total_implied/team_implied
+    const fairOrigDec = (implOrig + implHedge) / implOrig;
+    const fairHedgeDec = (implOrig + implHedge) / implHedge;
+    fairOrigAm = decimalToAmerican(fairOrigDec);
+    fairHedgeAm = decimalToAmerican(fairHedgeDec);
+  }
 
-  const maxAbs = Math.max(Math.abs(noHedgeWin), Math.abs(noHedgeLose), 1);
+  const bookName = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.name;
+  const bookUrl = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.url;
 
-  const originalDecOdds = valid ? parsedPayout / parsedStake : 2;
-  const pOriginalWins = Math.min(99, Math.round((1 / originalDecOdds) * 100));
-  const pHedgeWins = hedgeDecOdds ? Math.min(99, Math.round((1 / hedgeDecOdds) * 100)) : 50;
+  const placeholder = (side: 'orig' | 'hedge') =>
+    fmt === 'american'
+      ? (side === 'orig' ? '+150' : '+170')
+      : (side === 'orig' ? '2.500' : '2.700');
 
   return (
-    <div className="px-4 pt-4 pb-32 space-y-4">
-      {/* Your original bet */}
-      <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-slate-200">Your original bet</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs text-slate-400">Amount you bet</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
-              <input
-                type="number"
-                value={stake}
-                onChange={(e) => setStake(e.target.value)}
-                placeholder="100"
-                className="input-field pl-7 text-sm"
-                min="1"
-              />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-slate-400">Total payout if you win</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
-              <input
-                type="number"
-                value={payout}
-                onChange={(e) => setPayout(e.target.value)}
-                placeholder="250"
-                className="input-field pl-7 text-sm"
-                min="1"
-              />
-            </div>
-          </div>
+    <div className="px-4 pt-2 pb-32 space-y-3">
+
+      {prefill && (
+        <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-emerald-400 font-mono">PRE-FILLED FROM {prefill.hedgeBook ? 'RADAR' : 'LINES'}</p>
+          <button onClick={onClearPrefill} className="text-[10px] text-slate-500 hover:text-slate-300 font-mono uppercase">Clear</button>
         </div>
-        {valid && (
-          <p className="text-xs text-slate-500">
-            You're risking <span className="text-white">${parsedStake.toFixed(0)}</span> to win a{' '}
-            <span className="text-emerald-400">+${(parsedPayout - parsedStake).toFixed(0)}</span> profit
-          </p>
+      )}
+
+      {/* Odds format + parlay toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-0.5 bg-[#0D1625] rounded-lg p-0.5">
+          {(['american', 'decimal'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => { onFmtChange(f); setOrigOdds(''); setHedgeOdds(''); }}
+              className={`text-[11px] px-3 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#132035] text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              {f === 'american' ? 'AM' : 'DEC'}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setIsParlay((v) => !v)}
+          className={`text-[11px] px-3 py-1 rounded-lg font-mono font-bold tracking-wider border transition-colors ${isParlay ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-[#1A2A40] text-slate-500 hover:text-slate-300'}`}
+        >
+          PARLAY
+        </button>
+      </div>
+
+      {/* Original bet inputs */}
+      <div className="card p-4 space-y-3">
+        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Original Bet</p>
+        <div className={`grid gap-2 ${isParlay ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {!isParlay && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Odds</label>
+              <input
+                type="text"
+                value={origOdds}
+                onChange={(e) => setOrigOdds(e.target.value)}
+                placeholder={placeholder('orig')}
+                className="input-field font-mono text-sm tracking-wide"
+                autoComplete="off"
+              />
+            </div>
+          )}
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Stake</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
+              <input
+                type="number"
+                value={origStake}
+                onChange={(e) => setOrigStake(e.target.value)}
+                placeholder="0.00"
+                className="input-field pl-6 font-mono text-sm"
+                min="0"
+                step="any"
+              />
+            </div>
+          </div>
+          {isParlay && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Total Payout</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
+                <input
+                  type="number"
+                  value={origPayout}
+                  onChange={(e) => setOrigPayout(e.target.value)}
+                  placeholder="0.00"
+                  className="input-field pl-6 font-mono text-sm"
+                  min="0"
+                  step="any"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        {parsedPayout !== null && !isNaN(parsedPayout) && parsedPayout > parsedStake && (
+          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#1A2A40] pt-2">
+            <span>PAYOUT <span className="text-slate-300">${parsedPayout.toFixed(2)}</span></span>
+            <span>NET <span className="text-emerald-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
+            {implOrig && <span>IMPL <span className="text-slate-300">{implOrig.toFixed(1)}%</span></span>}
+          </div>
         )}
       </div>
 
-      {/* Hedge odds */}
-      <div className="card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-200">Hedge odds available</h3>
-          <div className="flex gap-0.5 bg-[#0D1625] rounded-lg p-0.5">
-            <button
-              onClick={() => { setHedgeMode('payout'); setHedgeInput(''); }}
-              className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${hedgeMode === 'payout' ? 'bg-[#132035] text-white' : 'text-slate-500'}`}
-            >
-              $/100
-            </button>
-            <button
-              onClick={() => { setHedgeMode('american'); setHedgeInput(''); }}
-              className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${hedgeMode === 'american' ? 'bg-[#132035] text-white' : 'text-slate-500'}`}
-            >
-              Odds
-            </button>
+      {/* Hedge inputs */}
+      <div className="card p-4 space-y-3">
+        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Hedge Leg</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Odds</label>
+            <input
+              type="text"
+              value={hedgeOdds}
+              onChange={(e) => setHedgeOdds(e.target.value)}
+              placeholder={placeholder('hedge')}
+              className="input-field font-mono text-sm tracking-wide"
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Stake Override</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
+              <input
+                type="number"
+                value={hedgeStakeOverride}
+                onChange={(e) => setHedgeStakeOverride(e.target.value)}
+                placeholder={result ? result.optimalHedgeStake.toFixed(2) : 'optimal'}
+                className="input-field pl-6 font-mono text-sm"
+                min="0"
+                step="any"
+              />
+            </div>
           </div>
         </div>
 
-        {hedgeMode === 'payout' ? (
-          <div className="space-y-1">
-            <label className="text-xs text-slate-400">
-              If I bet $100 on the other side, I'd get back in total:
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
-              <input
-                type="number"
-                value={hedgeInput}
-                onChange={(e) => setHedgeInput(e.target.value)}
-                placeholder="185"
-                className="input-field pl-7 text-sm"
-                min="101"
-              />
-            </div>
-            <p className="text-xs text-slate-600">Must be over $100 — check the app for the current total payout</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <label className="text-xs text-slate-400">American odds on the other side</label>
-            <input
-              type="text"
-              value={hedgeInput}
-              onChange={(e) => setHedgeInput(e.target.value)}
-              placeholder="+150 or -120"
-              className="input-field text-sm"
-            />
-            <p className="text-xs text-slate-600">The number next to the team in your betting app</p>
+        {/* Book selector */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Book</label>
+          <select
+            value={hedgeBook}
+            onChange={(e) => setHedgeBook(e.target.value)}
+            className="input-field text-sm font-mono bg-[#132035]"
+          >
+            <option value="">— select book —</option>
+            {US_SPORTSBOOKS.map((b) => (
+              <option key={b.key} value={b.key}>{b.shortName} · {b.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {(implHedge || hold !== null) && (
+          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#1A2A40] pt-2">
+            {implHedge && <span>IMPL <span className="text-slate-300">{implHedge.toFixed(1)}%</span></span>}
+            {hold !== null && (
+              <span>
+                HOLD <span className={hold > 6 ? 'text-red-400' : hold > 3.5 ? 'text-amber-400' : 'text-slate-300'}>{hold.toFixed(2)}%</span>
+              </span>
+            )}
+            {fairOrigAm && <span>FAIR-O <span className="text-slate-300">{fairOrigAm}</span></span>}
+            {fairHedgeAm && <span>FAIR-H <span className="text-slate-300">{fairHedgeAm}</span></span>}
           </div>
         )}
       </div>
 
       {/* Results */}
-      {valid && optResult && (
+      {result && valid && (
         <>
-          {/* Optimal hedge callout */}
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Optimal Hedge</p>
-              {optResult.isGuaranteedProfit && (
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-semibold">
-                  GUARANTEED PROFIT
-                </span>
-              )}
+          {/* Main metrics 2×2 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/20'}`}>
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Optimal Hedge</p>
+              <p className="text-lg font-bold font-mono text-white">${result.optimalHedgeStake.toFixed(2)}</p>
             </div>
-            <div className="flex gap-6">
-              <div>
-                <p className="text-xs text-slate-500">Bet this on the other side</p>
-                <p className="text-2xl font-bold text-white">${optResult.optimalHedgeStake.toFixed(2)}</p>
-              </div>
-              <div className="w-px bg-[#1A2A40]" />
-              <div>
-                <p className="text-xs text-slate-500">Guaranteed profit either way</p>
-                <p className={`text-2xl font-bold ${optResult.guaranteedProfit > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {optResult.guaranteedProfit >= 0 ? '+' : ''}${optResult.guaranteedProfit.toFixed(2)}
-                </p>
-              </div>
-            </div>
-            {!optResult.isGuaranteedProfit && (
-              <p className="text-xs text-amber-400">
-                No guaranteed profit — hedging still reduces your maximum loss from ${parsedStake.toFixed(0)} to ${Math.abs(optResult.guaranteedProfit).toFixed(0)}.
-              </p>
-            )}
-          </div>
-
-          {/* Risk vs Reward interactive section */}
-          <div className="card p-5 space-y-5">
-            <div>
-              <p className="text-sm font-semibold text-slate-200">Risk vs Reward</p>
-              <p className="text-xs text-slate-500 mt-0.5">Drag the slider to see how hedging changes your outcomes</p>
-            </div>
-
-            {/* Outcome cards */}
-            <div className="flex gap-3">
-              <div className={`flex-1 rounded-xl border p-4 space-y-2 transition-all duration-300 ${displayWin >= 0 ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
-                <p className="text-xs text-slate-500">Your bet WINS</p>
-                <p className={`text-xl font-bold transition-all duration-300 ${displayWin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {displayWin >= 0 ? '+' : ''}${displayWin.toFixed(0)}
-                </p>
-                <div className="h-1.5 bg-[#1A2A40] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${displayWin >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
-                    style={{ width: `${Math.min(100, Math.round((Math.abs(displayWin) / maxAbs) * 100))}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className={`flex-1 rounded-xl border p-4 space-y-2 transition-all duration-300 ${displayLose >= 0 ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
-                <p className="text-xs text-slate-500">Other team WINS</p>
-                <p className={`text-xl font-bold transition-all duration-300 ${displayLose >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {displayLose >= 0 ? '+' : ''}${displayLose.toFixed(0)}
-                </p>
-                <div className="h-1.5 bg-[#1A2A40] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${displayLose >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
-                    style={{ width: `${Math.min(100, Math.round((Math.abs(displayLose) / maxAbs) * 100))}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>No hedge</span>
-                <span className="text-slate-300 font-medium">
-                  ${hedgeStakeAtPct.toFixed(0)} hedge ({hedgePct}%)
-                </span>
-                <span>Full hedge</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={hedgePct}
-                onChange={(e) => setHedgePct(Number(e.target.value))}
-                className="w-full accent-emerald-500 cursor-pointer"
-              />
-            </div>
-
-            <div className="bg-[#0D1625] rounded-xl p-3 text-xs text-slate-400">
-              {hedgePct === 0
-                ? `High risk / high reward: win $${noHedgeWin.toFixed(0)} or lose $${Math.abs(noHedgeLose).toFixed(0)}`
-                : hedgePct === 100
-                ? `You lock in $${(curResult?.guaranteedProfit ?? 0).toFixed(0)} profit regardless of the outcome`
-                : `Partial hedge: ${100 - hedgePct}% of upside preserved, downside reduced`}
-            </div>
-          </div>
-
-          {/* Probability section */}
-          <div className="card p-5 space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-200">Likelihood based on odds</p>
-              <p className="text-xs text-slate-500 mt-0.5">What the market thinks will happen — not a guarantee</p>
-            </div>
-            <div className="space-y-3">
-              <ProbabilityBar label="Your original bet wins" pct={pOriginalWins} color="#10b981" />
-              <ProbabilityBar label="The other side wins (your hedge succeeds)" pct={pHedgeWins} color="#6366f1" />
-            </div>
-            <div className="bg-[#0D1625] rounded-xl p-3">
-              <p className="text-xs text-slate-400">
-                These don't add to 100% because sportsbooks take a cut (the "vig"). The true probabilities are somewhere in between.
+            <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Guaranteed P&L</p>
+              <p className={`text-lg font-bold font-mono ${result.isGuaranteedProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                {result.guaranteedProfit >= 0 ? '+' : ''}${result.guaranteedProfit.toFixed(2)}
               </p>
             </div>
-          </div>
-
-          {/* Full breakdown */}
-          <div className="card p-5 space-y-3">
-            <p className="text-sm font-semibold text-slate-200">Full breakdown</p>
-            <div className="space-y-2">
-              {[
-                { label: 'Original stake (already paid)', value: `-$${parsedStake.toFixed(2)}`, accent: false },
-                { label: 'Optimal hedge stake to place now', value: `-$${optResult.optimalHedgeStake.toFixed(2)}`, accent: false },
-                { label: 'Total money in play', value: `-$${(parsedStake + optResult.optimalHedgeStake).toFixed(2)}`, accent: false, bold: true },
-              ].map((r, i) => (
-                <div key={i} className={`flex justify-between text-sm ${r.bold ? 'font-semibold border-t border-[#1A2A40] pt-2' : ''}`}>
-                  <span className="text-slate-400">{r.label}</span>
-                  <span className="text-red-400">{r.value}</span>
-                </div>
-              ))}
-
-              <div className="border-t border-[#1A2A40] pt-2 space-y-2">
-                {[
-                  { label: 'If your original bet wins', value: `+$${optResult.profitIfOriginalWins.toFixed(2)}` },
-                  { label: 'If the other side wins', value: `+$${optResult.profitIfHedgeWins.toFixed(2)}` },
-                  { label: 'Your guaranteed profit', value: `${optResult.guaranteedProfit >= 0 ? '+' : ''}$${optResult.guaranteedProfit.toFixed(2)}`, bold: true },
-                ].map((r, i) => (
-                  <div key={i} className={`flex justify-between text-sm ${r.bold ? 'font-semibold' : ''}`}>
-                    <span className="text-slate-400">{r.label}</span>
-                    <span className={optResult.guaranteedProfit > 0 ? 'text-emerald-400' : 'text-amber-400'}>{r.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-[#1A2A40] pt-2 space-y-2">
-                <p className="text-xs text-slate-500 font-semibold">vs. no hedge:</p>
-                {[
-                  { label: 'If original wins (no hedge)', value: `+$${optResult.noHedgeProfitIfWins.toFixed(2)}` },
-                  { label: 'If original loses (no hedge)', value: `$${optResult.noHedgeLossIfLoses.toFixed(2)}` },
-                ].map((r, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span className="text-slate-500">{r.label}</span>
-                    <span className="text-slate-400">{r.value}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="card p-3">
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">If Orig Wins</p>
+              <p className="text-base font-bold font-mono text-white">+${result.profitIfOriginalWins.toFixed(2)}</p>
+            </div>
+            <div className="card p-3">
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">If Hedge Wins</p>
+              <p className="text-base font-bold font-mono text-white">+${result.profitIfHedgeWins.toFixed(2)}</p>
             </div>
           </div>
+
+          {/* Analytics table */}
+          <div className="card p-4 space-y-2">
+            <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Analytics</p>
+            <div className="space-y-1.5">
+              {([
+                ['Total Invested',   `-$${result.totalInvested.toFixed(2)}`],
+                ['ROI on Hedge',     `${(result.roi * 100).toFixed(2)}%`],
+                hold !== null ? ['Market Hold', `${hold.toFixed(2)}%`] : null,
+                fairOrigAm ? ['No-Vig Line (orig)', fairOrigAm] : null,
+                fairHedgeAm ? ['No-Vig Line (hedge)', fairHedgeAm] : null,
+                ['No-Hedge Win',    `+$${result.noHedgeProfitIfWins.toFixed(2)}`],
+                ['No-Hedge Loss',   `-$${Math.abs(result.noHedgeLossIfLoses).toFixed(2)}`],
+                ['Break-even Prob', `${(parsedStake / parsedPayout! * 100).toFixed(1)}%`],
+                hedgeStake ? ['Hedge Stake (custom)', `-$${result.hedgeStakeUsed.toFixed(2)}`] : null,
+              ] as ([string, string] | null)[])
+                .filter((r): r is [string, string] => r !== null)
+                .map(([label, val]) => (
+                  <div key={label} className="flex justify-between items-center text-[11px] font-mono">
+                    <span className="text-slate-500 uppercase tracking-wide">{label}</span>
+                    <span className="text-slate-300">{val}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          {/* Quick launch */}
+          {bookName && bookUrl && (
+            <a
+              href={bookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between card p-4 hover:border-slate-500 transition-colors"
+            >
+              <div>
+                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Place Hedge At</p>
+                <p className="text-sm font-bold text-white">{bookName}</p>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  {result.optimalHedgeStake.toFixed(2)} · {hedgeOdds}
+                </p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-slate-400">
+                <path d="M3 13L13 3M13 3H7M13 3v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          )}
         </>
       )}
 
       {!valid && (
-        <div className="card p-8 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#132035] flex items-center justify-center mx-auto">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="text-emerald-500">
-              <path d="M11 2L2 7l9 5 9-5-9-5zM2 17l9 5 9-5M2 12l9 5 9-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <p className="text-slate-300 text-sm font-medium">Enter your bet details above</p>
-          <p className="text-slate-600 text-xs">Fill in all three fields to see the full risk / reward analysis</p>
+        <div className="card p-6 text-center">
+          <p className="text-[11px] text-slate-600 font-mono tracking-widest uppercase">
+            Enter original bet + hedge odds to calculate
+          </p>
         </div>
       )}
     </div>
