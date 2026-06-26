@@ -181,7 +181,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             <div className="space-y-2">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sport (optional)</p>
               <div className="grid grid-cols-4 gap-2">
-                {SPORTS.slice(0, 8).map((s) => (
+                {SPORTS.map((s) => (
                   <button
                     key={s.key}
                     onClick={() => setSport(sport === s.key ? '' : s.key)}
@@ -192,7 +192,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     }`}
                   >
                     <span className="text-lg">{s.emoji}</span>
-                    <span>{s.name}</span>
+                    <span className="truncate w-full text-center">{s.name}</span>
                   </button>
                 ))}
               </div>

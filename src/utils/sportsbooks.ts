@@ -28,14 +28,29 @@ export interface Sport {
 }
 
 export const SPORTS: Sport[] = [
-  { key: 'americanfootball_nfl',   name: 'NFL',    emoji: '🏈' },
-  { key: 'basketball_nba',         name: 'NBA',    emoji: '🏀' },
-  { key: 'baseball_mlb',           name: 'MLB',    emoji: '⚾' },
-  { key: 'icehockey_nhl',          name: 'NHL',    emoji: '🏒' },
-  { key: 'americanfootball_ncaaf', name: 'NCAAF',  emoji: '🏈' },
-  { key: 'basketball_ncaab',       name: 'NCAAB',  emoji: '🏀' },
-  { key: 'mma_mixed_martial_arts', name: 'MMA',    emoji: '🥊' },
-  { key: 'golf_pga_tour',          name: 'Golf',   emoji: '⛳' },
-  { key: 'soccer_usa_mls',         name: 'MLS',    emoji: '⚽' },
-  { key: 'tennis_atp',             name: 'Tennis', emoji: '🎾' },
+  // American
+  { key: 'americanfootball_nfl',           name: 'NFL',             emoji: '🏈' },
+  { key: 'basketball_nba',                 name: 'NBA',             emoji: '🏀' },
+  { key: 'baseball_mlb',                   name: 'MLB',             emoji: '⚾' },
+  { key: 'icehockey_nhl',                  name: 'NHL',             emoji: '🏒' },
+  { key: 'americanfootball_ncaaf',         name: 'NCAAF',           emoji: '🏈' },
+  { key: 'basketball_ncaab',               name: 'NCAAB',           emoji: '🏀' },
+  { key: 'soccer_usa_mls',                 name: 'MLS',             emoji: '⚽' },
+  // European soccer
+  { key: 'soccer_epl',                     name: 'Premier League',  emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { key: 'soccer_uefa_champs_league',      name: 'Champions League',emoji: '⭐' },
+  { key: 'soccer_spain_la_liga',           name: 'La Liga',         emoji: '🇪🇸' },
+  { key: 'soccer_germany_bundesliga',      name: 'Bundesliga',      emoji: '🇩🇪' },
+  { key: 'soccer_italy_serie_a',           name: 'Serie A',         emoji: '🇮🇹' },
+  { key: 'soccer_france_ligue_one',        name: 'Ligue 1',         emoji: '🇫🇷' },
+  { key: 'soccer_uefa_europa_league',      name: 'Europa League',   emoji: '🟠' },
+  { key: 'soccer_netherlands_eredivisie',  name: 'Eredivisie',      emoji: '🇳🇱' },
+  { key: 'soccer_portugal_primeira_liga',  name: 'Primeira Liga',   emoji: '🇵🇹' },
+  { key: 'soccer_england_efl_champ',       name: 'Championship',    emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  // Combat
+  { key: 'boxing_boxing',                  name: 'Boxing',          emoji: '🥊' },
+  { key: 'mma_mixed_martial_arts',         name: 'MMA',             emoji: '🤼' },
+  // Other
+  { key: 'golf_pga_tour',                  name: 'Golf',            emoji: '⛳' },
+  { key: 'tennis_atp',                     name: 'Tennis',          emoji: '🎾' },
 ];
