@@ -30,12 +30,24 @@ function HedgeActionCard({
   opp: HedgeOpportunity;
   onDone: () => void;
 }) {
+  const [betADone, setBetADone] = useState(false);
+  const [betBDone, setBetBDone] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
   const betABook = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
   const betBBook = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'Sportsbook';
   const betBUrl = US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.url;
+  const betAUrl = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.url;
 
-  function handleDone() {
+  function markA() {
+    setBetADone(true);
+    if (betBDone) finalize();
+  }
+  function markB() {
+    setBetBDone(true);
+    if (betADone) finalize();
+  }
+  function finalize() {
     markHedged(bet.id);
     setConfirmed(true);
     setTimeout(onDone, 1200);
@@ -54,49 +66,78 @@ function HedgeActionCard({
   return (
     <div className="space-y-3 animate-slide-up">
       {/* Bet A pill */}
-      <div className="rounded-xl bg-[#100020] border border-[#3D1A6E] p-4">
+      <div className={`rounded-xl p-4 border-2 transition-colors ${betADone ? 'bg-green-500/5 border-green-500/30' : 'bg-[#100020] border-[#3D1A6E]'}`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
+            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betADone ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-200'}`}>
+              {betADone ? '✓' : 'A'}
+            </span>
             <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">Original Bet</span>
           </div>
-          <span className="text-[10px] font-mono text-slate-500">Already placed ✓</span>
+          {betADone && <span className="text-[10px] font-mono text-green-400">Placed ✓</span>}
         </div>
         <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
         <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {betABook}</p>
+        {!betADone && (
+          <div className="flex gap-2 mt-3">
+            {betAUrl && (
+              <a
+                href={betAUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-slate-500 hover:text-white transition-colors"
+              >
+                Open {betABook} ↗
+              </a>
+            )}
+            <button
+              onClick={markA}
+              className="flex-1 py-2.5 rounded-lg border border-slate-500/40 text-slate-300 text-xs font-bold hover:bg-slate-500/10 transition-colors"
+            >
+              Done ✓
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Bet B pill */}
-      <div className="rounded-xl bg-purple-500/10 border-2 border-purple-500/40 p-4">
+      <div className={`rounded-xl p-4 border-2 transition-colors ${betBDone ? 'bg-green-500/5 border-green-500/30' : 'bg-purple-500/10 border-purple-500/40'}`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">B</span>
-            <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider">Hedge Bet — Place Now</span>
+            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betBDone ? 'bg-green-500/20 text-green-400' : 'bg-purple-500 text-white'}`}>
+              {betBDone ? '✓' : 'B'}
+            </span>
+            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${betBDone ? 'text-slate-500' : 'text-purple-400'}`}>Hedge Bet</span>
           </div>
-          <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shrink-0" />
+          {betBDone
+            ? <span className="text-[10px] font-mono text-green-400">Placed ✓</span>
+            : <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shrink-0" />
+          }
         </div>
         <p className="text-sm font-bold text-white">{opp.hedgeTeam}</p>
         <p className="text-xs text-slate-400 font-mono mt-1">
           {fmtOdds(opp.hedgeOdds)} · ${opp.hedgeStake.toFixed(2)} · {betBBook}
         </p>
-        <div className="flex gap-2 mt-3">
-          {betBUrl && (
-            <a
-              href={betBUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-purple-500/40 hover:text-purple-300 transition-colors"
+        {!betBDone && (
+          <div className="flex gap-2 mt-3">
+            {betBUrl && (
+              <a
+                href={betBUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2.5 rounded-lg border border-[#3D1A6E] text-slate-300 text-xs font-semibold text-center hover:border-purple-500/40 hover:text-purple-300 transition-colors"
+              >
+                Open {betBBook} ↗
+              </a>
+            )}
+            <button
+              onClick={markB}
+              className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-colors shadow-lg shadow-purple-500/20"
             >
-              Open {betBBook} ↗
-            </a>
-          )}
-          <button
-            onClick={handleDone}
-            className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-colors shadow-lg shadow-purple-500/20"
-          >
-            Done ✓
-          </button>
-        </div>
+              Done ✓
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Guaranteed profit */}
