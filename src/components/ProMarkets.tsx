@@ -136,8 +136,11 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
       )}
 
       {noApi && (
-        <div className="card p-4 border-amber-500/20 bg-amber-500/5">
-          <p className="text-xs font-mono text-amber-400">API KEY + BOOKS REQUIRED — configure in Settings</p>
+        <div className="card p-4 border-[#CCFF00]/40 bg-[#CCFF00]/10 shadow-[0_0_16px_rgba(204,255,0,0.15)]">
+          <p className="text-xs font-bold font-mono text-[#CCFF00] tracking-wide uppercase flex items-center gap-1.5">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse shrink-0" />
+            API KEY + BOOKS REQUIRED — configure in Settings
+          </p>
         </div>
       )}
 
