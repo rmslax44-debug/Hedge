@@ -206,9 +206,12 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       </button>
 
       {!isReady && (
-        <div className="card p-4 border-amber-500/20 bg-amber-500/5 space-y-1">
-          <p className="text-xs font-semibold text-white">To find live hedge opportunities:</p>
-          <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
+        <div className="card p-4 border-[#CCFF00]/40 bg-[#CCFF00]/10 space-y-1 shadow-[0_0_16px_rgba(204,255,0,0.15)]">
+          <p className="text-xs font-bold text-[#CCFF00] tracking-wide uppercase flex items-center gap-1.5">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse" />
+            To find live hedge opportunities:
+          </p>
+          <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
             <li>Go to <span className="text-purple-400">the-odds-api.com</span> — it's free</li>
             <li>Sign up and copy your API key</li>
             <li>Paste it above and pick your betting apps</li>
