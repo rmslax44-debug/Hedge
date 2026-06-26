@@ -119,6 +119,21 @@ export function addBet(bet: Omit<TrackedBet, 'id' | 'createdAt' | 'status'>): Tr
   return newBet;
 }
 
+export function addBetWithHedge(
+  bet: Omit<TrackedBet, 'id' | 'createdAt' | 'status'> & { hedgeOpportunity: HedgeOpportunity },
+): TrackedBet {
+  const newBet: TrackedBet = {
+    ...bet,
+    id: crypto.randomUUID(),
+    createdAt: Date.now(),
+    status: 'hedge_ready',
+  };
+  const bets = loadBets();
+  bets.unshift(newBet);
+  saveBets(bets);
+  return newBet;
+}
+
 export function updateBet(id: string, updates: Partial<TrackedBet>) {
   const bets = loadBets().map((b) => (b.id === id ? { ...b, ...updates } : b));
   saveBets(bets);

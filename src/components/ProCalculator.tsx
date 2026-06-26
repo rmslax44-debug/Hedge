@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { calculate, parseOdds, decimalToAmerican } from '../utils/odds';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
+import { addBetWithHedge } from '../utils/storage';
 
 export type OddsFormat = 'american' | 'decimal';
 
@@ -18,6 +19,7 @@ interface Props {
   onClearPrefill?: () => void;
   fmt: OddsFormat;
   onFmtChange: (f: OddsFormat) => void;
+  onSaveToTracker?: () => void;
 }
 
 function impliedPct(decOdds: number) { return (1 / decOdds) * 100; }
@@ -26,7 +28,7 @@ function noVigLine(impl1: number, impl2: number, target: number): number {
   return 100 / ((target / (impl1 + impl2)) * 100);
 }
 
-export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChange }: Props) {
+export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChange, onSaveToTracker }: Props) {
   const [origOdds, setOrigOdds] = useState('');
   const [origStake, setOrigStake] = useState('');
   const [origPayout, setOrigPayout] = useState('');
@@ -34,6 +36,12 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
   const [hedgeOdds, setHedgeOdds] = useState('');
   const [hedgeStakeOverride, setHedgeStakeOverride] = useState('');
   const [hedgeBook, setHedgeBook] = useState('');
+
+  // Track-both-bets form state
+  const [showTrackForm, setShowTrackForm] = useState(false);
+  const [trackLabel, setTrackLabel] = useState('');
+  const [trackHedgeTeam, setTrackHedgeTeam] = useState('');
+  const [trackOrigBook, setTrackOrigBook] = useState('');
 
   useEffect(() => {
     if (!prefill) return;
@@ -43,6 +51,11 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
     if (prefill.hedgeOdds !== undefined) setHedgeOdds(prefill.hedgeOdds);
     if (prefill.hedgeBook !== undefined) setHedgeBook(prefill.hedgeBook);
     if (prefill.isParlay !== undefined) setIsParlay(prefill.isParlay);
+    // Reset track form when new prefill arrives
+    setShowTrackForm(false);
+    setTrackLabel('');
+    setTrackHedgeTeam('');
+    setTrackOrigBook('');
   }, [prefill]);
 
   // Parse original side
@@ -87,6 +100,35 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
 
   const bookName = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.name;
   const bookUrl = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.url;
+
+  const trackFormReady = trackLabel.trim().length > 0 && trackOrigBook.length > 0;
+
+  function handleSaveToTracker() {
+    if (!result || !parsedPayout || !hedgeDecOdds || !trackFormReady) return;
+    const amStr = decimalToAmerican(hedgeDecOdds);
+    const hedgeAmOdds = parseFloat(amStr);
+    const hedgeBookDisplay = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.name ?? hedgeBook;
+    addBetWithHedge({
+      label: trackLabel.trim(),
+      myTeam: trackLabel.trim(),
+      sportsbook: trackOrigBook,
+      stake: parsedStake,
+      potentialPayout: parsedPayout,
+      sport: 'other',
+      isParlay,
+      hedgeOpportunity: {
+        hedgeTeam: trackHedgeTeam.trim() || 'Opposing outcome',
+        hedgeBook: hedgeBookDisplay,
+        hedgeBookKey: hedgeBook,
+        hedgeStake: result.optimalHedgeStake,
+        hedgeOdds: hedgeAmOdds,
+        guaranteedProfit: result.guaranteedProfit,
+        foundAt: Date.now(),
+      },
+    });
+    setShowTrackForm(false);
+    onSaveToTracker?.();
+  }
 
   const placeholder = (side: 'orig' | 'hedge') =>
     fmt === 'american'
@@ -315,6 +357,101 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
               </svg>
             </a>
           )}
+
+          {/* Track Both Bets */}
+          <div className="card p-4 space-y-3 border-[#CCFF00]/30 bg-[#CCFF00]/5 shadow-[0_0_16px_rgba(204,255,0,0.08)]">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse shrink-0" />
+              <p className="text-[10px] font-mono font-bold text-[#CCFF00] uppercase tracking-widest">
+                Add Both Bets to Tracker
+              </p>
+            </div>
+
+            {!showTrackForm ? (
+              <button
+                onClick={() => setShowTrackForm(true)}
+                className="w-full py-3 rounded-xl border border-[#CCFF00]/30 bg-[#CCFF00]/5 text-[#CCFF00] text-xs font-bold font-mono hover:bg-[#CCFF00]/15 transition-colors tracking-wider"
+              >
+                TRACK THIS HEDGE →
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Bet Label</label>
+                  <input
+                    type="text"
+                    value={trackLabel}
+                    onChange={(e) => setTrackLabel(e.target.value)}
+                    placeholder="e.g. Chiefs to win Super Bowl"
+                    className="input-field text-sm"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Hedge Outcome (Bet B)</label>
+                  <input
+                    type="text"
+                    value={trackHedgeTeam}
+                    onChange={(e) => setTrackHedgeTeam(e.target.value)}
+                    placeholder="e.g. Eagles (team/outcome you're hedging on)"
+                    className="input-field text-sm"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Original Sportsbook (Bet A)</label>
+                  <select
+                    value={trackOrigBook}
+                    onChange={(e) => setTrackOrigBook(e.target.value)}
+                    className="input-field text-sm font-mono bg-[#180032]"
+                  >
+                    <option value="">— where you placed your original bet —</option>
+                    {US_SPORTSBOOKS.map((b) => (
+                      <option key={b.key} value={b.key}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-[#100020] rounded-xl p-3 space-y-1.5 text-[11px] font-mono border border-[#3D1A6E]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 uppercase tracking-wide">Bet A (original)</span>
+                    <span className="text-slate-300">${parsedStake.toFixed(2)} → ${parsedPayout!.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 uppercase tracking-wide">Bet B (hedge)</span>
+                    <span className="text-slate-300">${result.optimalHedgeStake.toFixed(2)} · {hedgeOdds} · {bookName ?? '—'}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-[#3D1A6E] pt-1.5">
+                    <span className="text-[#CCFF00] font-bold uppercase tracking-wide">Guaranteed Profit</span>
+                    <span className="text-[#CCFF00] font-bold">+${result.guaranteedProfit.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowTrackForm(false)}
+                    className="w-20 py-3 rounded-xl border border-[#3D1A6E] text-slate-500 text-xs font-mono hover:text-slate-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveToTracker}
+                    disabled={!trackFormReady}
+                    className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono transition-colors ${
+                      trackFormReady
+                        ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+                        : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+                    }`}
+                  >
+                    Save to My Bets →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
 

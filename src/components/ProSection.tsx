@@ -12,7 +12,11 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: 'lines', label: 'LINES' },
 ];
 
-export default function ProSection() {
+interface ProSectionProps {
+  onSwitchToMyBets?: () => void;
+}
+
+export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
   const [subTab, setSubTab] = useState<SubTab>('radar');
   const [calcPrefill, setCalcPrefill] = useState<CalcPrefill | null>(null);
   const [fmt, setFmt] = useState<OddsFormat>('american');
@@ -89,6 +93,7 @@ export default function ProSection() {
             onClearPrefill={clearPrefill}
             fmt={fmt}
             onFmtChange={setFmt}
+            onSaveToTracker={onSwitchToMyBets}
           />
         )}
         {subTab === 'lines' && (

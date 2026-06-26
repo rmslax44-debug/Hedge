@@ -36,7 +36,7 @@ export default function App() {
         )}
 
         {tab === 'pro' && (
-          <ProSection />
+          <ProSection onSwitchToMyBets={() => setTab('bets')} />
         )}
 
         {tab === 'settings' && (
