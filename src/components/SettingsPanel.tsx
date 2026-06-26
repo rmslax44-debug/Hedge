@@ -207,7 +207,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
 
       {!isReady && (
         <div className="card p-4 border-amber-500/20 bg-amber-500/5 space-y-1">
-          <p className="text-xs font-semibold text-amber-400">To find live hedge opportunities:</p>
+          <p className="text-xs font-semibold text-white">To find live hedge opportunities:</p>
           <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
             <li>Go to <span className="text-purple-400">the-odds-api.com</span> — it's free</li>
             <li>Sign up and copy your API key</li>
