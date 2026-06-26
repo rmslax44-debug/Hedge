@@ -32,7 +32,7 @@ export default function App() {
         )}
 
         {tab === 'opportunities' && (
-          <Opportunities />
+          <Opportunities onSwitchToMyBets={() => setTab('bets')} />
         )}
 
         {tab === 'pro' && (

@@ -3,8 +3,7 @@ import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import {} from '../utils/sportsbooks';
-import { getApiKey, getSelectedBooks } from '../utils/storage';
-import AddBetWizard from './AddBetWizard';
+import { getApiKey, getSelectedBooks, addBetWithHedge } from '../utils/storage';
 
 const SCAN_SPORTS = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'mma_mixed_martial_arts'];
 
@@ -25,10 +24,10 @@ function formatGameTime(iso: string): string {
 
 function ArbCard({
   opp,
-  onSetup,
+  onAddToTracker,
 }: {
   opp: ArbOpportunity;
-  onSetup: () => void;
+  onAddToTracker: (stakeA: number, stakeB: number, profit: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [betAmount, setBetAmount] = useState('100');
@@ -152,10 +151,10 @@ function ArbCard({
               </div>
 
               <button
-                onClick={onSetup}
+                onClick={() => onAddToTracker(stakeA, stakeB, profit)}
                 className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all shadow-lg shadow-purple-500/20"
               >
-                Add Bet A to my tracker →
+                Add both bets to my tracker →
               </button>
             </div>
           )}
@@ -212,14 +211,12 @@ function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: stri
 
 // ─── Opportunities Screen ─────────────────────────────────────────────────────
 
-export default function Opportunities() {
+export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?: () => void }) {
   const [arbs, setArbs] = useState<ArbOpportunity[]>([]);
   const [nearArbs, setNearArbs] = useState<OddsEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState(false);
-  const [setupPrefill, setSetupPrefill] = useState<Parameters<typeof AddBetWizard>[0]['prefill']>(undefined);
-  const [showWizard, setShowWizard] = useState(false);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -345,15 +342,27 @@ export default function Opportunities() {
                 <ArbCard
                   key={a.event.id}
                   opp={a}
-                  onSetup={() => {
-                    setSetupPrefill({
+                  onAddToTracker={(scaledStakeA, scaledStakeB, scaledProfit) => {
+                    addBetWithHedge({
                       label: `${a.teamA} to win`,
                       myTeam: a.teamA,
-                      opposingTeam: a.teamB,
+                      sportsbook: a.bookAKey,
+                      stake: scaledStakeA,
+                      potentialPayout: scaledStakeA * americanToDecimal(a.oddsA),
                       sport: a.event.sport_key,
                       eventId: a.event.id,
+                      opposingTeam: a.teamB,
+                      hedgeOpportunity: {
+                        hedgeTeam: a.teamB,
+                        hedgeBook: a.bookBName,
+                        hedgeBookKey: a.bookBKey,
+                        hedgeStake: scaledStakeB,
+                        hedgeOdds: a.oddsB,
+                        guaranteedProfit: scaledProfit,
+                        foundAt: Date.now(),
+                      },
                     });
-                    setShowWizard(true);
+                    onSwitchToMyBets?.();
                   }}
                 />
               ))}
@@ -382,13 +391,6 @@ export default function Opportunities() {
         </div>
       )}
 
-      {showWizard && (
-        <AddBetWizard
-          prefill={setupPrefill}
-          onClose={() => setShowWizard(false)}
-          onAdded={() => setShowWizard(false)}
-        />
-      )}
     </div>
   );
 }
