@@ -13,9 +13,37 @@ import {
 import { checkMonitoredBets } from '../utils/hedgeMonitor';
 import { calcLiveHedge } from '../utils/arb';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
+import { calcRisk } from '../utils/risk';
 import AddBetWizard from './AddBetWizard';
 import LinkEventModal from './LinkEventModal';
 import PortfolioView from './PortfolioView';
+
+// ─── Risk Bar (always visible in collapsed card header) ───────────────────────
+
+function RiskBar({ stake, payout }: { stake: number; payout: number }) {
+  if (payout <= stake || stake <= 0) return null;
+  const risk = calcRisk(stake, payout);
+  return (
+    <div className="flex items-center gap-2 mt-1.5">
+      <div className="flex gap-0.5">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className={`h-1 w-5 rounded-full transition-all duration-500 ${
+              i <= risk.tierIndex ? risk.barColor : 'bg-[#2D0060]'
+            }`}
+          />
+        ))}
+      </div>
+      <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
+        {risk.label}
+      </span>
+      <span className="text-[10px] font-mono text-slate-600 ml-auto">
+        {(risk.impliedProb * 100).toFixed(0)}% win prob
+      </span>
+    </div>
+  );
+}
 
 // ─── Hedge Action Card ────────────────────────────────────────────────────────
 
@@ -462,6 +490,7 @@ function BetCard({
               )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5 truncate">{headerSub}</p>
+            {isActive && <RiskBar stake={bet.stake} payout={bet.potentialPayout} />}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={`text-xs font-semibold ${

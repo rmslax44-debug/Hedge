@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { calculate } from '../utils/odds';
+import { calcRisk } from '../utils/risk';
 
 interface Scenario {
   id: string;
@@ -150,23 +151,45 @@ export default function HedgeSimulator() {
             <p className="text-sm text-slate-400">These are based on realistic bet situations</p>
           </div>
 
-          {SCENARIOS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => pickScenario(s)}
-              className="card p-4 w-full text-left space-y-2 hover:border-purple-500/30 transition-all active:scale-[0.99]"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{s.emoji}</span>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{s.sport}</span>
-              </div>
-              <p className="text-sm text-slate-200">{s.story}</p>
-              <div className="flex gap-3 text-xs text-slate-500 font-mono">
-                <span>Stake: <span className="text-white">${s.originalStake}</span></span>
-                <span>To win: <span className="text-purple-400">+${(s.originalPayout - s.originalStake).toFixed(0)}</span></span>
-              </div>
-            </button>
-          ))}
+          {SCENARIOS.map((s) => {
+            const risk = calcRisk(s.originalStake, s.originalPayout);
+            return (
+              <button
+                key={s.id}
+                onClick={() => pickScenario(s)}
+                className="card p-4 w-full text-left space-y-2 hover:border-purple-500/30 transition-all active:scale-[0.99]"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{s.emoji}</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{s.sport}</span>
+                  </div>
+                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
+                    {risk.label}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-200">{s.story}</p>
+                <div className="flex gap-3 text-xs text-slate-500 font-mono">
+                  <span>Stake: <span className="text-white">${s.originalStake}</span></span>
+                  <span>To win: <span className="text-purple-400">+${(s.originalPayout - s.originalStake).toFixed(0)}</span></span>
+                </div>
+                {/* Risk bar */}
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <div className="flex gap-0.5">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 w-5 rounded-full transition-all ${i <= risk.tierIndex ? risk.barColor : 'bg-[#2D0060]'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-slate-600 font-mono">
+                    ~{(risk.impliedProb * 100).toFixed(0)}% win probability
+                  </span>
+                </div>
+              </button>
+            );
+          })}
 
           {history.length > 0 && (
             <div className="card p-4 space-y-2">

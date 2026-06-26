@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { addBet, type ParlayLeg } from '../utils/storage';
+import { calcRisk } from '../utils/risk';
 import SportIcon from './SportIcon';
 
 interface Props {
@@ -248,16 +249,52 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 </p>
               </div>
 
-              {/* Live preview */}
-              {payoutProfit !== null && payoutProfit > 0 && (
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 text-center space-y-1">
-                  <p className="text-xs text-purple-400 uppercase tracking-widest font-semibold">If your bet wins</p>
-                  <p className="text-3xl font-bold text-purple-400">
-                    +${payoutProfit.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-slate-500">profit on top of getting your ${stake} back</p>
-                </div>
-              )}
+              {/* Live preview + risk meter */}
+              {payoutProfit !== null && payoutProfit > 0 && (() => {
+                const risk = calcRisk(parsedStake, parsedPayout);
+                return (
+                  <div className="space-y-3">
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 text-center space-y-1">
+                      <p className="text-xs text-purple-400 uppercase tracking-widest font-semibold">If your bet wins</p>
+                      <p className="text-3xl font-bold text-purple-400">
+                        +${payoutProfit.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-slate-500">profit on top of getting your ${stake} back</p>
+                    </div>
+
+                    {/* Risk meter */}
+                    <div className={`rounded-2xl p-4 space-y-3 border ${risk.borderColor} ${risk.bgColor}`}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Risk Level</p>
+                        <span className={`text-xs font-bold font-mono uppercase tracking-wider ${risk.textColor}`}>
+                          {risk.label}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className={`flex-1 h-2.5 rounded-full transition-all duration-500 ${
+                              i <= risk.tierIndex ? risk.barColor : 'bg-[#2D0060]'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className={`text-xs ${risk.textColor}`}>{risk.sublabel}</p>
+                        <p className="text-xs text-slate-500 font-mono shrink-0 ml-2">
+                          ~{(risk.impliedProb * 100).toFixed(0)}% win prob
+                        </p>
+                      </div>
+                      {risk.tier === 'high' || risk.tier === 'extreme' ? (
+                        <p className="text-[10px] text-slate-500 border-t border-white/5 pt-2">
+                          💡 If this bet starts going your way, Hedge will alert you to lock in profit early.
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {parsedPayout > 0 && parsedStake > 0 && parsedPayout <= parsedStake && (
                 <div className="card p-3 border-red-500/30 bg-red-500/5">
