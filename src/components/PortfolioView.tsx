@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { getAllBets, getPortfolioStats, type TrackedBet, type BetResult } from '../utils/storage';
+import { useMemo, useState } from 'react';
+import { getAllBets, getPortfolioStats, deleteBet, type TrackedBet, type BetResult } from '../utils/storage';
 
 function resultBadge(result: BetResult | undefined, status: string) {
   if (status === 'hedged' || result === 'hedged') return { label: 'HEDGED', cls: 'bg-blue-500/20 text-blue-400' };
@@ -52,8 +52,17 @@ function MiniPnlChart({ bets }: { bets: TrackedBet[] }) {
 }
 
 export default function PortfolioView() {
-  const allBets = useMemo(() => getAllBets(), []);
-  const stats = useMemo(() => getPortfolioStats(), []);
+  const [rev, setRev] = useState(0);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const allBets = useMemo(() => getAllBets(), [rev]);
+  const stats = useMemo(() => getPortfolioStats(), [rev]);
+
+  function handleDelete(id: string) {
+    deleteBet(id);
+    setConfirmId(null);
+    setRev((r) => r + 1);
+  }
 
   const history: TrackedBet[] = allBets
     .filter((b) => b.status === 'settled' || b.status === 'hedged')
@@ -118,6 +127,7 @@ export default function PortfolioView() {
           {history.map((bet) => {
             const badge = resultBadge(bet.result, bet.status);
             const pnl = bet.settledPnl ?? (bet.hedgeOpportunity?.guaranteedProfit ?? 0);
+            const confirming = confirmId === bet.id;
             return (
               <div key={bet.id} className="card p-4 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
@@ -134,6 +144,32 @@ export default function PortfolioView() {
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${badge.cls}`}>
                     {badge.label}
                   </span>
+                  {confirming ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleDelete(bet.id)}
+                        className="text-[10px] font-bold text-red-400 border border-red-500/40 px-2 py-0.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        className="text-[10px] text-slate-500 border border-[#3D1A6E] px-2 py-0.5 rounded-lg hover:text-slate-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmId(bet.id)}
+                      className="text-slate-700 hover:text-red-400 transition-colors p-1"
+                      aria-label="Delete bet"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M3 3.5l.7 7.5a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             );
