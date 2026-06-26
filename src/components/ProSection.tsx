@@ -70,8 +70,11 @@ export default function ProSection() {
 
       {/* Setup warning (non-blocking) */}
       {noSetup && subTab !== 'calc' && (
-        <div className="mx-4 mt-3 px-3 py-2 border border-amber-500/20 bg-amber-500/5 rounded-xl">
-          <p className="text-[10px] font-mono text-amber-400">LIVE FEATURES REQUIRE API KEY + BOOKS → Settings</p>
+        <div className="mx-4 mt-3 px-3 py-2 border border-[#CCFF00]/40 bg-[#CCFF00]/10 rounded-xl shadow-[0_0_16px_rgba(204,255,0,0.15)]">
+          <p className="text-[10px] font-bold font-mono text-[#CCFF00] tracking-wide uppercase flex items-center gap-1.5">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse shrink-0" />
+            LIVE FEATURES REQUIRE API KEY + BOOKS → Settings
+          </p>
         </div>
       )}
 
