@@ -96,7 +96,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
         <select
           value={sport}
           onChange={(e) => setSport(e.target.value)}
-          className="flex-1 input-field text-sm font-mono bg-[#132035] truncate"
+          className="flex-1 input-field text-sm font-mono bg-[#180032] truncate"
         >
           {SPORTS.map((s) => (
             <option key={s.key} value={s.key}>{s.emoji} {s.name}</option>
@@ -107,15 +107,15 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
           disabled={loading || noApi}
           className={`px-4 py-2 rounded-xl text-xs font-mono font-bold border transition-colors ${
             loading
-              ? 'border-emerald-500/20 text-emerald-400'
+              ? 'border-purple-500/20 text-purple-400'
               : noApi
-              ? 'border-[#1A2A40] text-slate-600 cursor-not-allowed'
-              : 'border-[#1A2A40] text-slate-300 hover:border-emerald-500/30 hover:text-emerald-400'
+              ? 'border-[#3D1A6E] text-slate-600 cursor-not-allowed'
+              : 'border-[#3D1A6E] text-slate-300 hover:border-purple-500/30 hover:text-purple-400'
           }`}
         >
           {loading ? (
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 border border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-purple-500 border-t-transparent rounded-full animate-spin" />
               LOAD
             </span>
           ) : 'LOAD'}
@@ -128,7 +128,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
           <span className="text-[10px] font-mono text-slate-600">SHOW:</span>
           <button
             onClick={() => setShowImplied((v) => !v)}
-            className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${showImplied ? 'border-emerald-500/30 text-emerald-400' : 'border-[#1A2A40] text-slate-500'}`}
+            className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${showImplied ? 'border-purple-500/30 text-purple-400' : 'border-[#3D1A6E] text-slate-500'}`}
           >
             {showImplied ? 'IMPL %' : 'ODDS'}
           </button>
@@ -163,7 +163,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
             {/* Event header */}
             <button
               onClick={() => setExpandedId(expanded ? null : event.id)}
-              className="w-full p-4 flex items-center justify-between text-left hover:bg-[#132035]/30 transition-colors"
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-[#180032]/30 transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-white truncate">
@@ -193,10 +193,10 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
 
             {/* Odds matrix */}
             {expanded && (
-              <div className="border-t border-[#1A2A40] overflow-x-auto">
+              <div className="border-t border-[#3D1A6E] overflow-x-auto">
                 <table className="w-full text-[11px] font-mono">
                   <thead>
-                    <tr className="border-b border-[#1A2A40]">
+                    <tr className="border-b border-[#3D1A6E]">
                       <th className="text-left px-4 py-2 text-slate-600 font-normal uppercase tracking-wider w-28">Team</th>
                       {activeBooks.map((bk) => (
                         <th key={bk.key} className="px-3 py-2 text-slate-500 font-normal text-center">{bk.shortName}</th>
@@ -206,7 +206,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                   </thead>
                   <tbody>
                     {teams.map((team, ti) => (
-                      <tr key={team} className="border-b border-[#0D1625]">
+                      <tr key={team} className="border-b border-[#100020]">
                         <td className="px-4 py-2.5 text-slate-300 truncate max-w-[7rem]">
                           {team.split(' ').pop()}
                         </td>
@@ -230,7 +230,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                   }}
                                   className={`px-1.5 py-0.5 rounded font-bold transition-colors ${
                                     isBest
-                                      ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                      ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
                                       : isSecond
                                       ? 'text-amber-400/80 hover:text-amber-400'
                                       : 'text-slate-400 hover:text-slate-200'
@@ -259,7 +259,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                   : dec.toFixed(3);
                                 onPrefill({ hedgeOdds: hedgeOddsStr, hedgeBook: bst?.key ?? '' });
                               }}
-                              className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors"
+                              className="text-purple-400 font-bold hover:text-purple-300 transition-colors"
                             >
                               {showImplied
                                 ? `${(1 / americanToDecimal(bestPrices[ti]!) * 100).toFixed(0)}%`

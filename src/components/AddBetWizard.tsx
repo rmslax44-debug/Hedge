@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { addBet, type ParlayLeg } from '../utils/storage';
+import SportIcon from './SportIcon';
 
 interface Props {
   onClose: () => void;
@@ -70,9 +71,9 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   const step3Valid = sportsbook.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080E1A] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#09000F] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 border-b border-[#1A2A40]">
+      <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 border-b border-[#3D1A6E]">
         <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -89,10 +90,10 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             key={n}
             className={`rounded-full transition-all duration-300 ${
               n === step
-                ? 'w-6 h-2 bg-emerald-500'
+                ? 'w-6 h-2 bg-purple-500'
                 : n < step
-                  ? 'w-2 h-2 bg-emerald-500/50'
-                  : 'w-2 h-2 bg-[#1A2A40]'
+                  ? 'w-2 h-2 bg-purple-500/50'
+                  : 'w-2 h-2 bg-[#2D0060]'
             }`}
           />
         ))}
@@ -117,7 +118,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               <button
                 onClick={() => setIsParlay(p => !p)}
                 className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ${
-                  isParlay ? 'bg-amber-500 border-amber-500' : 'bg-[#1A2A40] border-[#1A2A40]'
+                  isParlay ? 'bg-amber-500 border-amber-500' : 'bg-[#2D0060] border-[#3D1A6E]'
                 }`}
               >
                 <span className={`pointer-events-none inline-block h-5 w-5 mt-0.5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
@@ -147,7 +148,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 {legs.length > 0 && (
                   <div className="space-y-1.5">
                     {legs.map((leg, i) => (
-                      <div key={leg.id} className="flex items-center gap-2 bg-[#0D1B2E] rounded-xl px-3 py-2.5">
+                      <div key={leg.id} className="flex items-center gap-2 bg-[#1A003A] rounded-xl px-3 py-2.5">
                         <span className="text-xs font-mono text-slate-500 w-5 text-center">{i + 1}</span>
                         <span className="text-sm text-slate-300 flex-1">{leg.label}</span>
                         <button onClick={() => removeLeg(leg.id)} className="text-slate-600 hover:text-red-400 transition-colors text-xs">✕</button>
@@ -185,14 +186,14 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                   <button
                     key={s.key}
                     onClick={() => setSport(sport === s.key ? '' : s.key)}
-                    className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                    className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
                       sport === s.key
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                        : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                        ? 'bg-purple-500/15 border-purple-500/40 text-purple-300'
+                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
                     }`}
                   >
-                    <span className="text-lg">{s.emoji}</span>
-                    <span className="truncate w-full text-center">{s.name}</span>
+                    <SportIcon sportKey={s.key} size={30} />
+                    <span className="truncate w-full text-center leading-tight">{s.name}</span>
                   </button>
                 ))}
               </div>
@@ -249,9 +250,9 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
 
               {/* Live preview */}
               {payoutProfit !== null && payoutProfit > 0 && (
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-center space-y-1">
-                  <p className="text-xs text-emerald-400 uppercase tracking-widest font-semibold">If your bet wins</p>
-                  <p className="text-3xl font-bold text-emerald-400">
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 text-center space-y-1">
+                  <p className="text-xs text-purple-400 uppercase tracking-widest font-semibold">If your bet wins</p>
+                  <p className="text-3xl font-bold text-purple-400">
                     +${payoutProfit.toFixed(2)}
                   </p>
                   <p className="text-xs text-slate-500">profit on top of getting your ${stake} back</p>
@@ -284,12 +285,12 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                   onClick={() => setSportsbook(book.key)}
                   className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all ${
                     sportsbook === book.key
-                      ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                      : 'bg-[#132035] border-[#1A2A40] text-slate-300 hover:border-slate-600'
+                      ? 'bg-purple-500/15 border-purple-500/50 text-purple-300'
+                      : 'bg-[#180032] border-[#3D1A6E] text-slate-300 hover:border-slate-600'
                   }`}
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    sportsbook === book.key ? 'border-emerald-500 bg-emerald-500' : 'border-slate-600'
+                    sportsbook === book.key ? 'border-purple-500 bg-purple-500' : 'border-slate-600'
                   }`}>
                     {sportsbook === book.key && (
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -304,8 +305,8 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
 
             {/* Confirmation summary */}
             {step3Valid && (
-              <div className="card p-4 space-y-2 border-emerald-500/20 bg-emerald-500/5">
-                <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Your bet summary</p>
+              <div className="card p-4 space-y-2 border-purple-500/20 bg-purple-500/5">
+                <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest">Your bet summary</p>
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-white font-medium">{label}</p>
                   {isParlay && (
@@ -316,7 +317,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 </div>
                 <div className="flex gap-4 text-xs text-slate-400 font-mono">
                   <span>Bet: <span className="text-white">${parsedStake.toFixed(2)}</span></span>
-                  <span>Win: <span className="text-emerald-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
+                  <span>Win: <span className="text-purple-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
                   <span>At: <span className="text-white">{US_SPORTSBOOKS.find(b => b.key === sportsbook)?.name}</span></span>
                 </div>
               </div>
@@ -326,15 +327,15 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
       </div>
 
       {/* Bottom button */}
-      <div className="px-5 pb-safe pb-6 pt-4 border-t border-[#1A2A40] bg-[#080E1A]">
+      <div className="px-5 pb-safe pb-6 pt-4 border-t border-[#3D1A6E] bg-[#09000F]">
         {step < 3 ? (
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={step === 1 ? !step1Valid : !step2Valid}
             className={`w-full py-4 rounded-2xl font-semibold text-base transition-all ${
               (step === 1 ? step1Valid : step2Valid)
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+                ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-[#180032] text-slate-600 cursor-not-allowed'
             }`}
           >
             Continue →
@@ -345,8 +346,8 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             disabled={!step3Valid}
             className={`w-full py-4 rounded-2xl font-semibold text-base transition-all ${
               step3Valid
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+                ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-[#180032] text-slate-600 cursor-not-allowed'
             }`}
           >
             Start monitoring this bet ✓

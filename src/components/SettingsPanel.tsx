@@ -75,7 +75,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
             onClick={handleNotifToggle}
             disabled={notifStatus === 'requesting'}
             className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ${
-              notificationsOn ? 'bg-emerald-500 border-emerald-500' : 'bg-[#1A2A40] border-[#1A2A40]'
+              notificationsOn ? 'bg-purple-500 border-purple-500' : 'bg-[#2D0060] border-[#3D1A6E]'
             }`}
           >
             <span
@@ -95,7 +95,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         )}
 
         {notificationsOn && (
-          <div className="flex items-center gap-2 text-xs text-emerald-400">
+          <div className="flex items-center gap-2 text-xs text-purple-400">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
               <path d="M4 6l1.5 1.5L8 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -111,7 +111,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
           <h2 className="text-sm font-semibold text-slate-200">Odds API Key</h2>
           <p className="text-xs text-slate-500 mt-1">
             Required to fetch live odds. Get a free key at{' '}
-            <span className="text-emerald-400">the-odds-api.com</span>
+            <span className="text-purple-400">the-odds-api.com</span>
             {' '}(500 requests/month free)
           </p>
         </div>
@@ -134,7 +134,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         </div>
         {apiKey && (
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-emerald-500 shrink-0">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-purple-500 shrink-0">
               <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
               <path d="M4 6l1.5 1.5L8 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -160,13 +160,13 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
                 onClick={() => toggleBook(book.key)}
                 className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-150 ${
                   selected
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                    : 'bg-[#132035] border-[#1A2A40] text-slate-400 hover:border-slate-600'
+                    ? 'bg-purple-500/10 border-purple-500/40 text-purple-300'
+                    : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-slate-600'
                 }`}
               >
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    selected ? 'border-emerald-500 bg-emerald-500' : 'border-slate-600'
+                    selected ? 'border-purple-500 bg-purple-500' : 'border-slate-600'
                   }`}
                 >
                   {selected && (
@@ -196,10 +196,10 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         disabled={!isReady}
         className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all duration-150 ${
           saved
-            ? 'bg-emerald-600 text-white'
+            ? 'bg-purple-600 text-white'
             : isReady
-              ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-              : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+              ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
+              : 'bg-[#180032] text-slate-600 cursor-not-allowed'
         }`}
       >
         {saved ? '✓ Settings saved' : isReady ? 'Save Settings' : 'Enter API key and select apps to continue'}
@@ -209,7 +209,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         <div className="card p-4 border-amber-500/20 bg-amber-500/5 space-y-1">
           <p className="text-xs font-semibold text-amber-400">To find live hedge opportunities:</p>
           <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
-            <li>Go to <span className="text-emerald-400">the-odds-api.com</span> — it's free</li>
+            <li>Go to <span className="text-purple-400">the-odds-api.com</span> — it's free</li>
             <li>Sign up and copy your API key</li>
             <li>Paste it above and pick your betting apps</li>
           </ol>

@@ -167,15 +167,15 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
           disabled={scanning || noApi}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border ${
             scanning
-              ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10'
+              ? 'border-purple-500/20 text-purple-400 bg-purple-500/10'
               : noApi
-              ? 'border-[#1A2A40] text-slate-600 cursor-not-allowed'
-              : 'border-[#1A2A40] text-slate-300 hover:border-emerald-500/30 hover:text-emerald-400'
+              ? 'border-[#3D1A6E] text-slate-600 cursor-not-allowed'
+              : 'border-[#3D1A6E] text-slate-300 hover:border-purple-500/30 hover:text-purple-400'
           }`}
         >
           {scanning ? (
             <>
-              <span className="w-3 h-3 border border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-purple-500 border-t-transparent rounded-full animate-spin" />
               SCANNING
             </>
           ) : (
@@ -220,17 +220,17 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
             };
 
             return (
-              <div key={o.bet.id} className={`card p-4 space-y-3 ${o.guaranteedProfit > 0 ? 'border-emerald-500/20' : 'border-amber-500/10'}`}>
+              <div key={o.bet.id} className={`card p-4 space-y-3 ${o.guaranteedProfit > 0 ? 'border-purple-500/20' : 'border-amber-500/10'}`}>
                 {/* Rank + bet label */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${o.guaranteedProfit > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${o.guaranteedProfit > 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-500/20 text-slate-400'}`}>
                       #{i + 1}
                     </span>
                     <p className="text-sm font-semibold text-white leading-tight">{o.bet.label}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`text-xs font-mono font-bold ${o.guaranteedProfit > 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    <p className={`text-xs font-mono font-bold ${o.guaranteedProfit > 0 ? 'text-purple-400' : 'text-amber-400'}`}>
                       ROI {o.roi.toFixed(1)}%
                     </p>
                   </div>
@@ -242,13 +242,13 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                     <span>HEDGE</span>
                     <span className="text-white">{o.hedgeTeam}</span>
                     <span className="text-white">{fmtAm(o.hedgeOddsAm)}</span>
-                    <span className={`px-1.5 rounded ${o.guaranteedProfit > 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#1A2A40] text-slate-400'}`}>
+                    <span className={`px-1.5 rounded ${o.guaranteedProfit > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-[#2D0060] text-slate-400'}`}>
                       {o.hedgeBook}
                     </span>
                   </div>
                   <div className="flex gap-6 text-slate-500">
                     <span>STAKE <span className="text-white">${o.hedgeStake.toFixed(2)}</span></span>
-                    <span>LOCK <span className={o.guaranteedProfit > 0 ? 'text-emerald-400' : 'text-amber-400'}>
+                    <span>LOCK <span className={o.guaranteedProfit > 0 ? 'text-purple-400' : 'text-amber-400'}>
                       {o.guaranteedProfit >= 0 ? '+' : ''}${o.guaranteedProfit.toFixed(2)}
                     </span></span>
                   </div>
@@ -258,7 +258,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => onOpenCalc(prefill)}
-                    className="flex-1 py-2 rounded-lg text-xs font-mono font-bold border border-[#1A2A40] text-slate-300 hover:border-emerald-500/30 hover:text-emerald-400 transition-colors"
+                    className="flex-1 py-2 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-300 hover:border-purple-500/30 hover:text-purple-400 transition-colors"
                   >
                     OPEN CALC →
                   </button>
@@ -267,7 +267,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 py-2 rounded-lg text-xs font-mono font-bold text-center border border-[#1A2A40] text-slate-300 hover:border-slate-500 transition-colors"
+                      className="flex-1 py-2 rounded-lg text-xs font-mono font-bold text-center border border-[#3D1A6E] text-slate-300 hover:border-slate-500 transition-colors"
                     >
                       {o.hedgeBook.toUpperCase()} ↗
                     </a>
@@ -297,7 +297,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                     isParlay: true,
                   })
                 }
-                className="text-[10px] font-mono font-bold text-slate-400 hover:text-emerald-400 shrink-0 border border-[#1A2A40] px-2 py-1 rounded transition-colors"
+                className="text-[10px] font-mono font-bold text-slate-400 hover:text-purple-400 shrink-0 border border-[#3D1A6E] px-2 py-1 rounded transition-colors"
               >
                 CALC
               </button>
@@ -317,7 +317,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
       {/* Initial state */}
       {!lastScan && !scanning && !noApi && (
         <div className="card p-8 text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl border border-[#1A2A40] flex items-center justify-center mx-auto">
+          <div className="w-10 h-10 rounded-xl border border-[#3D1A6E] flex items-center justify-center mx-auto">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-slate-500">
               <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3" />
               <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />

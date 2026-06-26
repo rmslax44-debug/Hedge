@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SPORTS } from '../utils/sportsbooks';
+import SportIcon from './SportIcon';
 import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { getApiKey, getSelectedBooks, updateBet, type TrackedBet } from '../utils/storage';
 
@@ -58,9 +59,9 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-[#0D1B2E] border border-[#1A2A40] rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col">
+      <div className="bg-[#0F001E] border border-[#3D1A6E] rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1A2A40]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#3D1A6E]">
           <div>
             <p className="text-sm font-bold text-white">Link to Live Game</p>
             <p className="text-xs text-slate-500 truncate max-w-[200px]">{bet.label}</p>
@@ -81,13 +82,14 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
                 <button
                   key={s.key}
                   onClick={() => { setSport(s.key); setEvents([]); setSelectedEvent(null); }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     sport === s.key
-                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                      : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                      ? 'bg-purple-500/15 border-purple-500/40 text-purple-300'
+                      : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
                   }`}
                 >
-                  {s.emoji} {s.name}
+                  <SportIcon sportKey={s.key} size={18} />
+                  {s.name}
                 </button>
               ))}
             </div>
@@ -96,7 +98,7 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
           <button
             onClick={loadEvents}
             disabled={loading}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold border border-[#1A2A40] text-slate-300 hover:border-emerald-500/40 hover:text-emerald-400 transition-all disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold border border-[#3D1A6E] text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-all disabled:opacity-50"
           >
             {loading ? 'Loading…' : 'Load Upcoming Games'}
           </button>
@@ -114,8 +116,8 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
                   onClick={() => { setSelectedEvent(ev); setMyTeamKey(null); }}
                   className={`w-full p-3 rounded-xl border text-left transition-all ${
                     selectedEvent?.id === ev.id
-                      ? 'bg-emerald-500/10 border-emerald-500/40'
-                      : 'bg-[#132035] border-[#1A2A40] hover:border-slate-600'
+                      ? 'bg-purple-500/10 border-purple-500/40'
+                      : 'bg-[#180032] border-[#3D1A6E] hover:border-slate-600'
                   }`}
                 >
                   <p className="text-sm font-semibold text-white">
@@ -139,8 +141,8 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
                       onClick={() => setMyTeamKey(side)}
                       className={`p-3 rounded-xl border text-sm font-medium transition-all ${
                         myTeamKey === side
-                          ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                          : 'bg-[#132035] border-[#1A2A40] text-slate-300 hover:border-slate-600'
+                          ? 'bg-purple-500/15 border-purple-500/50 text-purple-300'
+                          : 'bg-[#180032] border-[#3D1A6E] text-slate-300 hover:border-slate-600'
                       }`}
                     >
                       {teamName}
@@ -153,14 +155,14 @@ export default function LinkEventModal({ bet, onLinked, onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-[#1A2A40]">
+        <div className="px-5 py-4 border-t border-[#3D1A6E]">
           <button
             onClick={handleLink}
             disabled={!selectedEvent || !myTeamKey}
             className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${
               selectedEvent && myTeamKey
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
-                : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+                ? 'bg-purple-500 hover:bg-purple-400 text-white'
+                : 'bg-[#180032] text-slate-600 cursor-not-allowed'
             }`}
           >
             Link Game — Enable Auto-Monitoring

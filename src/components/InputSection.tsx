@@ -29,14 +29,14 @@ function SegmentedControl<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="flex bg-[#132035] rounded-xl p-1 gap-1">
+    <div className="flex bg-[#180032] rounded-xl p-1 gap-1">
       {options.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={`flex-1 py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-150 ${
             value === opt.value
-              ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+              ? 'bg-purple-500 text-white shadow-sm shadow-purple-500/30'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -144,7 +144,7 @@ export default function InputSection({
       {/* Original bet */}
       <div className="card p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
           <h2 className="text-sm font-semibold text-slate-200">Your Original Bet</h2>
         </div>
 

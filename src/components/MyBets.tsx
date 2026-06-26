@@ -38,9 +38,9 @@ function HedgeActionCard({
 
   if (confirmed) {
     return (
-      <div className="rounded-2xl bg-emerald-500/15 border border-emerald-500/40 p-5 text-center space-y-1 animate-fade-in">
+      <div className="rounded-2xl bg-purple-500/15 border border-purple-500/40 p-5 text-center space-y-1 animate-fade-in">
         <p className="text-2xl">✓</p>
-        <p className="text-emerald-400 font-bold">Hedge placed!</p>
+        <p className="text-purple-400 font-bold">Hedge placed!</p>
         <p className="text-xs text-slate-400">You've locked in your profit. Nice work.</p>
       </div>
     );
@@ -49,33 +49,33 @@ function HedgeActionCard({
   const bookName = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'your sportsbook';
 
   return (
-    <div className="rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/50 p-5 space-y-4 animate-slide-up">
+    <div className="rounded-2xl bg-purple-500/10 border-2 border-purple-500/50 p-5 space-y-4 animate-slide-up">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30">
+        <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
           <span className="text-lg">💰</span>
         </div>
         <div>
-          <p className="font-bold text-emerald-400 text-base">Time to lock in your profit!</p>
+          <p className="font-bold text-purple-400 text-base">Time to lock in your profit!</p>
           <p className="text-xs text-slate-400 mt-0.5">Do this right now to guarantee your winnings</p>
         </div>
       </div>
 
-      <div className="bg-[#080E1A] rounded-xl p-4 space-y-3">
+      <div className="bg-[#09000F] rounded-xl p-4 space-y-3">
         <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">What to do</p>
         <div className="space-y-2">
           <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-            <p className="text-sm text-white">Open <span className="font-bold text-emerald-400">{bookName}</span></p>
+            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <p className="text-sm text-white">Open <span className="font-bold text-purple-400">{bookName}</span></p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
             <p className="text-sm text-white">
-              Bet <span className="font-bold text-emerald-400 font-mono">${opp.hedgeStake.toFixed(2)}</span>{' '}
+              Bet <span className="font-bold text-purple-400 font-mono">${opp.hedgeStake.toFixed(2)}</span>{' '}
               on <span className="font-bold">{opp.hedgeTeam}</span>
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
             <p className="text-sm text-white">Come back here and tap "Done"</p>
           </div>
         </div>
@@ -83,20 +83,20 @@ function HedgeActionCard({
 
       <div className="text-center py-1">
         <p className="text-slate-400 text-xs mb-1">No matter what happens, you'll make</p>
-        <p className="text-4xl font-bold text-emerald-400">+${opp.guaranteedProfit.toFixed(2)}</p>
+        <p className="text-4xl font-bold text-purple-400">+${opp.guaranteedProfit.toFixed(2)}</p>
         <p className="text-slate-500 text-xs mt-1">guaranteed profit</p>
       </div>
 
       <div className="flex gap-3">
         <button
           onClick={handleDone}
-          className="flex-1 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+          className="flex-1 py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all shadow-lg shadow-purple-500/20"
         >
           I did it — done ✓
         </button>
         <button
           onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
-          className="py-3.5 px-4 rounded-xl border border-[#1A2A40] text-slate-400 text-sm hover:border-slate-600 transition-colors"
+          className="py-3.5 px-4 rounded-xl border border-[#3D1A6E] text-slate-400 text-sm hover:border-slate-600 transition-colors"
         >
           Later
         </button>
@@ -187,7 +187,7 @@ function ManualHedgePanel({
                     className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
                       bookKey === b.key
                         ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
-                        : 'bg-[#132035] border-[#1A2A40] text-slate-400'
+                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
                     }`}>
                     {b.shortName}
                   </button>
@@ -195,9 +195,9 @@ function ManualHedgePanel({
               </div>
             </div>
 
-            <div className="bg-emerald-500/10 rounded-xl p-3 text-center space-y-0.5">
-              <p className="text-xs text-emerald-400 font-semibold">Hedge this to guarantee</p>
-              <p className="text-2xl font-bold text-emerald-400">+${calc.guaranteedProfit.toFixed(2)}</p>
+            <div className="bg-purple-500/10 rounded-xl p-3 text-center space-y-0.5">
+              <p className="text-xs text-purple-400 font-semibold">Hedge this to guarantee</p>
+              <p className="text-2xl font-bold text-purple-400">+${calc.guaranteedProfit.toFixed(2)}</p>
               <p className="text-xs text-slate-500">by betting ${calc.hedgeStake.toFixed(2)} on the opposite outcome</p>
             </div>
 
@@ -206,8 +206,8 @@ function ManualHedgePanel({
               disabled={!bookKey}
               className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
                 bookKey
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-400'
-                  : 'bg-[#132035] text-slate-600 cursor-not-allowed'
+                  ? 'bg-purple-500 text-white hover:bg-purple-400'
+                  : 'bg-[#180032] text-slate-600 cursor-not-allowed'
               }`}
             >
               Show me exactly what to do
@@ -245,11 +245,11 @@ function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => voi
       hedged: 'Mark as HEDGED?',
     };
     return (
-      <div className="bg-[#080E1A] rounded-xl p-3 space-y-2">
+      <div className="bg-[#09000F] rounded-xl p-3 space-y-2">
         <p className="text-xs text-slate-400 text-center">{labels[confirming]}</p>
         <div className="flex gap-2">
-          <button onClick={() => doSettle(confirming)} className="flex-1 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">Confirm</button>
-          <button onClick={() => setConfirming(null)} className="flex-1 py-2 rounded-lg border border-[#1A2A40] text-slate-400 text-xs">Cancel</button>
+          <button onClick={() => doSettle(confirming)} className="flex-1 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold">Confirm</button>
+          <button onClick={() => setConfirming(null)} className="flex-1 py-2 rounded-lg border border-[#3D1A6E] text-slate-400 text-xs">Cancel</button>
         </div>
       </div>
     );
@@ -259,9 +259,9 @@ function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => voi
     <div className="space-y-1.5">
       <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Settle bet</p>
       <div className="grid grid-cols-3 gap-1.5">
-        <button onClick={() => setConfirming('win')} className="py-2 rounded-lg border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/10 transition-all">Won ✓</button>
+        <button onClick={() => setConfirming('win')} className="py-2 rounded-lg border border-purple-500/30 text-purple-400 text-xs font-semibold hover:bg-purple-500/10 transition-all">Won ✓</button>
         <button onClick={() => setConfirming('loss')} className="py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/10 transition-all">Lost ✗</button>
-        <button onClick={() => setConfirming('push')} className="py-2 rounded-lg border border-[#1A2A40] text-slate-400 text-xs font-semibold hover:border-slate-600 transition-all">Push</button>
+        <button onClick={() => setConfirming('push')} className="py-2 rounded-lg border border-[#3D1A6E] text-slate-400 text-xs font-semibold hover:border-slate-600 transition-all">Push</button>
       </div>
     </div>
   );
@@ -280,7 +280,7 @@ function ParlayLegs({ bet, onRefresh }: { bet: TrackedBet; onRefresh: () => void
   };
   const statusCls: Record<string, string> = {
     pending: 'text-slate-400',
-    won: 'text-emerald-400',
+    won: 'text-purple-400',
     lost: 'text-red-400',
     push: 'text-slate-400',
   };
@@ -290,7 +290,7 @@ function ParlayLegs({ bet, onRefresh }: { bet: TrackedBet; onRefresh: () => void
       <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Parlay Legs</p>
       <div className="space-y-1">
         {bet.legs.map((leg) => (
-          <div key={leg.id} className="flex items-center gap-2 bg-[#080E1A] rounded-lg px-3 py-2">
+          <div key={leg.id} className="flex items-center gap-2 bg-[#09000F] rounded-lg px-3 py-2">
             <span className={`text-xs font-bold w-4 text-center ${statusCls[leg.status]}`}>
               {statusIcon[leg.status]}
             </span>
@@ -298,11 +298,11 @@ function ParlayLegs({ bet, onRefresh }: { bet: TrackedBet; onRefresh: () => void
             {leg.status === 'pending' && (
               <div className="flex gap-1">
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'won'); onRefresh(); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">W</button>
+                  className="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-400 hover:bg-purple-500/10">W</button>
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'lost'); onRefresh(); }}
                   className="text-[10px] px-1.5 py-0.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10">L</button>
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'push'); onRefresh(); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded border border-[#1A2A40] text-slate-500">P</button>
+                  className="text-[10px] px-1.5 py-0.5 rounded border border-[#3D1A6E] text-slate-500">P</button>
               </div>
             )}
           </div>
@@ -331,7 +331,7 @@ function BetCard({
 
   const statusDot =
     bet.status === 'hedge_ready'
-      ? 'bg-emerald-500 animate-pulse'
+      ? 'bg-purple-500 animate-pulse'
       : bet.status === 'hedged'
         ? 'bg-blue-500'
         : bet.status === 'monitoring'
@@ -370,7 +370,7 @@ function BetCard({
       )}
 
       <div className={`card overflow-hidden transition-all ${
-        bet.status === 'hedge_ready' ? 'border-emerald-500/40' : ''
+        bet.status === 'hedge_ready' ? 'border-purple-500/40' : ''
       }`}>
         <button
           onClick={() => setExpanded(e => !e)}
@@ -390,10 +390,10 @@ function BetCard({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={`text-xs font-semibold ${
-              bet.status === 'hedge_ready' ? 'text-emerald-400' :
+              bet.status === 'hedge_ready' ? 'text-purple-400' :
               bet.status === 'hedged' ? 'text-blue-400' :
               bet.status === 'monitoring' ? 'text-amber-400' :
-              bet.result === 'win' ? 'text-emerald-400' :
+              bet.result === 'win' ? 'text-purple-400' :
               bet.result === 'loss' ? 'text-red-400' : 'text-slate-500'
             }`}>
               {statusLabel}
@@ -408,7 +408,7 @@ function BetCard({
         </button>
 
         {expanded && (
-          <div className="px-4 pb-4 space-y-3 animate-fade-in border-t border-[#1A2A40] pt-3">
+          <div className="px-4 pb-4 space-y-3 animate-fade-in border-t border-[#3D1A6E] pt-3">
             {/* Hedge action card */}
             {bet.status === 'hedge_ready' && bet.hedgeOpportunity && (
               <HedgeActionCard
@@ -435,7 +435,7 @@ function BetCard({
             {bet.status === 'monitoring' && !showManual && (
               <button
                 onClick={() => setShowManual(true)}
-                className="w-full py-3 rounded-xl border border-[#1A2A40] text-slate-400 text-sm hover:border-emerald-500/40 hover:text-emerald-400 transition-all"
+                className="w-full py-3 rounded-xl border border-[#3D1A6E] text-slate-400 text-sm hover:border-purple-500/40 hover:text-purple-400 transition-all"
               >
                 Check if I can hedge now →
               </button>
@@ -447,7 +447,7 @@ function BetCard({
 
             {bet.status === 'hedged' && (
               <div className="text-center py-2 space-y-0.5">
-                <p className="text-emerald-400 font-bold">Bet successfully hedged! 🎉</p>
+                <p className="text-purple-400 font-bold">Bet successfully hedged! 🎉</p>
                 <p className="text-xs text-slate-500">Your profit is locked in no matter the outcome.</p>
               </div>
             )}
@@ -459,8 +459,8 @@ function BetCard({
 
             {/* Settled P&L */}
             {bet.status === 'settled' && bet.settledPnl !== undefined && (
-              <div className={`rounded-xl p-3 text-center ${bet.settledPnl >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
-                <p className={`text-lg font-bold font-mono ${bet.settledPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              <div className={`rounded-xl p-3 text-center ${bet.settledPnl >= 0 ? 'bg-purple-500/10' : 'bg-red-500/10'}`}>
+                <p className={`text-lg font-bold font-mono ${bet.settledPnl >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
                   {bet.settledPnl >= 0 ? '+' : ''}${bet.settledPnl.toFixed(2)}
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">{bet.result === 'win' ? 'Profit' : bet.result === 'loss' ? 'Lost' : 'P&L'}</p>
@@ -513,7 +513,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
       {/* No bets empty state */}
       {bets.length === 0 && (
         <div className="flex flex-col items-center justify-center px-6 py-20 text-center space-y-5">
-          <div className="w-20 h-20 rounded-3xl bg-[#132035] flex items-center justify-center">
+          <div className="w-20 h-20 rounded-3xl bg-[#180032] flex items-center justify-center">
             <span className="text-4xl">🎯</span>
           </div>
           <div className="space-y-2">
@@ -524,7 +524,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
           </div>
           <button
             onClick={() => setShowWizard(true)}
-            className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all"
+            className="bg-purple-500 hover:bg-purple-400 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-purple-500/20 transition-all"
           >
             Add my first bet
           </button>
@@ -539,13 +539,13 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               onClick={() => setViewMode('active')}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
                 viewMode === 'active'
-                  ? 'bg-emerald-500/15 text-emerald-400'
+                  ? 'bg-purple-500/15 text-purple-400'
                   : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               Active
               {hedgeReady.length + active.length > 0 && (
-                <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
                   {hedgeReady.length + active.length}
                 </span>
               )}
@@ -554,7 +554,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               onClick={() => setViewMode('history')}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
                 viewMode === 'history'
-                  ? 'bg-emerald-500/15 text-emerald-400'
+                  ? 'bg-purple-500/15 text-purple-400'
                   : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -571,8 +571,8 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               {hedgeReady.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">
                       Hedge now!
                     </p>
                   </div>
@@ -617,7 +617,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
       {bets.length > 0 && (
         <button
           onClick={() => setShowWizard(true)}
-          className="fixed bottom-24 right-5 w-14 h-14 bg-emerald-500 hover:bg-emerald-400 rounded-full shadow-xl shadow-emerald-500/30 flex items-center justify-center transition-all active:scale-95 z-40"
+          className="fixed bottom-24 right-5 w-14 h-14 bg-purple-500 hover:bg-purple-400 rounded-full shadow-xl shadow-purple-500/30 flex items-center justify-center transition-all active:scale-95 z-40"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round" />
