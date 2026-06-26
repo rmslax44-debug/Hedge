@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { addBet, type ParlayLeg } from '../utils/storage';
 import { calcRisk } from '../utils/risk';
-import SportIcon from './SportIcon';
 
 interface Props {
   onClose: () => void;
@@ -38,34 +37,36 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   // ── Step 1 state ───────────────────────────────────────────────────────────
   const [label, setLabel]           = useState(prefill?.label ?? '');
   const [sportsbook, setSportsbook] = useState('');
+  const [stake, setStake]           = useState(prefill?.stake ? String(prefill.stake) : '');
   const [oddsStr, setOddsStr]       = useState('');
   const [sport, setSport]           = useState(prefill?.sport ?? '');
   const [isParlay, setIsParlay]     = useState(false);
   const [legs, setLegs]             = useState<ParlayLeg[]>([]);
   const [legInput, setLegInput]     = useState('');
+  const [legOddsInput, setLegOddsInput] = useState('');
 
   // ── Step 2 state ───────────────────────────────────────────────────────────
-  const [stake, setStake]             = useState(prefill?.stake ? String(prefill.stake) : '');
   const [manualPayout, setManualPayout] = useState(prefill?.potentialPayout ? String(prefill.potentialPayout) : '');
 
   // ── Derived values ─────────────────────────────────────────────────────────
-  const parsedOdds   = parseAmericanOdds(oddsStr);
-  const oddsValid    = parsedOdds !== null;
-  const parsedStake  = parseFloat(stake);
-  const stakeValid   = !isNaN(parsedStake) && parsedStake > 0;
+  const parsedOdds  = parseAmericanOdds(oddsStr);
+  const oddsValid   = parsedOdds !== null;
+  const parsedStake = parseFloat(stake);
+  const stakeValid  = !isNaN(parsedStake) && parsedStake > 0;
 
-  // If odds are entered and stake is known, auto-calculate payout
-  const autoPayout = oddsValid && stakeValid ? payoutFromOdds(parsedStake, parsedOdds!) : null;
+  const autoPayout   = oddsValid && stakeValid ? payoutFromOdds(parsedStake, parsedOdds!) : null;
   const parsedPayout = autoPayout ?? parseFloat(manualPayout);
-  const bookName = US_SPORTSBOOKS.find(b => b.key === sportsbook)?.name ?? '';
+  const bookName     = US_SPORTSBOOKS.find(b => b.key === sportsbook)?.name ?? '';
+  const sportName    = SPORTS.find(s => s.key === sport);
 
   // ── Validation ─────────────────────────────────────────────────────────────
   const step1Valid =
     label.trim().length > 0 &&
     sportsbook.length > 0 &&
-    (!isParlay || legs.length >= 2);
-  const step2Valid =
     stakeValid &&
+    (!isParlay || legs.length >= 2);
+
+  const step2Valid =
     !isNaN(parsedPayout) &&
     parsedPayout > parsedStake;
 
@@ -73,8 +74,16 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   function addLeg() {
     const t = legInput.trim();
     if (!t) return;
-    setLegs(prev => [...prev, { id: crypto.randomUUID(), label: t, sport: sport || undefined, status: 'pending' }]);
+    const legOdds = parseAmericanOdds(legOddsInput);
+    setLegs(prev => [...prev, {
+      id: crypto.randomUUID(),
+      label: t,
+      odds: legOdds ?? undefined,
+      sport: sport || undefined,
+      status: 'pending',
+    }]);
     setLegInput('');
+    setLegOddsInput('');
   }
   function removeLeg(id: string) { setLegs(prev => prev.filter(l => l.id !== id)); }
 
@@ -96,6 +105,17 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
     onAdded();
   }
 
+  // ── Continue button label ──────────────────────────────────────────────────
+  const continueLabel = !label.trim()
+    ? 'Describe your bet to continue'
+    : !sportsbook
+      ? 'Select a sportsbook to continue'
+      : !stakeValid
+        ? 'Enter your stake to continue'
+        : isParlay && legs.length < 2
+          ? `Add ${2 - legs.length} more leg${legs.length === 1 ? '' : 's'} to continue`
+          : 'Next →';
+
   return (
     // z-[60] so this sits above the BottomNav (z-50)
     <div className="fixed inset-0 z-[60] bg-[#09000F] flex flex-col">
@@ -107,7 +127,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
-        <h2 className="text-sm font-semibold">{step === 1 ? 'Your Bet' : 'The Money'}</h2>
+        <h2 className="text-sm font-semibold">{step === 1 ? 'Your Bet' : 'Payout & Risk'}</h2>
         <div className="w-8" />
       </div>
 
@@ -141,7 +161,25 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 className="input-field"
                 autoFocus
               />
-              <p className="text-[10px] text-slate-600 pl-1">Describe what needs to happen for you to win</p>
+            </div>
+
+            {/* Stake */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                How much did you bet? <span className="text-red-400">*</span>
+              </p>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono">$</span>
+                <input
+                  type="number"
+                  placeholder="100"
+                  value={stake}
+                  onChange={(e) => setStake(e.target.value)}
+                  className="input-field pl-8 text-lg"
+                  min="1"
+                  step="any"
+                />
+              </div>
             </div>
 
             {/* Sportsbook — required */}
@@ -169,9 +207,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                           </svg>
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold truncate">{book.name}</p>
-                      </div>
+                      <p className="text-xs font-semibold truncate">{book.name}</p>
                     </button>
                   );
                 })}
@@ -192,9 +228,17 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 className="input-field font-mono"
               />
               {oddsStr && !oddsValid && (
-                <p className="text-[10px] text-amber-400 pl-1">Must be +100 or higher (underdog) / -100 or lower (favorite)</p>
+                <p className="text-[10px] text-amber-400 pl-1">Must be ≥ +100 (underdog) or ≤ -100 (favorite)</p>
               )}
-              {oddsValid && parsedOdds !== null && (
+              {oddsValid && parsedOdds !== null && stakeValid && (
+                <p className="text-[10px] text-purple-400 pl-1 font-mono">
+                  {parsedOdds > 0
+                    ? `Win $${(parsedStake * parsedOdds / 100).toFixed(2)} on a $${parsedStake.toFixed(2)} bet`
+                    : `Win $${(parsedStake * 100 / Math.abs(parsedOdds)).toFixed(2)} on a $${parsedStake.toFixed(2)} bet`
+                  }
+                </p>
+              )}
+              {oddsValid && parsedOdds !== null && !stakeValid && (
                 <p className="text-[10px] text-purple-400 pl-1 font-mono">
                   {parsedOdds > 0
                     ? `Underdog · bet $100 to win $${parsedOdds}`
@@ -207,33 +251,38 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               </p>
             </div>
 
-            {/* Sport — optional */}
+            {/* Sport — dropdown */}
             <div className="space-y-2">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sport (optional)</p>
-              <div className="grid grid-cols-4 gap-2">
-                {SPORTS.map((s) => (
-                  <button
-                    key={s.key}
-                    onClick={() => setSport(sport === s.key ? '' : s.key)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-xs font-medium transition-all ${
-                      sport === s.key
-                        ? 'bg-purple-500/15 border-purple-500/40 text-purple-300'
-                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
-                    }`}
-                  >
-                    <SportIcon sportKey={s.key} size={28} />
-                    <span className="truncate w-full text-center leading-tight text-[10px]">{s.name}</span>
-                  </button>
-                ))}
+              <div className="relative">
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                  className="input-field appearance-none pr-10 cursor-pointer"
+                  style={{ colorScheme: 'dark' }}
+                >
+                  <option value="">Select a sport...</option>
+                  {SPORTS.map((s) => (
+                    <option key={s.key} value={s.key}>{s.emoji} {s.name}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </div>
+              {sportName && (
+                <p className="text-[10px] text-purple-400 pl-1">{sportName.emoji} {sportName.name} selected</p>
+              )}
             </div>
 
             {/* Parlay toggle */}
-            <div className="card p-4 space-y-3">
+            <div className="card p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-slate-200">Parlay bet</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Multiple legs that all need to win</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Multiple legs — all must win</p>
                 </div>
                 <button
                   onClick={() => setIsParlay(p => !p)}
@@ -248,34 +297,79 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               </div>
 
               {isParlay && (
-                <div className="space-y-3 pt-1 border-t border-[#2D0060]">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Legs ({legs.length} added — min 2)</p>
+                <div className="space-y-3 border-t border-[#2D0060] pt-3">
+
+                  {/* Leg count header */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                      Legs
+                    </p>
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                      legs.length >= 2
+                        ? 'bg-amber-500/15 text-amber-400'
+                        : 'bg-[#2D0060] text-slate-500'
+                    }`}>
+                      {legs.length} / min 2
+                    </span>
+                  </div>
+
+                  {/* Existing legs */}
                   {legs.length > 0 && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {legs.map((leg, i) => (
-                        <div key={leg.id} className="flex items-center gap-2 bg-[#1A003A] rounded-xl px-3 py-2.5">
-                          <span className="text-xs font-mono text-slate-500 w-5 text-center">{i + 1}</span>
-                          <span className="text-sm text-slate-300 flex-1">{leg.label}</span>
-                          <button onClick={() => removeLeg(leg.id)} className="text-slate-600 hover:text-red-400 transition-colors text-xs">✕</button>
+                        <div key={leg.id} className="bg-[#1A003A] border border-[#2D0060] rounded-xl px-3 py-2.5 flex items-start gap-2">
+                          <span className="text-[10px] font-mono text-slate-500 w-5 text-center mt-0.5 shrink-0">{i + 1}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-slate-200 leading-tight">{leg.label}</p>
+                            {leg.odds !== undefined && (
+                              <p className="text-[10px] font-mono text-amber-400 mt-0.5">{fmtOdds(leg.odds)}</p>
+                            )}
+                          </div>
+                          <button onClick={() => removeLeg(leg.id)} className="text-slate-600 hover:text-red-400 transition-colors text-xs shrink-0 mt-0.5">✕</button>
                         </div>
                       ))}
                     </div>
                   )}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder='e.g. "Chiefs ML" or "Over 47.5"'
-                      value={legInput}
-                      onChange={(e) => setLegInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && addLeg()}
-                      className="input-field text-sm flex-1"
-                    />
+
+                  {/* Add leg form */}
+                  <div className="bg-[#12002A] border border-[#2D0060] rounded-xl p-3 space-y-2.5">
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Add a leg</p>
+
+                    {/* Bet description */}
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-500">Bet</p>
+                      <input
+                        type="text"
+                        placeholder='e.g. "Chiefs ML" or "Over 47.5"'
+                        value={legInput}
+                        onChange={(e) => setLegInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && addLeg()}
+                        className="input-field text-sm"
+                      />
+                    </div>
+
+                    {/* Leg odds */}
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-500">Odds (optional)</p>
+                      <input
+                        type="text"
+                        placeholder="e.g. -110 or +200"
+                        value={legOddsInput}
+                        onChange={(e) => setLegOddsInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && addLeg()}
+                        className="input-field text-sm font-mono"
+                      />
+                      {legOddsInput && parseAmericanOdds(legOddsInput) === null && (
+                        <p className="text-[10px] text-amber-400">Must be ≥ +100 or ≤ -100</p>
+                      )}
+                    </div>
+
                     <button
                       onClick={addLeg}
                       disabled={!legInput.trim()}
-                      className="px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-sm font-semibold disabled:opacity-40 hover:bg-amber-500/25 transition-all"
+                      className="w-full py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-sm font-semibold disabled:opacity-40 hover:bg-amber-500/25 transition-all"
                     >
-                      + Add
+                      + Add Leg
                     </button>
                   </div>
                 </div>
@@ -285,58 +379,37 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
           </div>
         )}
 
-        {/* ── Step 2: The Money ─────────────────────────────────────────────── */}
+        {/* ── Step 2: Payout & Risk ─────────────────────────────────────────── */}
         {step === 2 && (
           <div className="space-y-4 animate-fade-in">
             <div className="text-center space-y-1 pt-2">
-              <p className="text-2xl font-bold">The money</p>
-              <p className="text-slate-400 text-sm">
-                {oddsValid ? 'Enter your stake — payout calculated automatically' : 'Open your app and enter two numbers'}
+              <p className="text-2xl font-bold">
+                {oddsValid ? 'Confirm your payout' : 'What do you win?'}
               </p>
-            </div>
-
-            {/* Stake */}
-            <div className="card p-4 space-y-2">
-              <p className="text-sm font-semibold text-slate-300">How much did you bet?</p>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono">$</span>
-                <input
-                  type="number"
-                  placeholder="100"
-                  value={stake}
-                  onChange={(e) => setStake(e.target.value)}
-                  className="input-field pl-8 text-lg"
-                  min="1"
-                  step="any"
-                  autoFocus
-                />
-              </div>
+              <p className="text-slate-400 text-sm">
+                {oddsValid ? 'We calculated it from your odds' : 'Open your app and enter the total payout'}
+              </p>
             </div>
 
             {/* Payout — auto or manual */}
             {oddsValid && parsedOdds !== null ? (
-              stakeValid ? (
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-4 space-y-1 shadow-[0_0_14px_rgba(168,85,247,0.15)]">
-                  <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest">Auto-calculated payout</p>
-                  <p className="text-3xl font-bold text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
+              <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5 space-y-2 shadow-[0_0_14px_rgba(168,85,247,0.15)]">
+                <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest">Auto-calculated from {fmtOdds(parsedOdds)} odds</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-4xl font-bold text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
                     +${(parsedPayout - parsedStake).toFixed(2)}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    Total back: <span className="text-white font-mono">${parsedPayout.toFixed(2)}</span>
-                    {' · '}Based on <span className="text-purple-300 font-mono">{fmtOdds(parsedOdds)}</span> odds
-                  </p>
+                  <p className="text-sm text-slate-400">profit</p>
                 </div>
-              ) : (
-                <div className="card p-3 border-purple-500/20 bg-purple-500/5">
-                  <p className="text-xs text-slate-400">
-                    Enter your stake above — payout will auto-calculate from your <span className="text-purple-300 font-mono">{fmtOdds(parsedOdds)}</span> odds.
-                  </p>
-                </div>
-              )
+                <p className="text-xs text-slate-500">
+                  Total back: <span className="text-white font-mono">${parsedPayout.toFixed(2)}</span>
+                  {' · '}Stake: <span className="text-white font-mono">${parsedStake.toFixed(2)}</span>
+                </p>
+              </div>
             ) : (
               <div className="card p-4 space-y-2">
                 <p className="text-sm font-semibold text-slate-300">
-                  If you win, what do you get back? <span className="text-slate-500 font-normal">(total)</span>
+                  If you win, what do you get back? <span className="text-slate-500 font-normal text-xs">(total including stake)</span>
                 </p>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono">$</span>
@@ -348,17 +421,18 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     className="input-field pl-8 text-lg"
                     min="1"
                     step="any"
+                    autoFocus
                   />
                 </div>
-                <p className="text-xs text-slate-600">💡 Total shown in your app — includes your stake back</p>
+                <p className="text-xs text-slate-600">Enter the total shown in your betting app — it includes your ${parsedStake > 0 ? parsedStake.toFixed(2) : '…'} stake back</p>
               </div>
             )}
 
-            {/* Error: payout less than stake */}
+            {/* Error: payout ≤ stake */}
             {!isNaN(parsedPayout) && stakeValid && parsedPayout <= parsedStake && (
               <div className="card p-3 border-red-500/30 bg-red-500/5">
                 <p className="text-xs text-red-400">
-                  Payout must be more than your stake. Double-check the numbers in your app.
+                  Payout must be more than your stake of ${parsedStake.toFixed(2)}. Check the numbers in your app.
                 </p>
               </div>
             )}
@@ -392,7 +466,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                   </div>
                   {(risk.tier === 'high' || risk.tier === 'extreme') && (
                     <p className="text-[10px] text-slate-500 border-t border-white/5 pt-2">
-                      💡 Hedge will alert you the moment a profitable hedge is available.
+                      Hedge will alert you the moment a profitable hedge is available.
                     </p>
                   )}
                 </div>
@@ -401,21 +475,35 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
 
             {/* Summary */}
             {step2Valid && (
-              <div className="card p-4 space-y-2 border-purple-500/20 bg-purple-500/5">
+              <div className="card p-4 space-y-2.5 border-purple-500/20 bg-purple-500/5">
                 <p className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-widest">Bet summary</p>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-start gap-2 flex-wrap">
                   <p className="text-sm text-white font-medium">{label}</p>
                   {isParlay && (
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">
                       {legs.length}-LEG PARLAY
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-slate-400">
+                {isParlay && legs.length > 0 && (
+                  <div className="space-y-1 border-t border-white/5 pt-2">
+                    {legs.map((leg, i) => (
+                      <div key={leg.id} className="flex items-center gap-2 text-xs text-slate-400">
+                        <span className="font-mono text-slate-600 shrink-0">{i + 1}.</span>
+                        <span>{leg.label}</span>
+                        {leg.odds !== undefined && (
+                          <span className="font-mono text-amber-400 ml-auto shrink-0">{fmtOdds(leg.odds)}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-slate-400 border-t border-white/5 pt-2">
                   <span>Stake: <span className="text-white">${parsedStake.toFixed(2)}</span></span>
                   <span>Win: <span className="text-purple-300">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
                   {oddsValid && parsedOdds !== null && <span>Odds: <span className="text-purple-300">{fmtOdds(parsedOdds)}</span></span>}
                   <span>At: <span className="text-white">{bookName}</span></span>
+                  {sportName && <span>Sport: <span className="text-white">{sportName.emoji} {sportName.name}</span></span>}
                 </div>
               </div>
             )}
@@ -424,7 +512,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
       </div>
 
       {/* Bottom action bar — always visible above keyboard / safe area */}
-      <div className="shrink-0 px-5 pt-4 pb-6 border-t border-[#3D1A6E] bg-[#09000F]" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+      <div className="shrink-0 px-5 pt-4 border-t border-[#3D1A6E] bg-[#09000F]" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         {step === 1 ? (
           <button
             onClick={() => setStep(2)}
@@ -435,7 +523,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 : 'bg-[#180032] text-slate-600 cursor-not-allowed'
             }`}
           >
-            {step1Valid ? 'Next →' : !label.trim() ? 'Describe your bet to continue' : 'Select a sportsbook to continue'}
+            {step1Valid ? 'Next →' : continueLabel}
           </button>
         ) : (
           <div className="space-y-3">
@@ -448,7 +536,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                   : 'bg-[#180032] text-slate-600 cursor-not-allowed'
               }`}
             >
-              Start monitoring this bet ✓
+              {step2Valid ? 'Start monitoring this bet ✓' : 'Enter payout to continue'}
             </button>
             <button
               onClick={() => setStep(1)}

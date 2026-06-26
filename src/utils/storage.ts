@@ -42,6 +42,7 @@ export type BetResult = 'win' | 'loss' | 'push' | 'hedged';
 export interface ParlayLeg {
   id: string;
   label: string;
+  odds?: number;
   sport?: string;
   eventId?: string;
   status: 'pending' | 'won' | 'lost' | 'push';
