@@ -40,6 +40,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
   const [stake, setStake]           = useState(prefill?.stake ? String(prefill.stake) : '');
   const [oddsStr, setOddsStr]       = useState('');
   const [sport, setSport]           = useState(prefill?.sport ?? '');
+  const [sportOpen, setSportOpen]   = useState(false);
   const [isParlay, setIsParlay]     = useState(false);
   const [legs, setLegs]             = useState<ParlayLeg[]>([]);
   const [legInput, setLegInput]     = useState('');
@@ -251,29 +252,68 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               </p>
             </div>
 
-            {/* Sport — dropdown */}
+            {/* Sport — custom dropdown */}
             <div className="space-y-2">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sport (optional)</p>
-              <div className="relative">
-                <select
-                  value={sport}
-                  onChange={(e) => setSport(e.target.value)}
-                  className="input-field appearance-none pr-10 cursor-pointer"
-                  style={{ colorScheme: 'dark' }}
-                >
-                  <option value="">Select a sport...</option>
-                  {SPORTS.map((s) => (
-                    <option key={s.key} value={s.key}>{s.emoji} {s.name}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+
+              {/* Trigger button */}
+              <button
+                type="button"
+                onClick={() => setSportOpen(o => !o)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-150 ${
+                  sport
+                    ? 'bg-purple-500/12 border-purple-500/50 text-white shadow-[0_0_10px_rgba(168,85,247,0.15)]'
+                    : 'bg-[#180032] border-[#3D1A6E] text-slate-500'
+                }`}
+              >
+                <span className="text-sm font-medium">
+                  {sportName ? `${sportName.emoji}  ${sportName.name}` : 'Select a sport…'}
+                </span>
+                <div className="flex items-center gap-2">
+                  {sport && (
+                    <span
+                      role="button"
+                      onClick={(e) => { e.stopPropagation(); setSport(''); setSportOpen(false); }}
+                      className="text-slate-500 hover:text-slate-300 text-xs px-1"
+                    >
+                      ✕
+                    </span>
+                  )}
+                  <svg
+                    width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    className={`text-slate-500 transition-transform duration-200 ${sportOpen ? 'rotate-180' : ''}`}
+                  >
                     <path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-              </div>
-              {sportName && (
-                <p className="text-[10px] text-purple-400 pl-1">{sportName.emoji} {sportName.name} selected</p>
+              </button>
+
+              {/* Dropdown list */}
+              {sportOpen && (
+                <div className="rounded-xl border border-[#3D1A6E] bg-[#100020] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                  <div className="max-h-56 overflow-y-auto">
+                    {SPORTS.map((s, i) => (
+                      <button
+                        key={s.key}
+                        type="button"
+                        onClick={() => { setSport(s.key); setSportOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-100 ${
+                          sport === s.key
+                            ? 'bg-purple-500/15 text-purple-300'
+                            : 'text-slate-300 hover:bg-purple-500/8 hover:text-white'
+                        } ${i > 0 ? 'border-t border-[#1A003A]' : ''}`}
+                      >
+                        <span className="text-base leading-none w-6 text-center">{s.emoji}</span>
+                        <span className="text-sm font-medium">{s.name}</span>
+                        {sport === s.key && (
+                          <svg className="ml-auto text-purple-400 shrink-0" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
