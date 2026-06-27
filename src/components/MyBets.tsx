@@ -575,21 +575,16 @@ function BetCard({
                 {/* Sportsbook selector */}
                 <div className="space-y-1.5">
                   <p className="text-xs text-slate-400">Which sportsbook did you use?</p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {US_SPORTSBOOKS.slice(0, 9).map((b) => (
-                      <button
-                        key={b.key}
-                        onClick={() => setBookInput(b.key)}
-                        className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
-                          bookInput === b.key
-                            ? 'bg-green-500/15 border-green-500/50 text-green-300'
-                            : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-[#5D2A9E] hover:text-slate-300'
-                        }`}
-                      >
-                        {b.shortName}
-                      </button>
+                  <select
+                    value={bookInput}
+                    onChange={(e) => setBookInput(e.target.value)}
+                    className="input-field text-sm bg-[#180032]"
+                  >
+                    <option value="">Select a sportsbook…</option>
+                    {US_SPORTSBOOKS.map((b) => (
+                      <option key={b.key} value={b.key}>{b.name}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
 
                 {/* Stake input */}
