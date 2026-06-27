@@ -500,36 +500,44 @@ function BetCard({
       }`}>
         <button
           onClick={() => setExpanded(e => !e)}
-          className="w-full p-4 flex items-center gap-3 text-left"
+          className="w-full p-4 text-left"
         >
-          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDot}`} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
+          {/* Row 1: dot + title + status + chevron */}
+          <div className="flex items-center gap-3">
+            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDot}`} />
+            <div className="flex-1 min-w-0 flex items-center gap-1.5">
               <p className="text-sm font-semibold text-white truncate">{headerTitle}</p>
               {bet.isParlay && (
                 <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">PARLAY</span>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-0.5 truncate">{headerSub}</p>
-            {isActive && <RiskBar stake={bet.stake} payout={bet.potentialPayout} />}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`text-xs font-semibold ${
+                bet.status === 'watching' ? 'text-white/60' :
+                bet.status === 'hedge_ready' ? 'text-purple-400' :
+                bet.status === 'hedged' ? 'text-blue-400' :
+                bet.status === 'monitoring' ? 'text-green-400' :
+                bet.result === 'win' ? 'text-purple-400' :
+                bet.result === 'loss' ? 'text-red-400' : 'text-slate-500'
+              }`}>
+                {statusLabel}
+              </span>
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className={`text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              >
+                <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-xs font-semibold ${
-              bet.status === 'watching' ? 'text-white/60' :
-              bet.status === 'hedge_ready' ? 'text-purple-400' :
-              bet.status === 'hedged' ? 'text-blue-400' :
-              bet.status === 'monitoring' ? 'text-green-400' :
-              bet.result === 'win' ? 'text-purple-400' :
-              bet.result === 'loss' ? 'text-red-400' : 'text-slate-500'
-            }`}>
-              {statusLabel}
-            </span>
-            <svg
-              width="14" height="14" viewBox="0 0 14 14" fill="none"
-              className={`text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            >
-              <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          {/* Row 2: subtitle + risk bar (indented to align with title) */}
+          <div className="pl-[22px] mt-0.5">
+            <p className="text-xs text-slate-500 truncate">{headerSub}</p>
+            {isActive && (
+              <div className="mt-1.5">
+                <RiskBar stake={bet.stake} payout={bet.potentialPayout} />
+              </div>
+            )}
           </div>
         </button>
 
