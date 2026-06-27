@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { fetchOdds, getOddsForTeamAtBook, type OddsEvent } from '../utils/oddsApi';
-import { getApiKey, getSelectedBooks } from '../utils/storage';
+import { getApiKey, getSelectedBooks, addWatchedBet } from '../utils/storage';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { americanToDecimal } from '../utils/arb';
 import type { CalcPrefill, OddsFormat } from './ProCalculator';
@@ -32,6 +32,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showImplied, setShowImplied] = useState(false);
+  const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -198,6 +199,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
             {expanded && (
               <div className="border-t border-[#3D1A6E] overflow-x-auto">
                 <table className="w-full text-xs font-mono">
+
                   <thead>
                     <tr className="border-b border-[#3D1A6E]">
                       <th className="text-left px-4 py-2 text-slate-500 font-normal uppercase tracking-wider w-28">Team</th>
@@ -304,6 +306,46 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                     </tr>
                   </tbody>
                 </table>
+                {/* Watch buttons */}
+                <div className="border-t border-[#3D1A6E] px-4 py-2 flex gap-3">
+                  {teams.map((team, ti) => {
+                    const watchKey = `${event.id}-${team}`;
+                    const isWatched = watchedKeys.has(watchKey);
+                    const opponent = teams[1 - ti];
+                    const bstPrice = bestPrices[ti];
+                    const bestBookKey = userBooks.find(
+                      (bk) => getOddsForTeamAtBook(event, team, bk) === bstPrice,
+                    ) ?? '';
+                    return (
+                      <button
+                        key={team}
+                        disabled={isWatched}
+                        onClick={() => {
+                          addWatchedBet({
+                            label: `${team} vs ${opponent}`,
+                            myTeam: team,
+                            opposingTeam: opponent,
+                            sport,
+                            eventId: event.id,
+                            sportsbook: bestBookKey,
+                            stake: 0,
+                            potentialPayout: 0,
+                            initialOdds: bstPrice ?? undefined,
+                            notifyHedge: false,
+                          });
+                          setWatchedKeys((prev) => new Set([...prev, watchKey]));
+                        }}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
+                          isWatched
+                            ? 'border-white/20 text-white/50 cursor-default'
+                            : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                        }`}
+                      >
+                        {isWatched ? `✓ ${team.split(' ').pop()}` : `+ Watch ${team.split(' ').pop()}`}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

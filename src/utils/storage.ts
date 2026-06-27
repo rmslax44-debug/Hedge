@@ -36,7 +36,7 @@ export function setNotificationsEnabled(v: boolean) {
 
 // ─── Tracked bets ─────────────────────────────────────────────────────────────
 
-export type BetStatus = 'monitoring' | 'hedge_ready' | 'hedged' | 'settled';
+export type BetStatus = 'watching' | 'monitoring' | 'hedge_ready' | 'hedged' | 'settled';
 export type BetResult = 'win' | 'loss' | 'push' | 'hedged';
 
 export interface ParlayLeg {
@@ -75,6 +75,9 @@ export interface TrackedBet {
   // Parlay fields
   isParlay?: boolean;
   legs?: ParlayLeg[];
+  // Notification / watch fields
+  notifyHedge?: boolean;
+  initialOdds?: number; // American odds when added to watch list
   // Settlement fields
   result?: BetResult;
   settledAt?: number;
@@ -114,6 +117,21 @@ export function addBet(bet: Omit<TrackedBet, 'id' | 'createdAt' | 'status'>): Tr
     id: crypto.randomUUID(),
     createdAt: Date.now(),
     status: 'monitoring',
+  };
+  const bets = loadBets();
+  bets.unshift(newBet);
+  saveBets(bets);
+  return newBet;
+}
+
+export function addWatchedBet(
+  bet: Omit<TrackedBet, 'id' | 'createdAt' | 'status'>,
+): TrackedBet {
+  const newBet: TrackedBet = {
+    ...bet,
+    id: crypto.randomUUID(),
+    createdAt: Date.now(),
+    status: 'watching',
   };
   const bets = loadBets();
   bets.unshift(newBet);

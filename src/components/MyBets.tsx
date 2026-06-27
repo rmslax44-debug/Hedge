@@ -418,34 +418,47 @@ function BetCard({
   const [expanded, setExpanded] = useState(bet.status === 'hedge_ready');
   const [showManual, setShowManual] = useState(false);
   const [showLink, setShowLink] = useState(false);
+  const [localNotify, setLocalNotify] = useState(bet.notifyHedge ?? false);
+  const [showActivate, setShowActivate] = useState(false);
+  const [stakeInput, setStakeInput] = useState('');
   const bookName = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
   const profit = bet.potentialPayout - bet.stake;
 
   const statusDot =
-    bet.status === 'hedge_ready'
-      ? 'bg-purple-500 animate-pulse'
+    bet.status === 'watching'
+      ? 'bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+      : bet.status === 'hedge_ready'
+      ? 'bg-purple-400 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]'
+      : bet.status === 'monitoring'
+      ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.65)]'
       : bet.status === 'hedged'
-        ? 'bg-blue-500'
-        : bet.status === 'monitoring'
-          ? 'bg-amber-400'
-          : 'bg-slate-500';
+      ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.65)]'
+      : 'bg-slate-500';
 
   const statusLabel =
-    bet.status === 'hedge_ready'
+    bet.status === 'watching'
+      ? 'Watching'
+      : bet.status === 'hedge_ready'
       ? 'Hedge now!'
       : bet.status === 'hedged'
-        ? 'Hedged ✓'
-        : bet.status === 'monitoring'
-          ? 'Watching…'
-          : bet.result === 'win' ? 'Won ✓'
-          : bet.result === 'loss' ? 'Lost'
-          : bet.result === 'push' ? 'Push'
-          : 'Settled';
+      ? 'Hedged ✓'
+      : bet.status === 'monitoring'
+      ? 'Active'
+      : bet.result === 'win' ? 'Won ✓'
+      : bet.result === 'loss' ? 'Lost'
+      : bet.result === 'push' ? 'Push'
+      : 'Settled';
 
   function handleOppFound(opp: HedgeOpportunity) {
     updateBet(bet.id, { status: 'hedge_ready', hedgeOpportunity: opp });
     setShowManual(false);
     onRefresh();
+  }
+
+  function toggleNotify() {
+    const newVal = !localNotify;
+    setLocalNotify(newVal);
+    updateBet(bet.id, { notifyHedge: newVal });
   }
 
   const isActive = bet.status === 'monitoring' || bet.status === 'hedge_ready';
@@ -456,7 +469,12 @@ function BetCard({
     ? `${bet.myTeam} vs ${bet.opposingTeam}`
     : bet.label;
   const eventTime = bet.hedgeOpportunity?.eventTime;
-  const headerSub = isHedgeView && eventTime
+  const fmtInitialOdds = bet.initialOdds !== undefined
+    ? (bet.initialOdds >= 0 ? `+${bet.initialOdds}` : `${bet.initialOdds}`)
+    : null;
+  const headerSub = bet.status === 'watching'
+    ? `Monitoring${fmtInitialOdds ? ` · ${fmtInitialOdds}` : ''} · ${bookName}`
+    : isHedgeView && eventTime
     ? new Date(eventTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : `$${bet.stake.toFixed(2)} at ${bookName} · win +$${profit.toFixed(2)}`;
 
@@ -471,11 +489,13 @@ function BetCard({
       )}
 
       <div className={`card overflow-hidden transition-all ${
-        bet.status === 'hedge_ready'
+        bet.status === 'watching'
+          ? 'border-white/10'
+          : bet.status === 'hedge_ready'
           ? 'border-purple-500/50 shadow-[0_0_22px_rgba(168,85,247,0.22)] glow-ring'
           : bet.status === 'hedged'
-            ? 'border-blue-500/30 shadow-[0_0_14px_rgba(59,130,246,0.12)]'
-            : ''
+          ? 'border-blue-500/30 shadow-[0_0_14px_rgba(59,130,246,0.12)]'
+          : ''
       }`}>
         <button
           onClick={() => setExpanded(e => !e)}
@@ -494,9 +514,10 @@ function BetCard({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={`text-xs font-semibold ${
+              bet.status === 'watching' ? 'text-white/60' :
               bet.status === 'hedge_ready' ? 'text-purple-400' :
               bet.status === 'hedged' ? 'text-blue-400' :
-              bet.status === 'monitoring' ? 'text-amber-400' :
+              bet.status === 'monitoring' ? 'text-green-400' :
               bet.result === 'win' ? 'text-purple-400' :
               bet.result === 'loss' ? 'text-red-400' : 'text-slate-500'
             }`}>
@@ -513,6 +534,95 @@ function BetCard({
 
         {expanded && (
           <div className="px-4 pb-4 space-y-3 animate-fade-in border-t border-[#3D1A6E] pt-3">
+            {/* Notification toggle */}
+            {(bet.status === 'watching' || bet.status === 'monitoring' || bet.status === 'hedge_ready') && (
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-slate-400 shrink-0">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p className="text-xs text-slate-400">Hedge notifications</p>
+                </div>
+                <button
+                  onClick={toggleNotify}
+                  className={`relative inline-flex h-6 w-10 shrink-0 cursor-pointer rounded-full border-2 transition-colors ${
+                    localNotify ? 'bg-purple-500 border-purple-500' : 'bg-[#2D0060] border-[#3D1A6E]'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow-md transform transition-transform ${
+                    localNotify ? 'translate-x-4' : 'translate-x-0.5'
+                  }`} />
+                </button>
+              </div>
+            )}
+
+            {/* Activate flow for watching bets */}
+            {bet.status === 'watching' && !showActivate && (
+              <button
+                onClick={() => setShowActivate(true)}
+                className="w-full py-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-semibold hover:bg-green-500/20 hover:border-green-500/60 transition-all"
+              >
+                Activate bet →
+              </button>
+            )}
+
+            {bet.status === 'watching' && showActivate && (
+              <div className="space-y-3 bg-[#09000F] rounded-xl p-3 border border-[#3D1A6E]">
+                <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Activate Bet</p>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-slate-400">How much did you wager?</p>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
+                    <input
+                      type="number"
+                      placeholder="100"
+                      value={stakeInput}
+                      onChange={(e) => setStakeInput(e.target.value)}
+                      className="input-field pl-8 text-sm"
+                      min="1"
+                    />
+                  </div>
+                </div>
+                {stakeInput && parseFloat(stakeInput) > 0 && bet.initialOdds !== undefined && (
+                  <div className="text-xs text-slate-400 text-center">
+                    {(() => {
+                      const s = parseFloat(stakeInput);
+                      const o = bet.initialOdds!;
+                      const pay = o > 0 ? s + (s * o / 100) : s + (s * 100 / Math.abs(o));
+                      return `Potential payout: $${pay.toFixed(2)}`;
+                    })()}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowActivate(false)}
+                    className="flex-1 py-2 rounded-lg border border-white/15 text-slate-400 text-xs hover:border-white/30 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={!stakeInput || parseFloat(stakeInput) <= 0}
+                    onClick={() => {
+                      const s = parseFloat(stakeInput);
+                      if (isNaN(s) || s <= 0) return;
+                      const o = bet.initialOdds ?? 0;
+                      const pay = o > 0 ? s + (s * o / 100) : s + (s * 100 / Math.abs(o));
+                      updateBet(bet.id, { stake: s, potentialPayout: pay, status: 'monitoring' });
+                      onRefresh();
+                    }}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                      stakeInput && parseFloat(stakeInput) > 0
+                        ? 'bg-green-500 text-white hover:bg-green-400'
+                        : 'bg-[#180032] text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Hedge action card */}
             {bet.status === 'hedge_ready' && bet.hedgeOpportunity && (
               <HedgeActionCard
@@ -652,6 +762,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
 
   const hedgeReady = bets.filter(b => b.status === 'hedge_ready');
   const active = bets.filter(b => b.status === 'monitoring');
+  const watching = bets.filter(b => b.status === 'watching');
   const hedged = bets.filter(b => b.status === 'hedged');
   const done = bets.filter(b => b.status === 'settled');
   const hasHistory = done.length > 0;
@@ -692,9 +803,9 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               }`}
             >
               Active
-              {hedgeReady.length + active.length + hedged.length > 0 && (
+              {hedgeReady.length + active.length + hedged.length + watching.length > 0 && (
                 <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
-                  {hedgeReady.length + active.length + hedged.length}
+                  {hedgeReady.length + active.length + hedged.length + watching.length}
                 </span>
               )}
             </button>
@@ -755,9 +866,9 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               {active.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                      Watching for hedge opportunities
+                    <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
+                    <p className="text-xs font-semibold text-green-400 uppercase tracking-widest">
+                      Active — watching for hedge
                     </p>
                   </div>
                   {active.map(bet => (
@@ -769,7 +880,25 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                 </div>
               )}
 
-              {hedgeReady.length === 0 && active.length === 0 && hedged.length === 0 && (
+              {/* Watching (no stake yet) */}
+              {watching.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-white/70 shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                      Monitoring odds
+                    </p>
+                  </div>
+                  {watching.map(bet => (
+                    <BetCard key={bet.id} bet={bet}
+                      onDelete={() => { deleteBet(bet.id); refresh(); }}
+                      onRefresh={refresh}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {hedgeReady.length === 0 && active.length === 0 && hedged.length === 0 && watching.length === 0 && (
                 <div className="card p-8 text-center mt-4">
                   <p className="text-xs text-slate-500">No active bets — tap + to add one.</p>
                 </div>
