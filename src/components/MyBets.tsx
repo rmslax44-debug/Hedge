@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getAllBets,
   deleteBet,
@@ -11,7 +11,7 @@ import {
   type BetResult,
 } from '../utils/storage';
 import { checkMonitoredBets } from '../utils/hedgeMonitor';
-import { calcLiveHedge } from '../utils/arb';
+import { calcLiveHedge, americanToDecimal } from '../utils/arb';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
 import { calcRisk } from '../utils/risk';
 import AddBetWizard from './AddBetWizard';
@@ -45,6 +45,87 @@ function RiskBar({ stake, payout }: { stake: number; payout: number }) {
   );
 }
 
+// ─── Radar Ping (better hedge alert indicator) ────────────────────────────────
+
+function RadarPing() {
+  return (
+    <div className="relative shrink-0 w-9 h-9">
+      <span
+        className="absolute inset-0 rounded-full border border-purple-400/40 animate-ping"
+        style={{ animationDuration: '2s' }}
+      />
+      <div
+        className="absolute inset-0 rounded-full overflow-hidden border border-purple-500/80 shadow-[0_0_16px_rgba(168,85,247,0.9),inset_0_0_10px_rgba(80,0,140,0.6)]"
+        style={{ background: '#06000F' }}
+      >
+        {/* Concentric rings + crosshairs */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
+          {[14, 10, 6.5, 3].map(r => (
+            <circle key={r} cx="18" cy="18" r={r} fill="none" stroke="rgba(168,85,247,0.22)" strokeWidth="0.45" />
+          ))}
+          <line x1="18" y1="2" x2="18" y2="34" stroke="rgba(168,85,247,0.12)" strokeWidth="0.35" />
+          <line x1="2" y1="18" x2="34" y2="18" stroke="rgba(168,85,247,0.12)" strokeWidth="0.35" />
+          {/* Outer tick marks */}
+          {Array.from({ length: 24 }, (_, i) => {
+            const angle = (i / 24) * Math.PI * 2;
+            const x1 = 18 + Math.cos(angle) * 14.5;
+            const y1 = 18 + Math.sin(angle) * 14.5;
+            const x2 = 18 + Math.cos(angle) * 16;
+            const y2 = 18 + Math.sin(angle) * 16;
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(168,85,247,0.35)" strokeWidth="0.5" />;
+          })}
+        </svg>
+
+        {/* Sweeping sector — conic gradient rotating */}
+        <div
+          className="absolute inset-0 animate-spin"
+          style={{
+            animationDuration: '2s',
+            animationTimingFunction: 'linear',
+            background: 'conic-gradient(from 0deg, rgba(200,40,255,0.85) 0deg, rgba(170,30,230,0.55) 35deg, rgba(130,10,190,0.25) 75deg, rgba(80,0,140,0.08) 110deg, transparent 135deg, transparent 360deg)',
+          }}
+        />
+
+        {/* Bright leading sweep line */}
+        <svg
+          className="absolute inset-0 w-full h-full animate-spin"
+          viewBox="0 0 36 36"
+          style={{ animationDuration: '2s', animationTimingFunction: 'linear' }}
+        >
+          <line x1="18" y1="18" x2="18" y2="4" stroke="rgba(230,80,255,1)" strokeWidth="1.4" strokeLinecap="round" />
+          <line x1="18" y1="18" x2="18" y2="4" stroke="rgba(255,120,255,0.4)" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+
+        {/* Center dot */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 4, height: 4,
+            top: '50%', left: '50%',
+            transform: 'translate(-50%,-50%)',
+            background: 'rgba(220,80,255,1)',
+            boxShadow: '0 0 6px rgba(200,60,255,1)',
+          }}
+        />
+
+        {/* Blip dots */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
+          <circle cx="25" cy="11" r="2" fill="rgba(230,80,255,1)" style={{ filter: 'drop-shadow(0 0 2px rgba(220,80,255,0.9))' }}>
+            <animate attributeName="opacity" values="0;1;0.7;1;0.3;0" dur="4s" begin="0.4s" repeatCount="indefinite" />
+            <animate attributeName="r" values="1.2;2;1.5;2;1.2" dur="4s" begin="0.4s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="12" cy="24" r="1.5" fill="rgba(210,60,255,0.9)">
+            <animate attributeName="opacity" values="0;0;0.9;0.5;0.9;0" dur="4s" begin="2.1s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="22" cy="27" r="1.2" fill="rgba(200,50,255,0.7)">
+            <animate attributeName="opacity" values="0;0.7;0.3;0.7;0" dur="4s" begin="1.3s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 // ─── Hedge Action Card ────────────────────────────────────────────────────────
 
 function fmtOdds(o: number) { return o > 0 ? `+${o}` : `${o}`; }
@@ -61,6 +142,28 @@ function HedgeActionCard({
   const [betADone, setBetADone] = useState(false);
   const [betBDone, setBetBDone] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [customStake, setCustomStake] = useState(opp.hedgeStake.toFixed(2));
+  const [stakeManuallySet, setStakeManuallySet] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const prevOppRef = useRef(opp);
+
+  // Detect a better hedge opportunity arriving while user hasn't committed yet
+  useEffect(() => {
+    const bothDone = betADone && betBDone;
+    if (!confirmed && !bothDone && opp.guaranteedProfit > prevOppRef.current.guaranteedProfit + 0.01) {
+      setShowAlert(true);
+      if (!stakeManuallySet) setCustomStake(opp.hedgeStake.toFixed(2));
+    }
+    prevOppRef.current = opp;
+  }, [opp]);
+
+  // Live profit calculation based on custom stake
+  const hedgeDecOdds = americanToDecimal(opp.hedgeOdds);
+  const customStakeNum = Math.max(0, parseFloat(customStake) || 0);
+  const profitIfOrigWins = bet.potentialPayout - bet.stake - customStakeNum;
+  const profitIfHedgeWins = customStakeNum * (hedgeDecOdds - 1) - bet.stake;
+  const liveProfit = Math.min(profitIfOrigWins, profitIfHedgeWins);
+  const isOffOptimal = Math.abs(customStakeNum - opp.hedgeStake) > 0.50;
 
   const betABook = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
   const betBBook = opp.hedgeBook || US_SPORTSBOOKS.find(b => b.key === opp.hedgeBookKey)?.name || 'Sportsbook';
@@ -72,6 +175,12 @@ function HedgeActionCard({
     if (betBDone) finalize();
   }
   function markB() {
+    // Persist the custom stake to storage if changed
+    if (isOffOptimal) {
+      updateBet(bet.id, {
+        hedgeOpportunity: { ...opp, hedgeStake: customStakeNum, guaranteedProfit: liveProfit },
+      });
+    }
     setBetBDone(true);
     if (betADone) finalize();
   }
@@ -86,13 +195,29 @@ function HedgeActionCard({
       <div className="rounded-2xl bg-purple-500/15 border border-purple-500/50 p-5 text-center space-y-1 animate-fade-in shadow-[0_0_28px_rgba(168,85,247,0.35)]">
         <p className="text-2xl">✓</p>
         <p className="text-purple-400 font-bold">Both bets placed!</p>
-        <p className="text-xs text-slate-400">+${opp.guaranteedProfit.toFixed(2)} profit locked in.</p>
+        <p className="text-xs text-slate-400">+${liveProfit.toFixed(2)} profit locked in.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3 animate-slide-up">
+
+      {/* Better hedge alert banner */}
+      {showAlert && (
+        <div className="flex items-center gap-3 rounded-xl border border-purple-500/40 bg-purple-500/10 px-3 py-2.5 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
+          <RadarPing />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">Better hedge detected</p>
+            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Go to Pro → Find Hedges to scan</p>
+          </div>
+          <button
+            onClick={() => setShowAlert(false)}
+            className="text-slate-500 hover:text-slate-300 text-sm shrink-0 transition-colors"
+          >✕</button>
+        </div>
+      )}
+
       {/* Bet A pill */}
       <div className={`rounded-xl p-4 border-2 transition-all duration-300 ${
         betADone
@@ -113,26 +238,20 @@ function HedgeActionCard({
         {!betADone && (
           <div className="flex gap-2 mt-3">
             {betAUrl && (
-              <a
-                href={betAUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/80 text-xs font-semibold text-center hover:border-white/40 hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.12)] transition-all"
-              >
+              <a href={betAUrl} target="_blank" rel="noopener noreferrer"
+                className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/80 text-xs font-semibold text-center hover:border-white/40 hover:text-white transition-all">
                 Open {betABook} ↗
               </a>
             )}
-            <button
-              onClick={markA}
-              className="flex-1 py-2.5 rounded-lg bg-white/10 border border-white/25 text-white text-xs font-bold hover:bg-white/15 hover:shadow-[0_0_10px_rgba(255,255,255,0.15)] transition-all"
-            >
+            <button onClick={markA}
+              className="flex-1 py-2.5 rounded-lg bg-white/10 border border-white/25 text-white text-xs font-bold hover:bg-white/15 transition-all">
               Done ✓
             </button>
           </div>
         )}
       </div>
 
-      {/* Bet B pill */}
+      {/* Bet B pill — editable stake */}
       <div className={`rounded-xl p-4 border-2 transition-all duration-300 ${
         betBDone
           ? 'bg-green-500/5 border-green-500/40 shadow-[0_0_14px_rgba(34,197,94,0.18)]'
@@ -141,9 +260,7 @@ function HedgeActionCard({
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
             <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${
-              betBDone
-                ? 'bg-green-500/20 text-green-400'
-                : 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)]'
+              betBDone ? 'bg-green-500/20 text-green-400' : 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)]'
             }`}>
               {betBDone ? '✓' : 'B'}
             </span>
@@ -155,36 +272,82 @@ function HedgeActionCard({
           }
         </div>
         <p className="text-sm font-bold text-white">{opp.hedgeTeam}</p>
-        <p className="text-xs text-slate-400 font-mono mt-1">
-          {fmtOdds(opp.hedgeOdds)} · ${opp.hedgeStake.toFixed(2)} · {betBBook}
-        </p>
+        <p className="text-xs text-slate-400 font-mono mt-0.5">{fmtOdds(opp.hedgeOdds)} · {betBBook}</p>
+
+        {/* Editable stake */}
         {!betBDone && (
-          <div className="flex gap-2 mt-3">
-            {betBUrl && (
-              <a
-                href={betBUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2.5 rounded-lg border border-purple-500/40 text-purple-300 text-xs font-semibold text-center hover:border-purple-500/70 hover:shadow-[0_0_12px_rgba(168,85,247,0.25)] transition-all"
+          <div className="mt-3 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-slate-400 shrink-0">Hedge stake:</p>
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-mono">$</span>
+                <input
+                  type="number"
+                  value={customStake}
+                  onChange={e => { setCustomStake(e.target.value); setStakeManuallySet(true); }}
+                  className="input-field pl-6 py-1.5 text-sm text-right w-full"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <button
+                onClick={() => { setCustomStake(opp.hedgeStake.toFixed(2)); setStakeManuallySet(false); }}
+                className="text-xs text-purple-400/70 hover:text-purple-400 transition-colors shrink-0"
+                title="Reset to optimal"
               >
-                Open {betBBook} ↗
-              </a>
-            )}
-            <button
-              onClick={markB}
-              className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-all btn-glow"
-            >
-              Done ✓
-            </button>
+                Reset
+              </button>
+            </div>
+            <div className="flex gap-2">
+              {betBUrl && (
+                <a href={betBUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 py-2.5 rounded-lg border border-purple-500/40 text-purple-300 text-xs font-semibold text-center hover:border-purple-500/70 transition-all">
+                  Open {betBBook} ↗
+                </a>
+              )}
+              <button onClick={markB}
+                className="flex-1 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold transition-all btn-glow">
+                Done ✓
+              </button>
+            </div>
           </div>
+        )}
+        {betBDone && (
+          <p className="text-xs text-slate-400 font-mono mt-1">${customStakeNum.toFixed(2)} staked</p>
         )}
       </div>
 
-      {/* Guaranteed profit */}
-      <div className="text-center py-3 bg-purple-500/8 rounded-xl border border-purple-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]">
-        <p className="text-xs text-slate-500 mb-0.5">No matter who wins</p>
-        <p className="text-3xl font-bold text-purple-400 font-mono drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">+${opp.guaranteedProfit.toFixed(2)}</p>
-        <p className="text-xs text-slate-500 mt-0.5">guaranteed profit</p>
+      {/* Live guaranteed profit */}
+      <div className={`text-center py-3 rounded-xl border shadow-[0_0_18px_rgba(168,85,247,0.18)] ${
+        liveProfit < 0
+          ? 'bg-red-500/8 border-red-500/25'
+          : 'bg-purple-500/8 border-purple-500/25'
+      }`}>
+        <p className="text-xs text-slate-500 mb-0.5">
+          {customStakeNum === 0 ? 'Enter a stake above' : 'No matter who wins'}
+        </p>
+        <p className={`text-3xl font-bold font-mono drop-shadow-[0_0_8px_rgba(168,85,247,0.6)] ${
+          liveProfit < 0 ? 'text-red-400' : 'text-purple-400'
+        }`}>
+          {liveProfit >= 0 ? '+' : ''}{customStakeNum > 0 ? `$${liveProfit.toFixed(2)}` : '—'}
+        </p>
+        <p className="text-xs text-slate-500 mt-0.5">
+          {liveProfit < 0 && customStakeNum > 0 ? 'stake too low or too high — adjust above' : 'guaranteed profit'}
+        </p>
+        {isOffOptimal && customStakeNum > 0 && liveProfit >= 0 && (
+          <p className="text-xs text-amber-400/70 mt-1">Optimal stake: ${opp.hedgeStake.toFixed(2)}</p>
+        )}
+        {/* Scenario breakdown when off-optimal */}
+        {isOffOptimal && customStakeNum > 0 && (
+          <div className="flex justify-center gap-4 mt-2 text-xs font-mono text-slate-500">
+            <span className={profitIfOrigWins >= 0 ? 'text-slate-400' : 'text-red-400'}>
+              If {bet.myTeam?.split(' ').pop() ?? 'A'} wins: {profitIfOrigWins >= 0 ? '+' : ''}${profitIfOrigWins.toFixed(2)}
+            </span>
+            <span className={profitIfHedgeWins >= 0 ? 'text-slate-400' : 'text-red-400'}>
+              If {opp.hedgeTeam.split(' ').pop()} wins: {profitIfHedgeWins >= 0 ? '+' : ''}${profitIfHedgeWins.toFixed(2)}
+            </span>
+          </div>
+        )}
       </div>
 
       <button
