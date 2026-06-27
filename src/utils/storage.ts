@@ -82,6 +82,9 @@ export interface TrackedBet {
   result?: BetResult;
   settledAt?: number;
   settledPnl?: number; // actual realized P&L
+  // Hedge value change tracking
+  hedgeValueTrend?: 'up' | 'down' | 'gone_negative' | 'expired';
+  previousGuaranteedProfit?: number;
 }
 
 export interface PortfolioStats {

@@ -144,15 +144,25 @@ function HedgeActionCard({
   const [confirmed, setConfirmed] = useState(false);
   const [customStake, setCustomStake] = useState(opp.hedgeStake.toFixed(2));
   const [stakeManuallySet, setStakeManuallySet] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(bet.hedgeValueTrend === 'up');
+  const [showDownAlert, setShowDownAlert] = useState(bet.hedgeValueTrend === 'down');
   const prevOppRef = useRef(opp);
 
-  // Detect a better hedge opportunity arriving while user hasn't committed yet
+  const isGoneNegative = bet.hedgeValueTrend === 'gone_negative';
+  const isExpired = bet.hedgeValueTrend === 'expired';
+
+  // Detect hedge opportunity value changes while user hasn't committed yet
   useEffect(() => {
     const bothDone = betADone && betBDone;
-    if (!confirmed && !bothDone && opp.guaranteedProfit > prevOppRef.current.guaranteedProfit + 0.01) {
-      setShowAlert(true);
-      if (!stakeManuallySet) setCustomStake(opp.hedgeStake.toFixed(2));
+    if (!confirmed && !bothDone) {
+      if (opp.guaranteedProfit > prevOppRef.current.guaranteedProfit + 0.01) {
+        setShowAlert(true);
+        setShowDownAlert(false);
+        if (!stakeManuallySet) setCustomStake(opp.hedgeStake.toFixed(2));
+      } else if (opp.guaranteedProfit < prevOppRef.current.guaranteedProfit - 0.01 && opp.guaranteedProfit > 0) {
+        setShowDownAlert(true);
+        setShowAlert(false);
+      }
     }
     prevOppRef.current = opp;
   }, [opp]);
@@ -204,7 +214,7 @@ function HedgeActionCard({
     <div className="space-y-3 animate-slide-up">
 
       {/* Better hedge alert banner */}
-      {showAlert && (
+      {showAlert && !isGoneNegative && !isExpired && (
         <div className="flex items-center gap-3 rounded-xl border border-purple-500/40 bg-purple-500/10 px-3 py-2.5 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
           <RadarPing />
           <div className="flex-1 min-w-0">
@@ -215,6 +225,67 @@ function HedgeActionCard({
             onClick={() => setShowAlert(false)}
             className="text-slate-500 hover:text-slate-300 text-sm shrink-0 transition-colors"
           >✕</button>
+        </div>
+      )}
+
+      {/* Value decreased alert */}
+      {showDownAlert && !isGoneNegative && !isExpired && !confirmed && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/35 bg-amber-500/8 px-3 py-2.5">
+          <div className="shrink-0 w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center shadow-[0_0_8px_rgba(251,191,36,0.4)]">
+            <span className="text-amber-400 font-bold text-sm leading-none">↓</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Hedge value decreased</p>
+            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed now · Lines moved since you found this</p>
+          </div>
+          <button
+            onClick={() => setShowDownAlert(false)}
+            className="text-slate-500 hover:text-slate-300 text-sm shrink-0 transition-colors"
+          >✕</button>
+        </div>
+      )}
+
+      {/* No longer viable */}
+      {isGoneNegative && !confirmed && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/8 px-4 py-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-400 font-bold text-base">⚠</span>
+            <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">No longer a good opportunity</p>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Lines have moved — this hedge would now result in a loss. Wait for better odds or go back to monitoring.
+          </p>
+          <button
+            onClick={() => {
+              updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined, hedgeValueTrend: undefined });
+              onDone();
+            }}
+            className="w-full py-2 rounded-lg border border-amber-500/35 text-amber-400 text-xs font-semibold hover:border-amber-500/60 hover:bg-amber-500/10 transition-all"
+          >
+            Back to monitoring →
+          </button>
+        </div>
+      )}
+
+      {/* Opportunity expired */}
+      {isExpired && !confirmed && (
+        <div className="rounded-xl border border-slate-700/60 bg-slate-800/20 px-4 py-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500 font-bold text-base">⊘</span>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Opportunity has expired</p>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            These odds are no longer available. Check Pro → Find Hedges for current opportunities on this game.
+          </p>
+          <button
+            onClick={() => {
+              updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined, hedgeValueTrend: undefined });
+              onDone();
+            }}
+            className="w-full py-2 rounded-lg border border-slate-700/60 text-slate-400 text-xs font-semibold hover:border-slate-600 hover:text-slate-300 transition-all"
+          >
+            Back to monitoring →
+          </button>
         </div>
       )}
 
@@ -351,7 +422,10 @@ function HedgeActionCard({
       </div>
 
       <button
-        onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
+        onClick={() => {
+          updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined, hedgeValueTrend: undefined });
+          onDone();
+        }}
         className="w-full py-2 text-xs text-slate-500 hover:text-slate-400 transition-colors"
       >
         Save for later
@@ -588,9 +662,15 @@ function BetCard({
   const bookName = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
   const profit = bet.potentialPayout - bet.stake;
 
+  const trend = bet.hedgeValueTrend;
+
   const statusDot =
     bet.status === 'watching'
       ? 'bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+      : bet.status === 'hedge_ready' && trend === 'gone_negative'
+      ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]'
+      : bet.status === 'hedge_ready' && trend === 'expired'
+      ? 'bg-slate-500'
       : bet.status === 'hedge_ready'
       ? 'bg-purple-400 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]'
       : bet.status === 'monitoring'
@@ -602,6 +682,14 @@ function BetCard({
   const statusLabel =
     bet.status === 'watching'
       ? 'Watching'
+      : bet.status === 'hedge_ready' && trend === 'gone_negative'
+      ? 'Not viable'
+      : bet.status === 'hedge_ready' && trend === 'expired'
+      ? 'Expired'
+      : bet.status === 'hedge_ready' && trend === 'up'
+      ? 'Hedge now! ↑'
+      : bet.status === 'hedge_ready' && trend === 'down'
+      ? 'Hedge now! ↓'
       : bet.status === 'hedge_ready'
       ? 'Hedge now!'
       : bet.status === 'hedged'
@@ -648,8 +736,17 @@ function BetCard({
   const fmtInitialOdds = bet.initialOdds !== undefined
     ? (bet.initialOdds >= 0 ? `+${bet.initialOdds}` : `${bet.initialOdds}`)
     : null;
+  const prevProfit = bet.previousGuaranteedProfit;
   const headerSub = bet.status === 'watching'
     ? `Monitoring${fmtInitialOdds ? ` · ${fmtInitialOdds}` : ''} · ${bookName}`
+    : bet.status === 'hedge_ready' && trend === 'gone_negative'
+    ? `Hedge no longer profitable${prevProfit !== undefined ? ` · was +$${prevProfit.toFixed(2)}` : ''}`
+    : bet.status === 'hedge_ready' && trend === 'expired'
+    ? 'Opportunity has expired — odds moved'
+    : bet.status === 'hedge_ready' && trend === 'up' && bet.hedgeOpportunity && prevProfit !== undefined
+    ? `↑ Now +$${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)} · was +$${prevProfit.toFixed(2)}`
+    : bet.status === 'hedge_ready' && trend === 'down' && bet.hedgeOpportunity && prevProfit !== undefined
+    ? `↓ Now +$${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)} · was +$${prevProfit.toFixed(2)}`
     : isHedgeView && eventTime
     ? new Date(eventTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : `$${bet.stake.toFixed(2)} at ${bookName} · win +$${profit.toFixed(2)}`;
@@ -667,6 +764,10 @@ function BetCard({
       <div className={`card overflow-hidden transition-all ${
         bet.status === 'watching'
           ? 'border-white/10'
+          : bet.status === 'hedge_ready' && trend === 'gone_negative'
+          ? 'border-amber-500/40 shadow-[0_0_16px_rgba(251,191,36,0.12)]'
+          : bet.status === 'hedge_ready' && trend === 'expired'
+          ? 'border-slate-700/50'
           : bet.status === 'hedge_ready'
           ? 'border-purple-500/50 shadow-[0_0_22px_rgba(168,85,247,0.22)] glow-ring'
           : bet.status === 'hedged'
@@ -689,6 +790,9 @@ function BetCard({
             <div className="flex items-center gap-2 shrink-0">
               <span className={`text-xs font-semibold ${
                 bet.status === 'watching' ? 'text-white/60' :
+                bet.status === 'hedge_ready' && (trend === 'gone_negative') ? 'text-amber-400' :
+                bet.status === 'hedge_ready' && trend === 'expired' ? 'text-slate-500' :
+                bet.status === 'hedge_ready' && trend === 'down' ? 'text-amber-400' :
                 bet.status === 'hedge_ready' ? 'text-purple-400' :
                 bet.status === 'hedged' ? 'text-blue-400' :
                 bet.status === 'monitoring' ? 'text-green-400' :

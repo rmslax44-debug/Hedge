@@ -254,7 +254,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
       }
 
       foundArbs.sort((a, b) => b.profitPct - a.profitPct);
-      setArbs(foundArbs);
+      setArbs(foundArbs.filter((a) => a.guaranteedProfit > 0));
       setNearArbs(foundNear.slice(0, 6));
       setScanned(true);
     } catch (e) {
