@@ -465,6 +465,18 @@ function BetCard({
   const isActive = bet.status === 'monitoring' || bet.status === 'hedge_ready';
   const noEventLinked = isActive && !bet.eventId;
 
+  // Risk bar values: active bets use real stake/payout; watching bets derive from initialOdds
+  const riskStake = isActive
+    ? bet.stake
+    : bet.status === 'watching' && bet.initialOdds
+    ? 100
+    : 0;
+  const riskPayout = isActive
+    ? bet.potentialPayout
+    : bet.status === 'watching' && bet.initialOdds
+    ? (bet.initialOdds > 0 ? 100 + bet.initialOdds : 100 + (100 * 100 / Math.abs(bet.initialOdds)))
+    : 0;
+
   const isHedgeView = bet.opposingTeam && (bet.status === 'hedge_ready' || bet.status === 'hedged');
   const headerTitle = isHedgeView
     ? `${bet.myTeam} vs ${bet.opposingTeam}`
@@ -533,9 +545,9 @@ function BetCard({
           {/* Row 2: subtitle + risk bar (indented to align with title) */}
           <div className="pl-[22px] mt-0.5">
             <p className="text-xs text-slate-500 truncate">{headerSub}</p>
-            {isActive && (
+            {(isActive || bet.status === 'watching') && (
               <div className="mt-1.5">
-                <RiskBar stake={bet.stake} payout={bet.potentialPayout} />
+                <RiskBar stake={riskStake} payout={riskPayout} />
               </div>
             )}
           </div>
