@@ -50,6 +50,15 @@ export default function SportIcon({ sportKey, size = 36 }: Props) {
     </svg>
   );
 
+  if (sportKey === 'basketball_wnba') return (
+    <svg width={s} height={s} viewBox={viewBox} fill="none">
+      <circle cx="12" cy="12" r="10" fill="#FF6B00" stroke="#CC4400" strokeWidth="1"/>
+      <path d="M2.5 12 Q6 7 12 12 Q18 7 21.5 12" stroke="white" strokeWidth="1.2" fill="none"/>
+      <path d="M2.5 12 Q6 17 12 12 Q18 17 21.5 12" stroke="white" strokeWidth="1.2" fill="none"/>
+      <line x1="12" y1="2" x2="12" y2="22" stroke="white" strokeWidth="1.2"/>
+    </svg>
+  );
+
   if (sportKey === 'baseball_mlb') return (
     <svg width={s} height={s} viewBox={viewBox} fill="none">
       <circle cx="12" cy="12" r="10" fill="#F5F5F5" stroke="#DDD" strokeWidth="1"/>
@@ -278,6 +287,25 @@ export default function SportIcon({ sportKey, size = 36 }: Props) {
       <path d="M6.5 12 Q10 14 13.5 12" stroke="white" strokeWidth="0.8" fill="none"/>
       {/* Handle */}
       <line x1="16" y1="17" x2="21" y2="22" stroke="#8B5A2B" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  );
+
+  if (sportKey === 'motorsport_nascar_cup_series') return (
+    <svg width={s} height={s} viewBox={viewBox} fill="none">
+      <rect x="2" y="2" width="20" height="20" rx="3" fill="#1A1A1A"/>
+      {/* Oval track */}
+      <ellipse cx="12" cy="13" rx="8.5" ry="5.5" fill="none" stroke="#555" strokeWidth="2"/>
+      <ellipse cx="12" cy="13" rx="6.5" ry="4" fill="none" stroke="#333" strokeWidth="0.8"/>
+      {/* Race car from side */}
+      <path d="M6.5 12 Q7.5 10 9.5 10 L14.5 10 Q16.5 10 17.5 12 L17.5 13.5 L6.5 13.5 Z" fill="#E31837"/>
+      <path d="M9.5 10 L10.5 8.5 L14 8.5 L15 10" fill="#CC1122"/>
+      {/* Wheels */}
+      <circle cx="9" cy="13.8" r="1.2" fill="#333" stroke="#777" strokeWidth="0.5"/>
+      <circle cx="15" cy="13.8" r="1.2" fill="#333" stroke="#777" strokeWidth="0.5"/>
+      {/* Checkered flag */}
+      <rect x="17.5" y="3" width="3" height="3" fill="white"/>
+      <rect x="19" y="3" width="1.5" height="1.5" fill="#333"/>
+      <rect x="17.5" y="4.5" width="1.5" height="1.5" fill="#333"/>
     </svg>
   );
 

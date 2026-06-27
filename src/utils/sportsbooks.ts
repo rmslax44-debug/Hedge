@@ -35,6 +35,7 @@ export const SPORTS: Sport[] = [
   { key: 'icehockey_nhl',                  name: 'NHL',             emoji: '🏒' },
   { key: 'americanfootball_ncaaf',         name: 'NCAAF',           emoji: '🏈' },
   { key: 'basketball_ncaab',               name: 'NCAAB',           emoji: '🏀' },
+  { key: 'basketball_wnba',               name: 'WNBA',            emoji: '🏀' },
   { key: 'soccer_usa_mls',                 name: 'MLS',             emoji: '⚽' },
   // European soccer
   { key: 'soccer_epl',                     name: 'Premier League',  emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
@@ -53,4 +54,5 @@ export const SPORTS: Sport[] = [
   // Other
   { key: 'golf_pga_tour',                  name: 'Golf',            emoji: '⛳' },
   { key: 'tennis_atp',                     name: 'Tennis',          emoji: '🎾' },
+  { key: 'motorsport_nascar_cup_series',   name: 'NASCAR',          emoji: '🏎️' },
 ];
