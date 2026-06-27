@@ -421,6 +421,7 @@ function BetCard({
   const [localNotify, setLocalNotify] = useState(bet.notifyHedge ?? false);
   const [showActivate, setShowActivate] = useState(false);
   const [stakeInput, setStakeInput] = useState('');
+  const [bookInput, setBookInput] = useState(bet.sportsbook ?? '');
   const bookName = US_SPORTSBOOKS.find(b => b.key === bet.sportsbook)?.name ?? bet.sportsbook;
   const profit = bet.potentialPayout - bet.stake;
 
@@ -570,6 +571,28 @@ function BetCard({
             {bet.status === 'watching' && showActivate && (
               <div className="space-y-3 bg-[#09000F] rounded-xl p-3 border border-[#3D1A6E]">
                 <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Activate Bet</p>
+
+                {/* Sportsbook selector */}
+                <div className="space-y-1.5">
+                  <p className="text-xs text-slate-400">Which sportsbook did you use?</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {US_SPORTSBOOKS.slice(0, 9).map((b) => (
+                      <button
+                        key={b.key}
+                        onClick={() => setBookInput(b.key)}
+                        className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
+                          bookInput === b.key
+                            ? 'bg-green-500/15 border-green-500/50 text-green-300'
+                            : 'bg-[#180032] border-[#3D1A6E] text-slate-400 hover:border-[#5D2A9E] hover:text-slate-300'
+                        }`}
+                      >
+                        {b.shortName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stake input */}
                 <div className="space-y-1.5">
                   <p className="text-xs text-slate-400">How much did you wager?</p>
                   <div className="relative">
@@ -584,6 +607,7 @@ function BetCard({
                     />
                   </div>
                 </div>
+
                 {stakeInput && parseFloat(stakeInput) > 0 && bet.initialOdds !== undefined && (
                   <div className="text-xs text-slate-400 text-center">
                     {(() => {
@@ -594,6 +618,7 @@ function BetCard({
                     })()}
                   </div>
                 )}
+
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowActivate(false)}
@@ -602,17 +627,17 @@ function BetCard({
                     Cancel
                   </button>
                   <button
-                    disabled={!stakeInput || parseFloat(stakeInput) <= 0}
+                    disabled={!stakeInput || parseFloat(stakeInput) <= 0 || !bookInput}
                     onClick={() => {
                       const s = parseFloat(stakeInput);
-                      if (isNaN(s) || s <= 0) return;
+                      if (isNaN(s) || s <= 0 || !bookInput) return;
                       const o = bet.initialOdds ?? 0;
                       const pay = o > 0 ? s + (s * o / 100) : s + (s * 100 / Math.abs(o));
-                      updateBet(bet.id, { stake: s, potentialPayout: pay, status: 'monitoring' });
+                      updateBet(bet.id, { stake: s, potentialPayout: pay, sportsbook: bookInput, status: 'monitoring' });
                       onRefresh();
                     }}
                     className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-                      stakeInput && parseFloat(stakeInput) > 0
+                      stakeInput && parseFloat(stakeInput) > 0 && bookInput
                         ? 'bg-green-500 text-white hover:bg-green-400'
                         : 'bg-[#180032] text-slate-500 cursor-not-allowed'
                     }`}
