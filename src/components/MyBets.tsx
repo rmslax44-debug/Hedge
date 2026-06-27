@@ -226,7 +226,7 @@ function HedgeActionCard({
           <RadarPing />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">Better hedge detected</p>
-            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Go to Pro → Find Hedges to scan</p>
+            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Go to Find Hedges tab to scan for a better deal</p>
           </div>
           <button
             onClick={() => setShowAlert(false)}
@@ -282,7 +282,7 @@ function HedgeActionCard({
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Opportunity has expired</p>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
-            These odds are no longer available. Check Pro → Find Hedges for current opportunities on this game.
+            These odds are no longer available. Go to Find Hedges tab to scan for current opportunities on this game.
           </p>
           <button
             onClick={() => {

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
-import { findArb, type ArbOpportunity, americanToDecimal } from '../utils/arb';
+import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import {} from '../utils/sportsbooks';
-import { getApiKey, getSelectedBooks, addBetWithHedge } from '../utils/storage';
+import { getApiKey, getSelectedBooks, addBetWithHedge, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
 
 const SCAN_SPORTS = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'mma_mixed_martial_arts'];
 
@@ -24,13 +24,18 @@ function formatGameTime(iso: string): string {
 
 function ArbCard({
   opp,
+  matchingBet,
   onAddToTracker,
+  onSwitchToMyBets,
 }: {
   opp: ArbOpportunity;
+  matchingBet?: TrackedBet;
   onAddToTracker: (stakeA: number, stakeB: number, profit: number) => void;
+  onSwitchToMyBets?: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(!!matchingBet);
   const [betAmount, setBetAmount] = useState('100');
+  const [updated, setUpdated] = useState(false);
   const parsed = parseFloat(betAmount);
   const multiplier = isNaN(parsed) || parsed <= 0 ? 1 : parsed / 100;
   const stakeA = opp.stakeA * multiplier;
@@ -150,6 +155,47 @@ function ArbCard({
                 <p className="text-xs text-slate-500">guaranteed return</p>
               </div>
 
+              {matchingBet && (
+                <button
+                  onClick={() => {
+                    // Determine which arb side is the hedge for this bet
+                    const isHedgeA = matchingBet.opposingTeam === opp.teamA;
+                    const hedgeOdds = isHedgeA ? opp.oddsA : opp.oddsB;
+                    const hedgeDec = americanToDecimal(hedgeOdds);
+                    const { hedgeStake, guaranteedProfit } = calcLiveHedge(
+                      matchingBet.stake,
+                      matchingBet.potentialPayout,
+                      hedgeDec,
+                    );
+                    const newOpp = {
+                      hedgeTeam: isHedgeA ? opp.teamA : opp.teamB,
+                      hedgeBook: isHedgeA ? opp.bookAName : opp.bookBName,
+                      hedgeBookKey: isHedgeA ? opp.bookAKey : opp.bookBKey,
+                      hedgeStake,
+                      hedgeOdds,
+                      guaranteedProfit,
+                      foundAt: Date.now(),
+                      eventTime: opp.event.commence_time,
+                    };
+                    updateBet(matchingBet.id, {
+                      hedgeOpportunity: newOpp,
+                      hedgeValueTrend: undefined,
+                      previousGuaranteedProfit: undefined,
+                    });
+                    setUpdated(true);
+                    setTimeout(() => onSwitchToMyBets?.(), 1500);
+                  }}
+                  disabled={updated}
+                  className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
+                    updated
+                      ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                      : 'bg-green-500 hover:bg-green-400 text-white shadow-[0_0_18px_rgba(34,197,94,0.4)]'
+                  }`}
+                >
+                  {updated ? '✓ Hedge updated! Switching to My Bets…' : `Update ${matchingBet.opposingTeam?.split(' ').slice(-1)[0]} hedge in My Bets →`}
+                </button>
+              )}
+
               <button
                 onClick={() => onAddToTracker(stakeA, stakeB, profit)}
                 className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all btn-glow"
@@ -217,6 +263,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState(false);
+  const [hedgeReadyBets, setHedgeReadyBets] = useState<TrackedBet[]>([]);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -256,6 +303,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
       foundArbs.sort((a, b) => b.profitPct - a.profitPct);
       setArbs(foundArbs.filter((a) => a.guaranteedProfit > 0));
       setNearArbs(foundNear.slice(0, 6));
+      setHedgeReadyBets(getAllBets().filter((b) => b.status === 'hedge_ready' && b.eventId));
       setScanned(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Scan failed');
@@ -342,6 +390,8 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
                 <ArbCard
                   key={a.event.id}
                   opp={a}
+                  matchingBet={hedgeReadyBets.find((b) => b.eventId === a.event.id)}
+                  onSwitchToMyBets={onSwitchToMyBets}
                   onAddToTracker={(scaledStakeA, scaledStakeB, scaledProfit) => {
                     addBetWithHedge({
                       label: `${a.teamA} to win`,
