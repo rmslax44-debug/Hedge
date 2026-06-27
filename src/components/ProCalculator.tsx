@@ -36,12 +36,12 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
   const [hedgeOdds, setHedgeOdds] = useState('');
   const [hedgeStakeOverride, setHedgeStakeOverride] = useState('');
   const [hedgeBook, setHedgeBook] = useState('');
+  const [origBook, setOrigBook] = useState('');
 
   // Track-both-bets form state
   const [showTrackForm, setShowTrackForm] = useState(false);
   const [trackLabel, setTrackLabel] = useState('');
   const [trackHedgeTeam, setTrackHedgeTeam] = useState('');
-  const [trackOrigBook, setTrackOrigBook] = useState('');
 
   useEffect(() => {
     if (!prefill) return;
@@ -55,7 +55,6 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
     setShowTrackForm(false);
     setTrackLabel('');
     setTrackHedgeTeam('');
-    setTrackOrigBook('');
   }, [prefill]);
 
   // Parse original side
@@ -101,7 +100,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
   const bookName = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.name;
   const bookUrl = US_SPORTSBOOKS.find((b) => b.key === hedgeBook)?.url;
 
-  const trackFormReady = trackLabel.trim().length > 0 && trackOrigBook.length > 0;
+  const trackFormReady = trackLabel.trim().length > 0 && origBook.length > 0;
 
   function handleSaveToTracker() {
     if (!result || !parsedPayout || !hedgeDecOdds || !trackFormReady) return;
@@ -111,7 +110,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
     addBetWithHedge({
       label: trackLabel.trim(),
       myTeam: trackLabel.trim(),
-      sportsbook: trackOrigBook,
+      sportsbook: origBook,
       stake: parsedStake,
       potentialPayout: parsedPayout,
       sport: 'other',
@@ -216,6 +215,22 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
             </div>
           )}
         </div>
+        {/* Book selector */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Book</label>
+          <select
+            value={origBook}
+            onChange={(e) => setOrigBook(e.target.value)}
+            className="input-field text-sm font-mono bg-[#180032]"
+            style={{ colorScheme: 'dark' }}
+          >
+            <option value="">— select book —</option>
+            {US_SPORTSBOOKS.map((b) => (
+              <option key={b.key} value={b.key}>{b.shortName} · {b.name}</option>
+            ))}
+          </select>
+        </div>
+
         {parsedPayout !== null && !isNaN(parsedPayout) && parsedPayout > parsedStake && (
           <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
             <span>PAYOUT <span className="text-slate-300">${parsedPayout.toFixed(2)}</span></span>
@@ -400,25 +415,14 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Original Sportsbook (Bet A)</label>
-                  <select
-                    value={trackOrigBook}
-                    onChange={(e) => setTrackOrigBook(e.target.value)}
-                    className="input-field text-sm font-mono bg-[#180032]"
-                  >
-                    <option value="">— where you placed your original bet —</option>
-                    {US_SPORTSBOOKS.map((b) => (
-                      <option key={b.key} value={b.key}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
-
                 {/* Summary */}
                 <div className="bg-[#100020] rounded-xl p-3 space-y-1.5 text-[11px] font-mono border border-[#3D1A6E]">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 uppercase tracking-wide">Bet A (original)</span>
-                    <span className="text-slate-300">${parsedStake.toFixed(2)} → ${parsedPayout!.toFixed(2)}</span>
+                    <span className="text-slate-300">
+                      ${parsedStake.toFixed(2)} → ${parsedPayout!.toFixed(2)}
+                      {origBook && ` · ${US_SPORTSBOOKS.find(b => b.key === origBook)?.shortName ?? ''}`}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 uppercase tracking-wide">Bet B (hedge)</span>
