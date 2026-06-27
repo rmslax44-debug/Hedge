@@ -37,6 +37,14 @@ export const SPORTS: Sport[] = [
   { key: 'basketball_ncaab',               name: 'NCAAB',           emoji: '🏀' },
   { key: 'basketball_wnba',               name: 'WNBA',            emoji: '🏀' },
   { key: 'soccer_usa_mls',                 name: 'MLS',             emoji: '⚽' },
+  // International soccer
+  { key: 'soccer_fifa_world_cup',          name: 'World Cup',       emoji: '🏆' },
+  { key: 'soccer_conmebol_copa_america',   name: 'Copa América',    emoji: '🌎' },
+  { key: 'soccer_uefa_european_championship', name: 'Euros',        emoji: '🇪🇺' },
+  { key: 'soccer_uefa_nations_league',     name: 'Nations League',  emoji: '🌍' },
+  { key: 'soccer_concacaf_championship',   name: 'CONCACAF',        emoji: '🌎' },
+  { key: 'soccer_afc_asian_cup',           name: 'AFC Asian Cup',   emoji: '🌏' },
+  { key: 'soccer_international',           name: 'Intl Friendlies', emoji: '🌐' },
   // European soccer
   { key: 'soccer_epl',                     name: 'Premier League',  emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
   { key: 'soccer_uefa_champs_league',      name: 'Champions League',emoji: '⭐' },
