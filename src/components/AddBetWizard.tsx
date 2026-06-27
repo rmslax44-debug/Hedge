@@ -219,7 +219,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Odds (optional)</p>
-                <span className="text-[10px] text-slate-600 font-mono">American format</span>
+                <span className="text-xs text-slate-400 font-mono">American format</span>
               </div>
               <input
                 type="text"
@@ -229,10 +229,10 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 className="input-field font-mono"
               />
               {oddsStr && !oddsValid && (
-                <p className="text-[10px] text-amber-400 pl-1">Must be ≥ +100 (underdog) or ≤ -100 (favorite)</p>
+                <p className="text-xs text-amber-400 pl-1">Must be ≥ +100 (underdog) or ≤ -100 (favorite)</p>
               )}
               {oddsValid && parsedOdds !== null && stakeValid && (
-                <p className="text-[10px] text-purple-400 pl-1 font-mono">
+                <p className="text-xs text-purple-400 pl-1 font-mono">
                   {parsedOdds > 0
                     ? `Win $${(parsedStake * parsedOdds / 100).toFixed(2)} on a $${parsedStake.toFixed(2)} bet`
                     : `Win $${(parsedStake * 100 / Math.abs(parsedOdds)).toFixed(2)} on a $${parsedStake.toFixed(2)} bet`
@@ -240,14 +240,14 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                 </p>
               )}
               {oddsValid && parsedOdds !== null && !stakeValid && (
-                <p className="text-[10px] text-purple-400 pl-1 font-mono">
+                <p className="text-xs text-purple-400 pl-1 font-mono">
                   {parsedOdds > 0
                     ? `Underdog · bet $100 to win $${parsedOdds}`
                     : `Favorite · bet $${Math.abs(parsedOdds)} to win $100`
                   }
                 </p>
               )}
-              <p className="text-[10px] text-slate-600 pl-1">
+              <p className="text-xs text-slate-400 pl-1">
                 Enter odds to auto-calculate your payout on the next step
               </p>
             </div>
@@ -344,7 +344,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                       Legs
                     </p>
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                    <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
                       legs.length >= 2
                         ? 'bg-amber-500/15 text-amber-400'
                         : 'bg-[#2D0060] text-slate-500'
@@ -358,14 +358,14 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     <div className="space-y-2">
                       {legs.map((leg, i) => (
                         <div key={leg.id} className="bg-[#1A003A] border border-[#2D0060] rounded-xl px-3 py-2.5 flex items-start gap-2">
-                          <span className="text-[10px] font-mono text-slate-500 w-5 text-center mt-0.5 shrink-0">{i + 1}</span>
+                          <span className="text-xs font-mono text-slate-500 w-5 text-center mt-0.5 shrink-0">{i + 1}</span>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-slate-200 leading-tight">{leg.label}</p>
                             {leg.odds !== undefined && (
-                              <p className="text-[10px] font-mono text-amber-400 mt-0.5">{fmtOdds(leg.odds)}</p>
+                              <p className="text-xs font-mono text-amber-400 mt-0.5">{fmtOdds(leg.odds)}</p>
                             )}
                           </div>
-                          <button onClick={() => removeLeg(leg.id)} className="text-slate-600 hover:text-red-400 transition-colors text-xs shrink-0 mt-0.5">✕</button>
+                          <button onClick={() => removeLeg(leg.id)} className="text-slate-400 hover:text-red-400 transition-colors text-xs shrink-0 mt-0.5">✕</button>
                         </div>
                       ))}
                     </div>
@@ -373,11 +373,11 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
 
                   {/* Add leg form */}
                   <div className="bg-[#12002A] border border-[#2D0060] rounded-xl p-3 space-y-2.5">
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Add a leg</p>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Add a leg</p>
 
                     {/* Bet description */}
                     <div className="space-y-1">
-                      <p className="text-[10px] text-slate-500">Bet</p>
+                      <p className="text-xs text-slate-500">Bet</p>
                       <input
                         type="text"
                         placeholder='e.g. "Chiefs ML" or "Over 47.5"'
@@ -390,7 +390,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
 
                     {/* Leg odds */}
                     <div className="space-y-1">
-                      <p className="text-[10px] text-slate-500">Odds (optional)</p>
+                      <p className="text-xs text-slate-500">Odds (optional)</p>
                       <input
                         type="text"
                         placeholder="e.g. -110 or +200"
@@ -400,7 +400,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                         className="input-field text-sm font-mono"
                       />
                       {legOddsInput && parseAmericanOdds(legOddsInput) === null && (
-                        <p className="text-[10px] text-amber-400">Must be ≥ +100 or ≤ -100</p>
+                        <p className="text-xs text-amber-400">Must be ≥ +100 or ≤ -100</p>
                       )}
                     </div>
 
@@ -464,7 +464,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     autoFocus
                   />
                 </div>
-                <p className="text-xs text-slate-600">Enter the total shown in your betting app — it includes your ${parsedStake > 0 ? parsedStake.toFixed(2) : '…'} stake back</p>
+                <p className="text-xs text-slate-400">Enter the total shown in your betting app — it includes your ${parsedStake > 0 ? parsedStake.toFixed(2) : '…'} stake back</p>
               </div>
             )}
 
@@ -483,7 +483,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               return (
                 <div className={`rounded-2xl p-4 space-y-3 border ${risk.borderColor} ${risk.bgColor}`}>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Risk Level</p>
+                    <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Risk Level</p>
                     <span className={`text-xs font-bold font-mono uppercase tracking-wider ${risk.textColor}`}>
                       {risk.label}
                     </span>
@@ -505,7 +505,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                     </p>
                   </div>
                   {(risk.tier === 'high' || risk.tier === 'extreme') && (
-                    <p className="text-[10px] text-slate-500 border-t border-white/5 pt-2">
+                    <p className="text-xs text-slate-500 border-t border-white/5 pt-2">
                       Hedge will alert you the moment a profitable hedge is available.
                     </p>
                   )}
@@ -516,11 +516,11 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             {/* Summary */}
             {step2Valid && (
               <div className="card p-4 space-y-2.5 border-purple-500/20 bg-purple-500/5">
-                <p className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-widest">Bet summary</p>
+                <p className="text-xs font-mono font-bold text-purple-400 uppercase tracking-widest">Bet summary</p>
                 <div className="flex items-start gap-2 flex-wrap">
                   <p className="text-sm text-white font-medium">{label}</p>
                   {isParlay && (
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">
+                    <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">
                       {legs.length}-LEG PARLAY
                     </span>
                   )}
@@ -529,7 +529,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
                   <div className="space-y-1 border-t border-white/5 pt-2">
                     {legs.map((leg, i) => (
                       <div key={leg.id} className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="font-mono text-slate-600 shrink-0">{i + 1}.</span>
+                        <span className="font-mono text-slate-400 shrink-0">{i + 1}.</span>
                         <span>{leg.label}</span>
                         {leg.odds !== undefined && (
                           <span className="font-mono text-amber-400 ml-auto shrink-0">{fmtOdds(leg.odds)}</span>
@@ -560,7 +560,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
             className={`w-full py-4 rounded-2xl font-semibold text-base transition-all ${
               step1Valid
                 ? 'bg-purple-500 hover:bg-purple-400 text-white btn-glow'
-                : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+                : 'bg-[#180032] text-slate-400 cursor-not-allowed'
             }`}
           >
             {step1Valid ? 'Next →' : continueLabel}
@@ -573,7 +573,7 @@ export default function AddBetWizard({ onClose, onAdded, prefill }: Props) {
               className={`w-full py-4 rounded-2xl font-semibold text-base transition-all ${
                 step2Valid
                   ? 'bg-purple-500 hover:bg-purple-400 text-white btn-glow'
-                  : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+                  : 'bg-[#180032] text-slate-400 cursor-not-allowed'
               }`}
             >
               {step2Valid ? 'Start monitoring this bet ✓' : 'Enter payout to continue'}

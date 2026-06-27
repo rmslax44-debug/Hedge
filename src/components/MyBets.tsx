@@ -35,10 +35,10 @@ function RiskBar({ stake, payout }: { stake: number; payout: number }) {
           />
         ))}
       </div>
-      <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
+      <span className={`text-xs font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
         {risk.label}
       </span>
-      <span className="text-[10px] font-mono text-slate-600 ml-auto">
+      <span className="text-xs font-mono text-slate-500 ml-auto">
         {(risk.impliedProb * 100).toFixed(0)}% win prob
       </span>
     </div>
@@ -101,12 +101,12 @@ function HedgeActionCard({
       }`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${betADone ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white border border-white/20'}`}>
+            <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${betADone ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white border border-white/20'}`}>
               {betADone ? '✓' : 'A'}
             </span>
-            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
+            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
           </div>
-          {betADone && <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>}
+          {betADone && <span className="text-xs font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>}
         </div>
         <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
         <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {betABook}</p>
@@ -140,17 +140,17 @@ function HedgeActionCard({
       }`}>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+            <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${
               betBDone
                 ? 'bg-green-500/20 text-green-400'
                 : 'bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)]'
             }`}>
               {betBDone ? '✓' : 'B'}
             </span>
-            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${betBDone ? 'text-slate-500' : 'text-purple-300'}`}>Hedge Bet</span>
+            <span className={`text-xs font-mono font-bold uppercase tracking-wider ${betBDone ? 'text-slate-500' : 'text-purple-300'}`}>Hedge Bet</span>
           </div>
           {betBDone
-            ? <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>
+            ? <span className="text-xs font-mono font-bold text-green-400 tracking-wide">Placed ✓</span>
             : <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shrink-0 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
           }
         </div>
@@ -189,7 +189,7 @@ function HedgeActionCard({
 
       <button
         onClick={() => updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined })}
-        className="w-full py-2 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+        className="w-full py-2 text-xs text-slate-500 hover:text-slate-400 transition-colors"
       >
         Save for later
       </button>
@@ -266,7 +266,7 @@ function ManualHedgePanel({
               min="100"
             />
           </div>
-          <p className="text-xs text-slate-600">Must be more than $100 (your bet back + profit)</p>
+          <p className="text-xs text-slate-500">Must be more than $100 (your bet back + profit)</p>
         </div>
 
         {calc && calc.guaranteedProfit > 0 && (
@@ -299,7 +299,7 @@ function ManualHedgePanel({
               className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
                 bookKey
                   ? 'bg-purple-500 text-white hover:bg-purple-400'
-                  : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+                  : 'bg-[#180032] text-slate-500 cursor-not-allowed'
               }`}
             >
               Show me exactly what to do
@@ -349,7 +349,7 @@ function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => voi
 
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Settle bet</p>
+      <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Settle bet</p>
       <div className="grid grid-cols-3 gap-1.5">
         <button onClick={() => setConfirming('win')} className="py-2 rounded-lg border border-purple-500/40 text-purple-300 text-xs font-semibold bg-purple-500/8 hover:bg-purple-500/15 hover:border-purple-500/70 hover:shadow-[0_0_10px_rgba(168,85,247,0.25)] transition-all">Won ✓</button>
         <button onClick={() => setConfirming('loss')} className="py-2 rounded-lg border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/10 hover:shadow-[0_0_8px_rgba(239,68,68,0.2)] transition-all">Lost ✗</button>
@@ -379,7 +379,7 @@ function ParlayLegs({ bet, onRefresh }: { bet: TrackedBet; onRefresh: () => void
 
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Parlay Legs</p>
+      <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Parlay Legs</p>
       <div className="space-y-1">
         {bet.legs.map((leg) => (
           <div key={leg.id} className="flex items-center gap-2 bg-[#09000F] rounded-lg px-3 py-2">
@@ -390,11 +390,11 @@ function ParlayLegs({ bet, onRefresh }: { bet: TrackedBet; onRefresh: () => void
             {leg.status === 'pending' && (
               <div className="flex gap-1">
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'won'); onRefresh(); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-400 hover:bg-purple-500/10">W</button>
+                  className="text-xs px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-400 hover:bg-purple-500/10">W</button>
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'lost'); onRefresh(); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10">L</button>
+                  className="text-xs px-1.5 py-0.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10">L</button>
                 <button onClick={() => { updateParlayLeg(bet.id, leg.id, 'push'); onRefresh(); }}
-                  className="text-[10px] px-1.5 py-0.5 rounded border border-[#3D1A6E] text-slate-500">P</button>
+                  className="text-xs px-1.5 py-0.5 rounded border border-[#3D1A6E] text-slate-500">P</button>
               </div>
             )}
           </div>
@@ -486,7 +486,7 @@ function BetCard({
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-semibold text-white truncate">{headerTitle}</p>
               {bet.isParlay && (
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">PARLAY</span>
+                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">PARLAY</span>
               )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5 truncate">{headerSub}</p>
@@ -504,7 +504,7 @@ function BetCard({
             </span>
             <svg
               width="14" height="14" viewBox="0 0 14 14" fill="none"
-              className={`text-slate-600 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              className={`text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
             >
               <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -555,10 +555,10 @@ function BetCard({
                 <div className="rounded-xl p-4 pill-glow-white">
                   <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold flex items-center justify-center shrink-0">A</span>
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
+                      <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold flex items-center justify-center shrink-0">A</span>
+                      <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Original Bet</span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
+                    <span className="text-xs font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
                   </div>
                   <p className="text-sm font-bold text-white">{bet.myTeam || bet.label}</p>
                   <p className="text-xs text-slate-400 font-mono mt-1">${bet.stake.toFixed(2)} · {bookName}</p>
@@ -569,10 +569,10 @@ function BetCard({
                   <div className="rounded-xl p-4 pill-glow-purple">
                     <div className="flex items-center justify-between mb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.5)]">B</span>
-                        <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">Hedge Bet</span>
+                        <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.5)]">B</span>
+                        <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-wider">Hedge Bet</span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
+                      <span className="text-xs font-mono font-bold text-green-400 tracking-wide">✓ Done</span>
                     </div>
                     <p className="text-sm font-bold text-white">{bet.hedgeOpportunity.hedgeTeam}</p>
                     <p className="text-xs text-slate-400 font-mono mt-1">
@@ -619,7 +619,7 @@ function BetCard({
             {/* Delete */}
             <button
               onClick={onDelete}
-              className="w-full py-2 text-xs text-slate-600 hover:text-red-400 transition-colors"
+              className="w-full py-2 text-xs text-slate-500 hover:text-red-400 transition-colors"
             >
               Remove this bet
             </button>
@@ -693,7 +693,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
             >
               Active
               {hedgeReady.length + active.length + hedged.length > 0 && (
-                <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
+                <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
                   {hedgeReady.length + active.length + hedged.length}
                 </span>
               )}
@@ -707,7 +707,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
               }`}
             >
               History & Portfolio
-              {hasHistory && <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-500/20 text-slate-400">{done.length}</span>}
+              {hasHistory && <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-slate-500/20 text-slate-400">{done.length}</span>}
             </button>
           </div>
 
@@ -771,7 +771,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
 
               {hedgeReady.length === 0 && active.length === 0 && hedged.length === 0 && (
                 <div className="card p-8 text-center mt-4">
-                  <p className="text-xs text-slate-600">No active bets — tap + to add one.</p>
+                  <p className="text-xs text-slate-500">No active bets — tap + to add one.</p>
                 </div>
               )}
             </div>

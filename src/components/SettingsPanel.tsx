@@ -177,14 +177,14 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold truncate">{book.name}</p>
-                  <p className="text-[10px] text-slate-600">{book.shortName}</p>
+                  <p className="text-xs text-slate-500">{book.shortName}</p>
                 </div>
               </button>
             );
           })}
         </div>
         {selectedBooks.length > 0 && (
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-500">
             {selectedBooks.length} app{selectedBooks.length !== 1 ? 's' : ''} selected
           </p>
         )}
@@ -199,7 +199,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
             ? 'bg-purple-600 text-white shadow-[0_0_24px_rgba(168,85,247,0.4)]'
             : isReady
               ? 'bg-purple-500 hover:bg-purple-400 text-white btn-glow'
-              : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+              : 'bg-[#180032] text-slate-500 cursor-not-allowed'
         }`}
       >
         {saved ? '✓ Settings saved' : isReady ? 'Save Settings' : 'Enter API key and select apps to continue'}

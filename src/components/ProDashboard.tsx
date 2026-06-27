@@ -157,9 +157,9 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Hedge Radar</p>
+          <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Hedge Radar</p>
           {lastScan && !scanning && (
-            <p className="text-[10px] font-mono text-slate-600">{sinceLabel(lastScan)}</p>
+            <p className="text-xs font-mono text-slate-500">{sinceLabel(lastScan)}</p>
           )}
         </div>
         <button
@@ -169,7 +169,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
             scanning
               ? 'border-purple-500/20 text-purple-400 bg-purple-500/10'
               : noApi
-              ? 'border-[#3D1A6E] text-slate-600 cursor-not-allowed'
+              ? 'border-[#3D1A6E] text-slate-500 cursor-not-allowed'
               : 'border-[#3D1A6E] text-slate-300 hover:border-purple-500/30 hover:text-purple-400'
           }`}
         >
@@ -227,7 +227,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                 {/* Rank + bet label */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${o.guaranteedProfit > 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                    <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${o.guaranteedProfit > 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-500/20 text-slate-400'}`}>
                       #{i + 1}
                     </span>
                     <p className="text-sm font-semibold text-white leading-tight">{o.bet.label}</p>
@@ -285,12 +285,12 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
       {/* Bets without event data */}
       {noEventBets.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">No Live Data</p>
+          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">No Live Data</p>
           {noEventBets.map((b) => (
             <div key={b.id} className="card p-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm text-slate-400 truncate">{b.label}</p>
-                <p className="text-[10px] font-mono text-slate-600">Stake ${b.stake.toFixed(2)} · Payout ${b.potentialPayout.toFixed(2)}</p>
+                <p className="text-xs font-mono text-slate-500">Stake ${b.stake.toFixed(2)} · Payout ${b.potentialPayout.toFixed(2)}</p>
               </div>
               <button
                 onClick={() =>
@@ -300,7 +300,7 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                     isParlay: true,
                   })
                 }
-                className="text-[10px] font-mono font-bold text-slate-400 hover:text-purple-400 shrink-0 border border-[#3D1A6E] px-2 py-1 rounded transition-colors"
+                className="text-xs font-mono font-bold text-slate-400 hover:text-purple-400 shrink-0 border border-[#3D1A6E] px-2 py-1 rounded transition-colors"
               >
                 CALC
               </button>
@@ -312,8 +312,8 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
       {/* Empty state after scan */}
       {lastScan && !scanning && opps.length === 0 && noEventBets.length === 0 && (
         <div className="card p-6 text-center">
-          <p className="text-xs font-mono text-slate-600 uppercase tracking-widest">No monitoring bets found</p>
-          <p className="text-xs text-slate-600 mt-1">Add bets via My Bets to track them here.</p>
+          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">No monitoring bets found</p>
+          <p className="text-xs text-slate-500 mt-1">Add bets via My Bets to track them here.</p>
         </div>
       )}
 

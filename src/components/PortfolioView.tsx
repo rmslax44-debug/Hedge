@@ -33,7 +33,7 @@ function MiniPnlChart({ bets }: { bets: TrackedBet[] }) {
 
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">P&L History</p>
+      <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">P&L History</p>
       <div className="flex items-end gap-1 h-16">
         {values.map((v, i) => {
           const heightPct = Math.max(4, (Math.abs(v) / maxAbs) * 100);
@@ -75,18 +75,18 @@ export default function PortfolioView() {
       <div className="card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Portfolio</p>
-          <p className="text-xs font-mono text-slate-600">{stats.totalBets} total bets</p>
+          <p className="text-xs font-mono text-slate-500">{stats.totalBets} total bets</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className={`rounded-xl p-3 space-y-0.5 border ${stats.totalPnl >= 0 ? 'bg-purple-500/5 border-purple-500/25 shadow-[0_0_14px_rgba(168,85,247,0.15)]' : 'bg-red-500/5 border-red-500/20'}`}>
-            <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Total P&L</p>
+            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Total P&L</p>
             <p className={`text-2xl font-bold font-mono ${pnlColor(stats.totalPnl)} ${stats.totalPnl > 0 ? 'drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]' : ''}`}>
               {stats.totalPnl >= 0 ? '+' : ''}${stats.totalPnl.toFixed(2)}
             </p>
           </div>
           <div className={`rounded-xl p-3 space-y-0.5 border ${stats.roi >= 0 ? 'bg-purple-500/5 border-purple-500/25 shadow-[0_0_14px_rgba(168,85,247,0.15)]' : 'bg-red-500/5 border-red-500/20'}`}>
-            <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">ROI</p>
+            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">ROI</p>
             <p className={`text-2xl font-bold font-mono ${pnlColor(stats.roi)} ${stats.roi > 0 ? 'drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]' : ''}`}>
               {stats.roi >= 0 ? '+' : ''}{stats.roi.toFixed(1)}%
             </p>
@@ -102,12 +102,12 @@ export default function PortfolioView() {
           ].map(({ label, value, cls, border }) => (
             <div key={label} className={`bg-[#09000F] rounded-xl p-2.5 text-center space-y-0.5 border ${border}`}>
               <p className={`text-lg font-bold font-mono ${cls}`}>{value}</p>
-              <p className="text-[10px] font-mono text-slate-600">{label}</p>
+              <p className="text-xs font-mono text-slate-500">{label}</p>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[#3D1A6E] pt-3 flex justify-between text-xs font-mono text-slate-600">
+        <div className="border-t border-[#3D1A6E] pt-3 flex justify-between text-xs font-mono text-slate-500">
           <span>Staked: <span className="text-slate-400">${stats.totalStaked.toFixed(2)}</span></span>
           <span>Active: <span className="text-slate-400">{stats.activeBets}</span></span>
         </div>
@@ -118,12 +118,12 @@ export default function PortfolioView() {
       {/* History list */}
       {history.length === 0 ? (
         <div className="card p-8 text-center">
-          <p className="text-xs font-mono text-slate-600 uppercase tracking-widest">No settled bets yet</p>
-          <p className="text-xs text-slate-600 mt-1">Settle bets from the Active tab to see your history here.</p>
+          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">No settled bets yet</p>
+          <p className="text-xs text-slate-500 mt-1">Settle bets from the Active tab to see your history here.</p>
         </div>
       ) : (
         <div className="space-y-2">
-          <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">History</p>
+          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">History</p>
           {history.map((bet) => {
             const badge = resultBadge(bet.result, bet.status);
             const pnl = bet.settledPnl ?? (bet.hedgeOpportunity?.guaranteedProfit ?? 0);
@@ -132,7 +132,7 @@ export default function PortfolioView() {
               <div key={bet.id} className="card p-4 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{bet.label}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     ${bet.stake.toFixed(2)} · {bet.settledAt ? fmtDate(bet.settledAt) : fmtDate(bet.createdAt)}
                     {bet.isParlay && <span className="ml-1 text-amber-400/70">PARLAY</span>}
                   </p>
@@ -141,20 +141,20 @@ export default function PortfolioView() {
                   <span className={`text-sm font-bold font-mono ${pnlColor(pnl)}`}>
                     {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                   </span>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${badge.cls}`}>
+                  <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${badge.cls}`}>
                     {badge.label}
                   </span>
                   {confirming ? (
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleDelete(bet.id)}
-                        className="text-[10px] font-bold text-red-400 border border-red-500/40 px-2 py-0.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                        className="text-xs font-bold text-red-400 border border-red-500/40 px-2 py-0.5 rounded-lg hover:bg-red-500/10 transition-colors"
                       >
                         Delete
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
-                        className="text-[10px] text-slate-500 border border-[#3D1A6E] px-2 py-0.5 rounded-lg hover:text-slate-300 transition-colors"
+                        className="text-xs text-slate-500 border border-[#3D1A6E] px-2 py-0.5 rounded-lg hover:text-slate-300 transition-colors"
                       >
                         Cancel
                       </button>

@@ -99,14 +99,14 @@ export default function BottomNav({
                 {t.icon(active)}
                 {count != null && count > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center"
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[11px] font-bold text-white flex items-center justify-center"
                     style={{ background: ACTIVE }}
                   >
                     {count}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-semibold tracking-wide">{t.label}</span>
+              <span className="text-xs font-semibold tracking-wide">{t.label}</span>
             </button>
           );
         })}

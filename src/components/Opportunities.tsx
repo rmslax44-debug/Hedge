@@ -43,7 +43,7 @@ function ArbCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="badge-profit text-[10px]">Guaranteed Profit</span>
+              <span className="badge-profit text-xs">Guaranteed Profit</span>
               <span className="text-purple-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
               </span>
@@ -65,14 +65,14 @@ function ArbCard({
             <p className="text-slate-500">Bet A</p>
             <p className="text-white font-semibold">{opp.teamA.split(' ').slice(-1)[0]}</p>
             <p className="text-white font-bold">{formatOdds(opp.oddsA)}</p>
-            <p className="text-slate-500 text-[10px]">{opp.bookAName}</p>
+            <p className="text-slate-500 text-xs">{opp.bookAName}</p>
           </div>
-          <div className="flex items-center text-slate-600 font-sans text-xs">+</div>
+          <div className="flex items-center text-slate-500 font-sans text-xs">+</div>
           <div className="flex-1 rounded-lg px-3 py-2 space-y-0.5 pill-glow-purple">
             <p className="text-purple-400/70">Bet B</p>
             <p className="text-white font-semibold">{opp.teamB.split(' ').slice(-1)[0]}</p>
             <p className="text-purple-300 font-bold">{formatOdds(opp.oddsB)}</p>
-            <p className="text-purple-400/50 text-[10px]">{opp.bookBName}</p>
+            <p className="text-purple-400/50 text-xs">{opp.bookBName}</p>
           </div>
         </div>
       </button>
@@ -185,7 +185,7 @@ function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: stri
             {event.away_team} @ {event.home_team}
           </p>
         </div>
-        <span className="text-[10px] text-slate-500 shrink-0 font-mono">
+        <span className="text-xs text-slate-500 shrink-0 font-mono">
           {margin}% juice
         </span>
       </div>
@@ -195,14 +195,14 @@ function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: stri
           <p className={`font-bold ${bestHome.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
             {formatOdds(bestHome.price)}
           </p>
-          <p className="text-slate-600 text-[10px]">{bestHome.bookName}</p>
+          <p className="text-slate-500 text-xs">{bestHome.bookName}</p>
         </div>
         <div className="bg-[#180032] rounded-lg p-2 space-y-0.5">
           <p className="text-slate-500 truncate">{event.away_team.split(' ').slice(-1)}</p>
           <p className={`font-bold ${bestAway.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
             {formatOdds(bestAway.price)}
           </p>
-          <p className="text-slate-600 text-[10px]">{bestAway.bookName}</p>
+          <p className="text-slate-500 text-xs">{bestAway.bookName}</p>
         </div>
       </div>
     </div>
@@ -382,7 +382,7 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
             <div className="space-y-3">
               <div>
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Best Lines Right Now</p>
-                <p className="text-xs text-slate-600 mt-0.5">Lowest juice across your books — closer to equal odds means less risk</p>
+                <p className="text-xs text-slate-500 mt-0.5">Lowest juice across your books — closer to equal odds means less risk</p>
               </div>
               {nearArbs.map((e) => (
                 <BestLinesCard key={e.id} event={e} userBooks={userBooks} />

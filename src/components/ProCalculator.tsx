@@ -140,7 +140,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
       {prefill && (
         <div className="flex items-center justify-between bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
           <p className="text-xs text-purple-400 font-mono">PRE-FILLED FROM {prefill.hedgeBook ? 'RADAR' : 'LINES'}</p>
-          <button onClick={onClearPrefill} className="text-[10px] text-slate-500 hover:text-slate-300 font-mono uppercase">Clear</button>
+          <button onClick={onClearPrefill} className="text-xs text-slate-500 hover:text-slate-300 font-mono uppercase">Clear</button>
         </div>
       )}
 
@@ -151,7 +151,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
             <button
               key={f}
               onClick={() => { onFmtChange(f); setOrigOdds(''); setHedgeOdds(''); }}
-              className={`text-[11px] px-3 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`text-xs px-3 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               {f === 'american' ? 'AM' : 'DEC'}
             </button>
@@ -159,7 +159,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
         <button
           onClick={() => setIsParlay((v) => !v)}
-          className={`text-[11px] px-3 py-1 rounded-lg font-mono font-bold tracking-wider border transition-colors ${isParlay ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-[#3D1A6E] text-slate-500 hover:text-slate-300'}`}
+          className={`text-xs px-3 py-1 rounded-lg font-mono font-bold tracking-wider border transition-colors ${isParlay ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-[#3D1A6E] text-slate-500 hover:text-slate-300'}`}
         >
           PARLAY
         </button>
@@ -167,11 +167,11 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
 
       {/* Original bet inputs */}
       <div className="card p-4 space-y-3">
-        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Original Bet</p>
+        <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Original Bet</p>
         <div className={`grid gap-2 ${isParlay ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {!isParlay && (
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Odds</label>
+              <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Odds</label>
               <input
                 type="text"
                 value={origOdds}
@@ -183,7 +183,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
             </div>
           )}
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Stake</label>
+            <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Stake</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
               <input
@@ -199,7 +199,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
           </div>
           {isParlay && (
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Total Payout</label>
+              <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Total Payout</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
                 <input
@@ -217,7 +217,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
         {/* Book selector */}
         <div className="space-y-1">
-          <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Book</label>
+          <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Book</label>
           <select
             value={origBook}
             onChange={(e) => setOrigBook(e.target.value)}
@@ -232,7 +232,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
 
         {parsedPayout !== null && !isNaN(parsedPayout) && parsedPayout > parsedStake && (
-          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
+          <div className="flex gap-4 text-xs font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
             <span>PAYOUT <span className="text-slate-300">${parsedPayout.toFixed(2)}</span></span>
             <span>NET <span className="text-purple-400">+${(parsedPayout - parsedStake).toFixed(2)}</span></span>
             {implOrig && <span>IMPL <span className="text-slate-300">{implOrig.toFixed(1)}%</span></span>}
@@ -242,10 +242,10 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
 
       {/* Hedge inputs */}
       <div className="card p-4 space-y-3">
-        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Hedge Leg</p>
+        <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Hedge Leg</p>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Odds</label>
+            <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Odds</label>
             <input
               type="text"
               value={hedgeOdds}
@@ -256,7 +256,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Stake Override</label>
+            <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Stake Override</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs">$</span>
               <input
@@ -274,7 +274,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
 
         {/* Book selector */}
         <div className="space-y-1">
-          <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Book</label>
+          <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Book</label>
           <select
             value={hedgeBook}
             onChange={(e) => setHedgeBook(e.target.value)}
@@ -288,7 +288,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
         </div>
 
         {(implHedge || hold !== null) && (
-          <div className="flex gap-4 text-[11px] font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
+          <div className="flex gap-4 text-xs font-mono text-slate-500 border-t border-[#3D1A6E] pt-2">
             {implHedge && <span>IMPL <span className="text-slate-300">{implHedge.toFixed(1)}%</span></span>}
             {hold !== null && (
               <span>
@@ -307,28 +307,28 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
           {/* Main metrics 2×2 */}
           <div className="grid grid-cols-2 gap-2">
             <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-purple-500/30 bg-purple-500/5' : 'border-amber-500/20'}`}>
-              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Optimal Hedge</p>
+              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">Optimal Hedge</p>
               <p className="text-lg font-bold font-mono text-white">${result.optimalHedgeStake.toFixed(2)}</p>
             </div>
             <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-purple-500/30 bg-purple-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
-              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Guaranteed P&L</p>
+              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">Guaranteed P&L</p>
               <p className={`text-lg font-bold font-mono ${result.isGuaranteedProfit ? 'text-purple-400' : 'text-red-400'}`}>
                 {result.guaranteedProfit >= 0 ? '+' : ''}${result.guaranteedProfit.toFixed(2)}
               </p>
             </div>
             <div className="card p-3">
-              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">If Orig Wins</p>
+              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">If Orig Wins</p>
               <p className="text-base font-bold font-mono text-white">+${result.profitIfOriginalWins.toFixed(2)}</p>
             </div>
             <div className="card p-3">
-              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">If Hedge Wins</p>
+              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">If Hedge Wins</p>
               <p className="text-base font-bold font-mono text-white">+${result.profitIfHedgeWins.toFixed(2)}</p>
             </div>
           </div>
 
           {/* Analytics table */}
           <div className="card p-4 space-y-2">
-            <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Analytics</p>
+            <p className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">Analytics</p>
             <div className="space-y-1.5">
               {([
                 ['Total Invested',   `-$${result.totalInvested.toFixed(2)}`],
@@ -343,7 +343,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
               ] as ([string, string] | null)[])
                 .filter((r): r is [string, string] => r !== null)
                 .map(([label, val]) => (
-                  <div key={label} className="flex justify-between items-center text-[11px] font-mono">
+                  <div key={label} className="flex justify-between items-center text-xs font-mono">
                     <span className="text-slate-500 uppercase tracking-wide">{label}</span>
                     <span className="text-slate-300">{val}</span>
                   </div>
@@ -361,7 +361,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
               className="flex items-center justify-between card p-4 hover:border-slate-500 transition-colors"
             >
               <div>
-                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Place Hedge At</p>
+                <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">Place Hedge At</p>
                 <p className="text-sm font-bold text-white">{bookName}</p>
                 <p className="text-xs text-slate-500 font-mono mt-0.5">
                   {result.optimalHedgeStake.toFixed(2)} · {hedgeOdds}
@@ -377,7 +377,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
           <div className="card p-4 space-y-3 border-[#CCFF00]/30 bg-[#CCFF00]/5 shadow-[0_0_16px_rgba(204,255,0,0.08)]">
             <div className="flex items-center gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse shrink-0" />
-              <p className="text-[10px] font-mono font-bold text-[#CCFF00] uppercase tracking-widest">
+              <p className="text-xs font-mono font-bold text-[#CCFF00] uppercase tracking-widest">
                 Add Both Bets to Tracker
               </p>
             </div>
@@ -392,7 +392,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
             ) : (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Bet Label</label>
+                  <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Bet Label</label>
                   <input
                     type="text"
                     value={trackLabel}
@@ -404,7 +404,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">Hedge Outcome (Bet B)</label>
+                  <label className="text-xs font-mono text-slate-500 uppercase tracking-wider">Hedge Outcome (Bet B)</label>
                   <input
                     type="text"
                     value={trackHedgeTeam}
@@ -416,7 +416,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
                 </div>
 
                 {/* Summary */}
-                <div className="bg-[#100020] rounded-xl p-3 space-y-1.5 text-[11px] font-mono border border-[#3D1A6E]">
+                <div className="bg-[#100020] rounded-xl p-3 space-y-1.5 text-xs font-mono border border-[#3D1A6E]">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 uppercase tracking-wide">Bet A (original)</span>
                     <span className="text-slate-300">
@@ -447,7 +447,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
                     className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono transition-colors ${
                       trackFormReady
                         ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-lg shadow-purple-500/20'
-                        : 'bg-[#180032] text-slate-600 cursor-not-allowed'
+                        : 'bg-[#180032] text-slate-500 cursor-not-allowed'
                     }`}
                   >
                     Save to My Bets →
@@ -461,7 +461,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
 
       {!valid && (
         <div className="card p-6 text-center">
-          <p className="text-[11px] text-slate-600 font-mono tracking-widest uppercase">
+          <p className="text-xs text-slate-500 font-mono tracking-widest uppercase">
             Enter original bet + hedge odds to calculate
           </p>
         </div>

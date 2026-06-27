@@ -164,7 +164,7 @@ export default function HedgeSimulator() {
                     <span className="text-xl">{s.emoji}</span>
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{s.sport}</span>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
+                  <span className={`text-xs font-mono font-bold uppercase tracking-wider ${risk.textColor}`}>
                     {risk.label}
                   </span>
                 </div>
@@ -183,7 +183,7 @@ export default function HedgeSimulator() {
                       />
                     ))}
                   </div>
-                  <span className="text-[10px] text-slate-600 font-mono">
+                  <span className="text-xs text-slate-500 font-mono">
                     ~{(risk.impliedProb * 100).toFixed(0)}% win probability
                   </span>
                 </div>

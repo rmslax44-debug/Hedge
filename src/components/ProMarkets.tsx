@@ -109,7 +109,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
             loading
               ? 'border-purple-500/20 text-purple-400'
               : noApi
-              ? 'border-[#3D1A6E] text-slate-600 cursor-not-allowed'
+              ? 'border-[#3D1A6E] text-slate-500 cursor-not-allowed'
               : 'border-[#3D1A6E] text-slate-300 hover:border-purple-500/30 hover:text-purple-400'
           }`}
         >
@@ -125,10 +125,10 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
       {/* View toggle */}
       {events.length > 0 && (
         <div className="flex items-center gap-2 justify-end">
-          <span className="text-[10px] font-mono text-slate-600">SHOW:</span>
+          <span className="text-xs font-mono text-slate-500">SHOW:</span>
           <button
             onClick={() => setShowImplied((v) => !v)}
-            className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${showImplied ? 'border-purple-500/30 text-purple-400' : 'border-[#3D1A6E] text-slate-500'}`}
+            className={`text-xs font-mono px-2 py-0.5 rounded border transition-colors ${showImplied ? 'border-purple-500/30 text-purple-400' : 'border-[#3D1A6E] text-slate-500'}`}
           >
             {showImplied ? 'IMPL %' : 'ODDS'}
           </button>
@@ -172,7 +172,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                 <p className="text-sm font-semibold text-white truncate">
                   {event.away_team} <span className="text-slate-500">@</span> {event.home_team}
                 </p>
-                <div className="flex gap-3 mt-0.5 text-[10px] font-mono text-slate-500">
+                <div className="flex gap-3 mt-0.5 text-xs font-mono text-slate-500">
                   <span>{commenceLabel(event.commence_time)}</span>
                   {hold !== null && (
                     <span className={hold > 6 ? 'text-amber-400' : hold > 3.5 ? 'text-amber-400/70' : 'text-slate-500'}>
@@ -197,10 +197,10 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
             {/* Odds matrix */}
             {expanded && (
               <div className="border-t border-[#3D1A6E] overflow-x-auto">
-                <table className="w-full text-[11px] font-mono">
+                <table className="w-full text-xs font-mono">
                   <thead>
                     <tr className="border-b border-[#3D1A6E]">
-                      <th className="text-left px-4 py-2 text-slate-600 font-normal uppercase tracking-wider w-28">Team</th>
+                      <th className="text-left px-4 py-2 text-slate-500 font-normal uppercase tracking-wider w-28">Team</th>
                       {activeBooks.map((bk) => (
                         <th key={bk.key} className="px-3 py-2 text-slate-500 font-normal text-center">{bk.shortName}</th>
                       ))}
@@ -276,7 +276,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                     ))}
                     {/* Hold row */}
                     <tr className="bg-[#0A1220]">
-                      <td className="px-4 py-1.5 text-slate-600 text-[10px] uppercase tracking-wider">Hold</td>
+                      <td className="px-4 py-1.5 text-slate-500 text-xs uppercase tracking-wider">Hold</td>
                       {activeBooks.map((bk) => {
                         const p1 = getOddsForTeamAtBook(event, teams[0], bk.key);
                         const p2 = getOddsForTeamAtBook(event, teams[1], bk.key);
@@ -287,17 +287,17 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                         return (
                           <td key={bk.key} className="px-3 py-1.5 text-center">
                             {h !== null ? (
-                              <span className={`text-[10px] ${h > 6 ? 'text-red-400' : h > 3.5 ? 'text-amber-400' : 'text-slate-500'}`}>
+                              <span className={`text-xs ${h > 6 ? 'text-red-400' : h > 3.5 ? 'text-amber-400' : 'text-slate-500'}`}>
                                 {h.toFixed(1)}%
                               </span>
                             ) : (
-                              <span className="text-slate-700 text-[10px]">—</span>
+                              <span className="text-slate-700 text-xs">—</span>
                             )}
                           </td>
                         );
                       })}
                       <td className="px-3 py-1.5 text-center">
-                        <span className={`text-[10px] ${hold !== null && hold > 6 ? 'text-red-400' : hold !== null && hold > 3.5 ? 'text-amber-400' : 'text-slate-500'}`}>
+                        <span className={`text-xs ${hold !== null && hold > 6 ? 'text-red-400' : hold !== null && hold > 3.5 ? 'text-amber-400' : 'text-slate-500'}`}>
                           {hold !== null ? `${hold.toFixed(1)}%` : '—'}
                         </span>
                       </td>
@@ -312,7 +312,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
 
       {!loading && !error && events.length === 0 && !noApi && (
         <div className="card p-6 text-center">
-          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-widest">
+          <p className="text-xs text-slate-500 font-mono uppercase tracking-widest">
             Select a sport and hit LOAD
           </p>
         </div>

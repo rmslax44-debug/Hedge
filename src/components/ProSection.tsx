@@ -37,7 +37,7 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold tracking-tight text-white font-mono">HEDGE PRO</h1>
-            <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold tracking-widest">v2</span>
+            <span className="text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold tracking-widest">v2</span>
           </div>
           {/* Global odds format toggle always visible */}
           <div className="flex gap-0.5 bg-[#100020] rounded-lg p-0.5">
@@ -45,7 +45,7 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
               <button
                 key={f}
                 onClick={() => setFmt(f)}
-                className={`text-[10px] px-2.5 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-600 hover:text-slate-400'}`}
+                className={`text-xs px-2.5 py-1 rounded-md font-mono font-bold tracking-wider transition-colors ${fmt === f ? 'bg-[#180032] text-white' : 'text-slate-600 hover:text-slate-400'}`}
               >
                 {f === 'american' ? 'AM' : 'DEC'}
               </button>
@@ -59,7 +59,7 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
             <button
               key={t.key}
               onClick={() => setSubTab(t.key)}
-              className={`flex-1 py-2.5 text-[11px] font-mono font-bold tracking-widest transition-colors relative ${
+              className={`flex-1 py-2.5 text-xs font-mono font-bold tracking-widest transition-colors relative ${
                 subTab === t.key ? 'text-purple-400' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -75,7 +75,7 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
       {/* Setup warning (non-blocking) */}
       {noSetup && subTab !== 'calc' && (
         <div className="mx-4 mt-3 px-3 py-2 border border-[#CCFF00]/40 bg-[#CCFF00]/10 rounded-xl shadow-[0_0_16px_rgba(204,255,0,0.15)]">
-          <p className="text-[10px] font-bold font-mono text-[#CCFF00] tracking-wide uppercase flex items-center gap-1.5">
+          <p className="text-xs font-bold font-mono text-[#CCFF00] tracking-wide uppercase flex items-center gap-1.5">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse shrink-0" />
             LIVE FEATURES REQUIRE API KEY + BOOKS → Settings
           </p>
