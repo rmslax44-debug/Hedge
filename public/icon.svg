@@ -1,0 +1,97 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="icon-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="icon-white-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="icon-bloom" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14" result="big"/>
+      <feGaussianBlur stdDeviation="5" result="small"/>
+      <feMerge><feMergeNode in="big"/><feMergeNode in="small"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="icon-bg" cx="50%" cy="34%" r="82%">
+      <stop offset="0%" stop-color="#2C0061"/>
+      <stop offset="100%" stop-color="#0B0016"/>
+    </radialGradient>
+    <linearGradient id="icon-metal" x1="0" y1="0" x2="0" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="16%" stop-color="#C9A9F2" stop-opacity="0.06"/>
+      <stop offset="36%" stop-color="#000000" stop-opacity="0.05"/>
+      <stop offset="54%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="72%" stop-color="#000000" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="icon-rim" x1="0" y1="0" x2="0" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E9D5FF" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#E9D5FF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="icon-chrome" x1="0" y1="82" x2="0" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"  stop-color="#FFFFFF"/>
+      <stop offset="14%" stop-color="#E7D6F7"/>
+      <stop offset="30%" stop-color="#B79AD8"/>
+      <stop offset="46%" stop-color="#F4EBFF"/>
+      <stop offset="52%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#C8B0E6"/>
+      <stop offset="78%" stop-color="#9B7CC9"/>
+      <stop offset="92%" stop-color="#E3D2F5"/>
+      <stop offset="100%" stop-color="#FBF4FF"/>
+    </linearGradient>
+    <linearGradient id="icon-spec" x1="0" y1="82" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.6"/>
+      <stop offset="22%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="icon-edgecut">
+      <rect x="0" y="0" width="512" height="512" fill="#fff"/>
+      <text x="256" y="296" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#000">EDGE</text>
+    </mask>
+    <mask id="icon-hshape">
+      <g fill="#fff">
+        <rect x="148" y="82"  width="56" height="308"/>
+        <rect x="308" y="82"  width="56" height="308"/>
+        <path d="M148 205 L364 205 L400 256 L364 307 L148 307 L112 256 Z"/>
+        <path d="M92  82  L214 82  L214 124 L148 124 Z"/>
+        <path d="M420 82  L298 82  L298 124 L364 124 Z"/>
+        <path d="M92  430 L214 430 L214 388 L148 388 Z"/>
+        <path d="M420 430 L298 430 L298 388 L364 388 Z"/>
+      </g>
+    </mask>
+    <clipPath id="icon-clip"><rect x="0" y="0" width="512" height="512" rx="120"/></clipPath>
+  </defs>
+
+  <!-- Badge background -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="url(#icon-bg)"/>
+  <g clip-path="url(#icon-clip)">
+    <rect x="0" y="0" width="512" height="512" fill="url(#icon-metal)"/>
+    <rect x="0" y="0" width="512" height="108" fill="url(#icon-rim)"/>
+  </g>
+
+  <!-- White outer glow ring -->
+  <rect x="-8" y="-8" width="528" height="528" rx="128" fill="none" stroke="white" stroke-width="4" filter="url(#icon-white-glow)" opacity="0.55"/>
+
+  <!-- Purple glow border -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="none" stroke="#A855F7" stroke-width="6" filter="url(#icon-glow)" opacity="0.9"/>
+  <!-- Inner subtle border -->
+  <rect x="14" y="14" width="484" height="484" rx="106" fill="none" stroke="#A855F7" stroke-width="2" opacity="0.35"/>
+
+  <!-- H logo -->
+  <g mask="url(#icon-edgecut)">
+    <g fill="url(#icon-chrome)">
+      <rect x="148" y="82"  width="56" height="308"/>
+      <rect x="308" y="82"  width="56" height="308"/>
+      <path d="M148 205 L364 205 L400 256 L364 307 L148 307 L112 256 Z"/>
+      <path d="M92  82  L214 82  L214 124 L148 124 Z"/>
+      <path d="M420 82  L298 82  L298 124 L364 124 Z"/>
+      <path d="M92  430 L214 430 L214 388 L148 388 Z"/>
+      <path d="M420 430 L298 430 L298 388 L364 388 Z"/>
+    </g>
+    <rect x="64" y="82" width="384" height="196" fill="url(#icon-spec)" mask="url(#icon-hshape)"/>
+  </g>
+
+  <!-- PRO text -->
+  <text x="256" y="480" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="500" letter-spacing="17" fill="#E9C9FF" filter="url(#icon-bloom)">PRO</text>
+</svg>
