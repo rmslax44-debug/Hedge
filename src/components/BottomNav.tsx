@@ -107,7 +107,35 @@ const TABS: {
           <clipPath id="bnpro-clip"><rect x="100" y="40" width="180" height="180" rx="44"/></clipPath>
         </defs>
 
-        {/* Badge background */}
+        {/* Pulsing ring rendered BELOW badge so badge bg clips inner half — corners match perfectly */}
+        {a && (
+          <>
+            <style>{`
+              @keyframes bnpro-pulse       { 0%,100%{opacity:0.08} 50%{opacity:1}    }
+              @keyframes bnpro-pulse-bloom { 0%,100%{opacity:0}    50%{opacity:0.7}  }
+            `}</style>
+            {/* Outermost ambient halo */}
+            <rect x="100" y="40" width="180" height="180" rx="44"
+              fill="none" stroke="#D8B4FE" strokeWidth="40"
+              filter="url(#bnpro-ultra)"
+              style={{ animation: 'bnpro-pulse-bloom 2s ease-in-out infinite' }}
+            />
+            {/* Wide purple glow */}
+            <rect x="100" y="40" width="180" height="180" rx="44"
+              fill="none" stroke="#A855F7" strokeWidth="20"
+              filter="url(#bnpro-ultra)"
+              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
+            />
+            {/* Hard white core */}
+            <rect x="100" y="40" width="180" height="180" rx="44"
+              fill="none" stroke="white" strokeWidth="6"
+              filter="url(#bnpro-white-glow)"
+              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
+            />
+          </>
+        )}
+
+        {/* Badge background — sits on top of rings, clips their inner half */}
         <rect x="100" y="40" width="180" height="180" rx="44" fill="url(#bnpro-bg)"/>
         <g clipPath="url(#bnpro-clip)">
           <rect x="100" y="40" width="180" height="180" fill="url(#bnpro-metal)"/>
@@ -138,46 +166,6 @@ const TABS: {
 
         {/* PRO text */}
         <text x="195" y="200" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="500" letterSpacing="6" fill="#E9C9FF" filter="url(#bnpro-bloom)">PRO</text>
-
-        {/* Pulsing ring — only when active */}
-        {a && (
-          <>
-            <style>{`
-              @keyframes bnpro-pulse       { 0%,100%{opacity:0.1}  50%{opacity:1}   }
-              @keyframes bnpro-pulse-bloom { 0%,100%{opacity:0}    50%{opacity:0.65} }
-            `}</style>
-
-            {/* All rings sit on the exact badge rect so corners match perfectly */}
-
-            {/* Outermost ambient halo — heavy blur spreads outward */}
-            <rect x="100" y="40" width="180" height="180" rx="44"
-              fill="none" stroke="#C084FC" strokeWidth="24"
-              filter="url(#bnpro-ultra)"
-              style={{ animation: 'bnpro-pulse-bloom 2s ease-in-out infinite' }}
-            />
-
-            {/* Wide purple glow */}
-            <rect x="100" y="40" width="180" height="180" rx="44"
-              fill="none" stroke="#A855F7" strokeWidth="10"
-              filter="url(#bnpro-ultra)"
-              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
-            />
-
-            {/* Mid glow */}
-            <rect x="100" y="40" width="180" height="180" rx="44"
-              fill="none" stroke="#C084FC" strokeWidth="4"
-              filter="url(#bnpro-glow)"
-              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
-            />
-
-            {/* Hard bright core */}
-            <rect x="100" y="40" width="180" height="180" rx="44"
-              fill="none" stroke="white" strokeWidth="2.5"
-              filter="url(#bnpro-white-glow)"
-              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
-            />
-          </>
-        )}
       </svg>
     ),
   },
