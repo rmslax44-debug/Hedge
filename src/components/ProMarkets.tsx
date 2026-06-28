@@ -4,6 +4,8 @@ import { getApiKey, getSelectedBooks, addWatchedBet } from '../utils/storage';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { americanToDecimal } from '../utils/arb';
 import type { CalcPrefill, OddsFormat } from './ProCalculator';
+import AddToBetsSheet, { type AddToBetsPrefill } from './AddToBetsSheet';
+import PlayerPropsSection from './PlayerPropsSection';
 
 interface Props {
   onPrefill: (prefill: CalcPrefill) => void;
@@ -33,6 +35,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showImplied, setShowImplied] = useState(false);
   const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
+  const [sheetPrefill, setSheetPrefill] = useState<AddToBetsPrefill | null>(null);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -307,7 +310,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                   </tbody>
                 </table>
                 {/* Watch buttons */}
-                <div className="border-t border-[#3D1A6E] px-4 py-2 flex gap-3">
+                <div className="border-t border-[#3D1A6E] px-4 py-2 flex gap-2">
                   {teams.map((team, ti) => {
                     const watchKey = `${event.id}-${team}`;
                     const isWatched = watchedKeys.has(watchKey);
@@ -317,35 +320,65 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                       (bk) => getOddsForTeamAtBook(event, team, bk) === bstPrice,
                     ) ?? '';
                     return (
-                      <button
-                        key={team}
-                        disabled={isWatched}
-                        onClick={() => {
-                          addWatchedBet({
-                            label: `${team} vs ${opponent}`,
-                            myTeam: team,
-                            opposingTeam: opponent,
-                            sport,
-                            eventId: event.id,
-                            sportsbook: bestBookKey,
-                            stake: 0,
-                            potentialPayout: 0,
-                            initialOdds: bstPrice ?? undefined,
-                            notifyHedge: false,
-                          });
-                          setWatchedKeys((prev) => new Set([...prev, watchKey]));
-                        }}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                          isWatched
-                            ? 'border-white/20 text-white/50 cursor-default'
-                            : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
-                        }`}
-                      >
-                        {isWatched ? `✓ ${team.split(' ').pop()}` : `+ Watch ${team.split(' ').pop()}`}
-                      </button>
+                      <div key={team} className="flex-1 flex gap-1">
+                        <button
+                          disabled={isWatched}
+                          onClick={() => {
+                            addWatchedBet({
+                              label: `${team} vs ${opponent}`,
+                              myTeam: team,
+                              opposingTeam: opponent,
+                              sport,
+                              eventId: event.id,
+                              sportsbook: bestBookKey,
+                              stake: 0,
+                              potentialPayout: 0,
+                              initialOdds: bstPrice ?? undefined,
+                              notifyHedge: false,
+                            });
+                            setWatchedKeys((prev) => new Set([...prev, watchKey]));
+                          }}
+                          className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
+                            isWatched
+                              ? 'border-white/20 text-white/50 cursor-default'
+                              : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                          }`}
+                        >
+                          {isWatched ? `✓ ${team.split(' ').pop()}` : `+ Watch ${team.split(' ').pop()}`}
+                        </button>
+                        {!isWatched && (
+                          <button
+                            onClick={() =>
+                              setSheetPrefill({
+                                label: `${team} vs ${opponent}`,
+                                myTeam: team,
+                                opposingTeam: opponent,
+                                sport,
+                                eventId: event.id,
+                                sportsbook: bestBookKey,
+                                initialOdds: bstPrice ?? undefined,
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+                            title="Add to parlay"
+                          >
+                            ⋯
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
+
+                {/* Player Props */}
+                <PlayerPropsSection
+                  event={event}
+                  sport={sport}
+                  apiKey={apiKey ?? ''}
+                  userBooks={userBooks}
+                  fmt={fmt}
+                  onAddToBets={setSheetPrefill}
+                />
               </div>
             )}
           </div>
@@ -359,6 +392,8 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
           </p>
         </div>
       )}
+
+      <AddToBetsSheet prefill={sheetPrefill} onClose={() => setSheetPrefill(null)} />
     </div>
   );
 }

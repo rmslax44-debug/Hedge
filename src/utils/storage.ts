@@ -82,6 +82,12 @@ export interface TrackedBet {
   result?: BetResult;
   settledAt?: number;
   settledPnl?: number; // actual realized P&L
+  // Futures / props metadata
+  isFutures?: boolean;
+  futuresMarket?: string;
+  isProp?: boolean;
+  propMarket?: string;
+  propLine?: number;
   // Hedge value change tracking
   hedgeValueTrend?: 'up' | 'down' | 'gone_negative' | 'expired';
   previousGuaranteedProfit?: number;
@@ -184,6 +190,15 @@ export function settleBet(id: string, result: BetResult) {
     pnl = bet.hedgeOpportunity?.guaranteedProfit ?? 0;
   }
   updateBet(id, { status: 'settled', result, settledAt: Date.now(), settledPnl: pnl });
+}
+
+export function addLegToParlay(betId: string, leg: Omit<ParlayLeg, 'id'>): void {
+  const bets = loadBets();
+  const bet = bets.find((b) => b.id === betId);
+  if (!bet?.isParlay) return;
+  if (!bet.legs) bet.legs = [];
+  bet.legs.push({ ...leg, id: crypto.randomUUID() });
+  saveBets(bets);
 }
 
 export function updateParlayLeg(betId: string, legId: string, status: ParlayLeg['status']) {

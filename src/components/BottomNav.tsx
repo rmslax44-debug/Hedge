@@ -47,6 +47,16 @@ const TABS: {
     ),
   },
   {
+    key: 'futures',
+    label: 'Futures',
+    icon: (a) => (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 3l2.1 5.5H19l-4.6 3.4 1.7 5.4L11 14l-5.1 3.3 1.7-5.4L3 8.5h5.9L11 3z"
+          stroke={a ? ACTIVE : INACTIVE} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     key: 'settings',
     label: 'Settings',
     icon: (a) => (

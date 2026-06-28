@@ -3,6 +3,8 @@ const BASE = 'https://api.the-odds-api.com/v4';
 export interface OddsOutcome {
   name: string;
   price: number; // American odds integer
+  description?: string; // "Over" | "Under" for player props
+  point?: number; // line value for player props
 }
 
 export interface OddsMarket {
@@ -95,4 +97,53 @@ export async function fetchOdds(
   if (!res.ok) throw new Error(`API error ${res.status}`);
 
   return res.json() as Promise<OddsEvent[]>;
+}
+
+export async function fetchOutrights(
+  sportKey: string,
+  apiKey: string,
+  bookmakerKeys: string[],
+): Promise<OddsEvent[]> {
+  if (!apiKey) throw new Error('No API key set');
+  if (bookmakerKeys.length === 0) throw new Error('No sportsbooks selected');
+
+  const params = new URLSearchParams({
+    apiKey,
+    regions: 'us',
+    markets: 'outrights',
+    oddsFormat: 'american',
+    bookmakers: bookmakerKeys.join(','),
+  });
+
+  const res = await fetch(`${BASE}/sports/${sportKey}/odds?${params}`);
+  if (res.status === 401) throw new Error('Invalid API key — check your settings.');
+  if (res.status === 422) throw new Error('Sport not available or invalid parameters.');
+  if (res.status === 429) throw new Error('Monthly API quota exceeded.');
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json() as Promise<OddsEvent[]>;
+}
+
+export async function fetchEventProps(
+  sport: string,
+  eventId: string,
+  markets: string[],
+  apiKey: string,
+  bookmakerKeys: string[],
+): Promise<OddsEvent> {
+  if (!apiKey) throw new Error('No API key set');
+
+  const params = new URLSearchParams({
+    apiKey,
+    markets: markets.join(','),
+    oddsFormat: 'american',
+    bookmakers: bookmakerKeys.join(','),
+  });
+
+  const res = await fetch(`${BASE}/sports/${sport}/events/${eventId}/odds?${params}`);
+  if (res.status === 401) throw new Error('Invalid API key — check your settings.');
+  if (res.status === 404) throw new Error('Event not found or props not available.');
+  if (res.status === 422) throw new Error('Props not available for this sport.');
+  if (res.status === 429) throw new Error('Monthly API quota exceeded.');
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json() as Promise<OddsEvent>;
 }
