@@ -120,9 +120,9 @@ export default function AddToBetsSheet({ prefill, onClose }: Props) {
       {/* Overlay */}
       <div className="fixed inset-0 z-40 bg-black/60" onClick={onClose} />
 
-      {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 max-w-2xl mx-auto">
-        <div className="bg-[#0E0020] border-t border-[#3D1A6E] rounded-t-2xl px-5 pt-4 pb-12">
+      {/* Sheet — sits above the bottom nav bar */}
+      <div className="fixed left-0 right-0 z-50 max-w-2xl mx-auto" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
+        <div className="bg-[#0E0020] border border-[#3D1A6E] rounded-2xl px-5 pt-4 pb-6 mx-2 shadow-2xl">
           {/* Handle bar */}
           <div className="w-10 h-1 bg-[#3D1A6E] rounded-full mx-auto mb-4" />
 
