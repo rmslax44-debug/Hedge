@@ -66,7 +66,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       <div className="card p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-200">Hedge alerts</h2>
+            <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Hedge alerts</h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Get notified the moment a guaranteed profit appears
             </p>
@@ -108,7 +108,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       {/* API Key */}
       <div className="card p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-200">Odds API Key</h2>
+          <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Odds API Key</h2>
           <p className="text-xs text-slate-500 mt-1">
             Required to fetch live odds. Get a free key at{' '}
             <span className="text-purple-400">the-odds-api.com</span>
@@ -146,7 +146,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       {/* Sportsbook selection */}
       <div className="card p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-200">Your Betting Apps</h2>
+          <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Your Betting Apps</h2>
           <p className="text-xs text-slate-500 mt-1">
             Select every app you have an account with — the more you pick, the better your chances of finding a guaranteed profit.
           </p>

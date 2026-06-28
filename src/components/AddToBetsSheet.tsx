@@ -145,14 +145,14 @@ export default function AddToBetsSheet({ prefill, onClose }: Props) {
               <div className="space-y-2 mt-4">
                 <button
                   onClick={handleSingle}
-                  className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-mono font-bold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left"
+                  className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-semibold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left"
                 >
                   Track as Single Bet
                 </button>
 
                 <button
                   onClick={handleNewParlay}
-                  className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-mono font-bold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left"
+                  className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-semibold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left"
                 >
                   + Start New Parlay
                 </button>
@@ -166,7 +166,7 @@ export default function AddToBetsSheet({ prefill, onClose }: Props) {
                       <button
                         key={p.id}
                         onClick={() => handleAddToParlay(p.id)}
-                        className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-mono font-bold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left flex items-center gap-2"
+                        className="w-full py-3 px-4 rounded-xl border border-[#3D1A6E] text-sm font-semibold text-slate-300 hover:border-purple-500/40 hover:text-purple-400 transition-colors text-left flex items-center gap-2"
                       >
                         <span className="text-purple-400 shrink-0">+</span>
                         <span className="flex-1 truncate">{p.label}</span>

@@ -395,7 +395,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">
+                <p className="text-xs font-bold text-purple-400 uppercase tracking-widest font-grotesk">
                   {arbs.length} guaranteed profit opportunit{arbs.length !== 1 ? 'ies' : 'y'} found
                 </p>
               </div>
@@ -446,7 +446,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
           {nearArbs.length > 0 && (
             <div className="space-y-3">
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Best Lines Right Now</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">Best Lines Right Now</p>
                 <p className="text-xs text-slate-500 mt-0.5">Lowest juice across your books — closer to equal odds means less risk</p>
               </div>
               {nearArbs.map((e) => (

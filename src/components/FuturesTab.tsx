@@ -128,7 +128,7 @@ export default function FuturesTab() {
         {/* Title row + load button */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-white">{selectedSport.label}</p>
+            <p className="text-sm font-semibold text-white font-grotesk">{selectedSport.label}</p>
             {teams.length > 0 && (
               <p className="text-xs text-slate-500 font-mono">{teams.length} outcomes</p>
             )}

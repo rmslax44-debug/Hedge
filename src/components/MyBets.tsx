@@ -1027,7 +1027,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
           <div className="flex items-center gap-1 px-4 pt-4 pb-2">
             <button
               onClick={() => setViewMode('active')}
-              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all font-grotesk ${
                 viewMode === 'active'
                   ? 'bg-purple-500/15 text-purple-400'
                   : 'text-slate-500 hover:text-slate-300'
@@ -1042,7 +1042,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
             </button>
             <button
               onClick={() => setViewMode('history')}
-              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all font-grotesk ${
                 viewMode === 'history'
                   ? 'bg-purple-500/15 text-purple-400'
                   : 'text-slate-500 hover:text-slate-300'
@@ -1062,7 +1062,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                    <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-purple-400 uppercase tracking-widest font-grotesk">
                       Hedge now!
                     </p>
                   </div>
@@ -1081,7 +1081,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest">
+                    <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest font-grotesk">
                       Hedged — awaiting payout
                     </p>
                   </div>
@@ -1100,7 +1100,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
-                    <p className="text-xs font-semibold text-green-400 uppercase tracking-widest">
+                    <p className="text-xs font-semibold text-green-400 uppercase tracking-widest font-grotesk">
                       Active — watching for hedge
                     </p>
                   </div>
@@ -1119,7 +1119,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-white/70 shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">
                       Monitoring odds
                     </p>
                   </div>

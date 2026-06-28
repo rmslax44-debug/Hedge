@@ -240,7 +240,7 @@ export default function BottomNav({
                 )}
               </div>
               {t.key !== 'pro' && (
-                <span className="text-xs font-semibold tracking-wide">{t.label}</span>
+                <span className="text-xs font-semibold tracking-wide font-grotesk">{t.label}</span>
               )}
             </button>
           );
