@@ -53,6 +53,10 @@ const TABS: {
             <feGaussianBlur stdDeviation="2" result="small"/>
             <feMerge><feMergeNode in="big"/><feMergeNode in="small"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
+          <filter id="bnpro-ultra" x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="11" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
           <radialGradient id="bnpro-bg" cx="50%" cy="34%" r="82%">
             <stop offset="0%" stopColor="#2C0061"/>
             <stop offset="100%" stopColor="#0B0016"/>
@@ -135,21 +139,55 @@ const TABS: {
         {/* PRO text */}
         <text x="195" y="200" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="500" letterSpacing="6" fill="#E9C9FF" filter="url(#bnpro-bloom)">PRO</text>
 
-        {/* Rotating ring — only when active. Perimeter of rx=47 rounded rect ≈ 663 */}
+        {/* Majestic rotating ring — only when active. Perimeter ≈ 663 */}
         {a && (
           <>
-            <style>{`@keyframes bnpro-ring { to { stroke-dashoffset: -663; } }`}</style>
-            {/* Soft purple bloom */}
+            <style>{`
+              @keyframes bnpro-ring     { to { stroke-dashoffset: -663; } }
+              @keyframes bnpro-ring-rev { to { stroke-dashoffset:  663; } }
+              @keyframes bnpro-pulse    { 0%,100%{opacity:0.15} 50%{opacity:0.5} }
+            `}</style>
+
+            {/* Pulsing full-perimeter base — makes the badge feel charged */}
             <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="#A855F7" strokeWidth="5" strokeDasharray="110 553"
-              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="0.85"
-              style={{ animation: 'bnpro-ring 2s linear infinite' }}
+              fill="none" stroke="#A855F7" strokeWidth="2.5"
+              filter="url(#bnpro-glow)"
+              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
-            {/* Hard white core */}
+
+            {/* Counter-rotating ghost arc */}
             <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="white" strokeWidth="1.5" strokeDasharray="110 553"
-              strokeLinecap="round" opacity="0.95"
-              style={{ animation: 'bnpro-ring 2s linear infinite' }}
+              fill="none" stroke="#7C3AED" strokeWidth="4" strokeDasharray="90 573"
+              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="0.4"
+              style={{ animation: 'bnpro-ring-rev 3.5s linear infinite' }}
+            />
+
+            {/* Comet — outer ultra bloom */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="#D8B4FE" strokeWidth="12" strokeDasharray="170 493"
+              strokeLinecap="round" filter="url(#bnpro-ultra)" opacity="0.55"
+              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
+            />
+
+            {/* Comet — purple body */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="#A855F7" strokeWidth="6" strokeDasharray="120 543"
+              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="1"
+              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
+            />
+
+            {/* Comet — bright white core */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="white" strokeWidth="2" strokeDasharray="55 608"
+              strokeLinecap="round" opacity="1"
+              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
+            />
+
+            {/* Comet — searing hot tip */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="white" strokeWidth="5" strokeDasharray="8 655"
+              strokeLinecap="round" filter="url(#bnpro-bloom)" opacity="1"
+              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
             />
           </>
         )}
