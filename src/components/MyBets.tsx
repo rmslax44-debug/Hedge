@@ -170,6 +170,12 @@ function HedgeActionCard({
     }
   }, [bet.hedgeValueTrend]);
 
+  // Reset the investment input to the new optimal whenever the hedge opportunity
+  // changes (e.g. Pro Radar loaded a better stake/odds than what was cached).
+  useEffect(() => {
+    setTotalInput(String(+(bet.stake + opp.hedgeStake).toFixed(2)));
+  }, [opp.hedgeStake, opp.hedgeOdds]);
+
   // Total-investment math: split optimally between Bet A and Bet B
   const parsedTotal = Math.max(0, parseFloat(totalInput) || 0);
   const stakeA = parsedTotal > 0 && impliedTotal > 0 ? (parsedTotal * (1 / decA)) / impliedTotal : 0;

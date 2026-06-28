@@ -112,7 +112,6 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets, scanTr
           };
 
           if (guaranteedProfit > 0) {
-            // Update storage so MyBets reflects the fresh live opportunity
             const hedgeOpp: HedgeOpportunity = {
               hedgeTeam: bet.opposingTeam,
               hedgeBook: bestHedge.bookName,
@@ -122,7 +121,13 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets, scanTr
               guaranteedProfit,
               foundAt: Date.now(),
             };
-            updateBet(bet.id, { status: 'hedge_ready', hedgeOpportunity: hedgeOpp });
+            // Clear stale trend flags so My Bets shows the live hedge, not "gone negative"
+            updateBet(bet.id, {
+              status: 'hedge_ready',
+              hedgeOpportunity: hedgeOpp,
+              hedgeValueTrend: undefined,
+              previousGuaranteedProfit: undefined,
+            });
             found.push(opp);
           } else if (bet.status === 'hedge_ready') {
             // Mark existing hedge_ready bets as gone_negative so My Bets shows the right state
@@ -292,7 +297,25 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets, scanTr
                 </div>
                 {onSwitchToMyBets && (
                   <button
-                    onClick={onSwitchToMyBets}
+                    onClick={() => {
+                      // Re-apply the scanned hedge at click-time so My Bets always
+                      // shows this exact opportunity with stale trend flags cleared.
+                      updateBet(o.bet.id, {
+                        status: 'hedge_ready',
+                        hedgeOpportunity: {
+                          hedgeTeam: o.hedgeTeam,
+                          hedgeBook: o.hedgeBook,
+                          hedgeBookKey: o.hedgeBookKey,
+                          hedgeStake: o.hedgeStake,
+                          hedgeOdds: o.hedgeOddsAm,
+                          guaranteedProfit: o.guaranteedProfit,
+                          foundAt: Date.now(),
+                        },
+                        hedgeValueTrend: undefined,
+                        previousGuaranteedProfit: undefined,
+                      });
+                      onSwitchToMyBets();
+                    }}
                     className="w-full py-2 rounded-lg text-xs font-mono font-bold bg-green-500/15 border border-green-500/40 text-green-400 hover:bg-green-500/25 transition-colors"
                   >
                     VIEW UPDATED HEDGE IN MY BETS →
