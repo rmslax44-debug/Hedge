@@ -340,17 +340,27 @@ function HedgeActionCard({
 
       {/* Guaranteed profit display */}
       {parsedTotal > 0 && (
-        <div className={`text-center py-3 rounded-xl border shadow-[0_0_18px_rgba(168,85,247,0.18)] ${
-          liveProfit < 0 ? 'bg-red-500/8 border-red-500/25' : 'bg-purple-500/8 border-purple-500/25'
+        <div className={`text-center py-3 rounded-xl border ${
+          isExpired
+            ? 'bg-slate-800/20 border-slate-700/40'
+            : liveProfit < 0
+            ? 'bg-red-500/8 border-red-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]'
+            : 'bg-purple-500/8 border-purple-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]'
         }`}>
           <p className="text-xs text-slate-500 mb-0.5">No matter who wins</p>
-          <p className={`text-3xl font-bold font-mono drop-shadow-[0_0_8px_rgba(168,85,247,0.6)] ${
-            liveProfit < 0 ? 'text-red-400' : 'text-purple-400'
+          <p className={`text-3xl font-bold font-mono ${
+            isExpired
+              ? 'text-slate-600 line-through decoration-slate-500'
+              : liveProfit < 0
+              ? 'text-red-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'
+              : 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'
           }`}>
-            {liveProfit >= 0 ? '+' : ''}${liveProfit.toFixed(2)}
+            {isExpired
+              ? `+$${opp.guaranteedProfit.toFixed(2)}`
+              : `${liveProfit >= 0 ? '+' : ''}$${liveProfit.toFixed(2)}`}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {liveProfit < 0 ? 'would be a loss at current odds' : 'guaranteed profit'}
+            {isExpired ? 'odds expired · no longer available' : liveProfit < 0 ? 'would be a loss at current odds' : 'guaranteed profit'}
           </p>
         </div>
       )}
