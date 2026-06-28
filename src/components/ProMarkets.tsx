@@ -5,7 +5,6 @@ import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { americanToDecimal } from '../utils/arb';
 import type { CalcPrefill, OddsFormat } from './ProCalculator';
 import AddToBetsSheet, { type AddToBetsPrefill } from './AddToBetsSheet';
-import PlayerPropsSection from './PlayerPropsSection';
 
 interface Props {
   onPrefill: (prefill: CalcPrefill) => void;
@@ -370,15 +369,6 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                   })}
                 </div>
 
-                {/* Player Props */}
-                <PlayerPropsSection
-                  event={event}
-                  sport={sport}
-                  apiKey={apiKey ?? ''}
-                  userBooks={userBooks}
-                  fmt={fmt}
-                  onAddToBets={setSheetPrefill}
-                />
               </div>
             )}
           </div>
