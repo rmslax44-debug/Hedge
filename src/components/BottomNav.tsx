@@ -139,55 +139,40 @@ const TABS: {
         {/* PRO text */}
         <text x="195" y="200" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="500" letterSpacing="6" fill="#E9C9FF" filter="url(#bnpro-bloom)">PRO</text>
 
-        {/* Majestic rotating ring — only when active. Perimeter ≈ 663 */}
+        {/* Pulsing ring — only when active */}
         {a && (
           <>
             <style>{`
-              @keyframes bnpro-ring     { to { stroke-dashoffset: -663; } }
-              @keyframes bnpro-ring-rev { to { stroke-dashoffset:  663; } }
-              @keyframes bnpro-pulse    { 0%,100%{opacity:0.15} 50%{opacity:0.5} }
+              @keyframes bnpro-pulse       { 0%,100%{opacity:0.1}  50%{opacity:1}   }
+              @keyframes bnpro-pulse-bloom { 0%,100%{opacity:0}    50%{opacity:0.65} }
             `}</style>
 
-            {/* Pulsing full-perimeter base — makes the badge feel charged */}
+            {/* Outermost ambient halo */}
+            <rect x="90" y="30" width="200" height="200" rx="54"
+              fill="none" stroke="#C084FC" strokeWidth="22"
+              filter="url(#bnpro-ultra)"
+              style={{ animation: 'bnpro-pulse-bloom 2s ease-in-out infinite' }}
+            />
+
+            {/* Wide purple glow ring */}
+            <rect x="95" y="35" width="190" height="190" rx="49"
+              fill="none" stroke="#A855F7" strokeWidth="10"
+              filter="url(#bnpro-ultra)"
+              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
+            />
+
+            {/* Mid glow */}
             <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="#A855F7" strokeWidth="2.5"
+              fill="none" stroke="#C084FC" strokeWidth="4"
               filter="url(#bnpro-glow)"
               style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
 
-            {/* Counter-rotating ghost arc */}
+            {/* Hard bright core */}
             <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="#7C3AED" strokeWidth="4" strokeDasharray="90 573"
-              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="0.4"
-              style={{ animation: 'bnpro-ring-rev 3.5s linear infinite' }}
-            />
-
-            {/* Comet — outer ultra bloom */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="#D8B4FE" strokeWidth="12" strokeDasharray="170 493"
-              strokeLinecap="round" filter="url(#bnpro-ultra)" opacity="0.55"
-              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
-            />
-
-            {/* Comet — purple body */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="#A855F7" strokeWidth="6" strokeDasharray="120 543"
-              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="1"
-              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
-            />
-
-            {/* Comet — bright white core */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="white" strokeWidth="2" strokeDasharray="55 608"
-              strokeLinecap="round" opacity="1"
-              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
-            />
-
-            {/* Comet — searing hot tip */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="white" strokeWidth="5" strokeDasharray="8 655"
-              strokeLinecap="round" filter="url(#bnpro-bloom)" opacity="1"
-              style={{ animation: 'bnpro-ring 1.8s linear infinite' }}
+              fill="none" stroke="white" strokeWidth="2"
+              filter="url(#bnpro-white-glow)"
+              style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
           </>
         )}
