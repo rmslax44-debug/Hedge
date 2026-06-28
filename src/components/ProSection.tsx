@@ -41,9 +41,106 @@ export default function ProSection({ onSwitchToMyBets, scanTrigger }: ProSection
       {/* Header */}
       <div className="px-5 pt-14 border-b border-[#3D1A6E]">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold tracking-tight text-white font-mono">HEDGE PRO</h1>
-            <span className="text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold tracking-widest">v2</span>
+          <div className="flex items-center gap-3">
+            {/* H·PRO logo */}
+            <svg width="64" height="64" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="hpro-glow" x="-90%" y="-90%" width="280%" height="280%">
+                  <feGaussianBlur stdDeviation="6" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="hpro-white-glow" x="-60%" y="-60%" width="220%" height="220%">
+                  <feGaussianBlur stdDeviation="5" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="hpro-bloom" x="-150%" y="-150%" width="400%" height="400%">
+                  <feGaussianBlur stdDeviation="6" result="big"/>
+                  <feGaussianBlur stdDeviation="2" result="small"/>
+                  <feMerge><feMergeNode in="big"/><feMergeNode in="small"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <radialGradient id="hpro-bg" cx="50%" cy="34%" r="82%">
+                  <stop offset="0%" stopColor="#2C0061"/>
+                  <stop offset="100%" stopColor="#0B0016"/>
+                </radialGradient>
+                <linearGradient id="hpro-metal" x1="0" y1="40" x2="0" y2="220" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"  stopColor="#FFFFFF" stopOpacity="0.16"/>
+                  <stop offset="16%" stopColor="#C9A9F2" stopOpacity="0.06"/>
+                  <stop offset="36%" stopColor="#000000" stopOpacity="0.05"/>
+                  <stop offset="54%" stopColor="#FFFFFF" stopOpacity="0.08"/>
+                  <stop offset="72%" stopColor="#000000" stopOpacity="0.18"/>
+                  <stop offset="100%" stopColor="#000000" stopOpacity="0.35"/>
+                </linearGradient>
+                <linearGradient id="hpro-rim" x1="0" y1="40" x2="0" y2="78" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#E9D5FF" stopOpacity="0.38"/>
+                  <stop offset="100%" stopColor="#E9D5FF" stopOpacity="0"/>
+                </linearGradient>
+                <linearGradient id="hpro-chrome" x1="0" y1="69" x2="0" y2="177" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"  stopColor="#FFFFFF"/>
+                  <stop offset="14%" stopColor="#E7D6F7"/>
+                  <stop offset="30%" stopColor="#B79AD8"/>
+                  <stop offset="46%" stopColor="#F4EBFF"/>
+                  <stop offset="52%" stopColor="#FFFFFF"/>
+                  <stop offset="60%" stopColor="#C8B0E6"/>
+                  <stop offset="78%" stopColor="#9B7CC9"/>
+                  <stop offset="92%" stopColor="#E3D2F5"/>
+                  <stop offset="100%" stopColor="#FBF4FF"/>
+                </linearGradient>
+                <linearGradient id="hpro-spec" x1="0" y1="69" x2="0" y2="135" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6"/>
+                  <stop offset="22%" stopColor="#FFFFFF" stopOpacity="0.18"/>
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0"/>
+                </linearGradient>
+                <mask id="hpro-edgecut">
+                  <rect x="100" y="40" width="180" height="180" fill="#fff"/>
+                  <text x="190" y="130" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="17" fontWeight="700" fill="#000">EDGE</text>
+                </mask>
+                <mask id="hpro-hshape">
+                  <g fill="#fff">
+                    <rect x="152" y="69" width="20" height="108"/>
+                    <rect x="208" y="69" width="20" height="108"/>
+                    <path d="M152 111 L228 111 L240 123 L228 135 L152 135 L140 123 Z"/>
+                    <path d="M134 69 L172 69 L172 83 L152 83 Z"/>
+                    <path d="M246 69 L208 69 L208 83 L228 83 Z"/>
+                    <path d="M134 177 L172 177 L172 163 L152 163 Z"/>
+                    <path d="M246 177 L208 177 L208 163 L228 163 Z"/>
+                  </g>
+                </mask>
+                <clipPath id="hpro-clip"><rect x="100" y="40" width="180" height="180" rx="44"/></clipPath>
+              </defs>
+              <rect x="100" y="40" width="180" height="180" rx="44" fill="url(#hpro-bg)"/>
+              <g clipPath="url(#hpro-clip)">
+                <rect x="100" y="40" width="180" height="180" fill="url(#hpro-metal)"/>
+                <rect x="100" y="40" width="180" height="38" fill="url(#hpro-rim)"/>
+              </g>
+              <rect x="97" y="37" width="186" height="186" rx="47" fill="none" stroke="white" strokeWidth="1.5" filter="url(#hpro-white-glow)" opacity="0.55"/>
+              <rect x="100" y="40" width="180" height="180" rx="44" fill="none" stroke="#A855F7" strokeWidth="2" filter="url(#hpro-glow)" opacity="0.9"/>
+              <rect x="109" y="49" width="162" height="162" rx="36" fill="none" stroke="#A855F7" strokeWidth="0.7" opacity="0.35"/>
+              <g mask="url(#hpro-edgecut)">
+                <g fill="url(#hpro-chrome)">
+                  <rect x="152" y="69" width="20" height="108"/>
+                  <rect x="208" y="69" width="20" height="108"/>
+                  <path d="M152 111 L228 111 L240 123 L228 135 L152 135 L140 123 Z"/>
+                  <path d="M134 69 L172 69 L172 83 L152 83 Z"/>
+                  <path d="M246 69 L208 69 L208 83 L228 83 Z"/>
+                  <path d="M134 177 L172 177 L172 163 L152 163 Z"/>
+                  <path d="M246 177 L208 177 L208 163 L228 163 Z"/>
+                </g>
+                <rect x="120" y="69" width="140" height="70" fill="url(#hpro-spec)" mask="url(#hpro-hshape)"/>
+              </g>
+              <text x="195" y="200" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="500" letterSpacing="6" fill="#E9C9FF" filter="url(#hpro-bloom)">PRO</text>
+            </svg>
+            {/* v2 badge with purple backlight */}
+            <span
+              className="text-xs font-bold tracking-widest px-2 py-0.5 rounded font-mono"
+              style={{
+                color: '#E9C9FF',
+                background: 'rgba(168,85,247,0.18)',
+                border: '1px solid rgba(168,85,247,0.45)',
+                boxShadow: '0 0 10px 2px rgba(168,85,247,0.35), 0 0 24px 4px rgba(168,85,247,0.15)',
+              }}
+            >
+              v2
+            </span>
           </div>
           {/* Global odds format toggle always visible */}
           <div className="flex gap-0.5 bg-[#100020] rounded-lg p-0.5">
