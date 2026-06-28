@@ -1,0 +1,29 @@
+{
+  "name": "Hedge — Lock In Your Profits",
+  "short_name": "Hedge",
+  "description": "Calculate the perfect hedge bet to guarantee profits or minimize losses.",
+  "start_url": "/Hedge/",
+  "display": "standalone",
+  "background_color": "#09000F",
+  "theme_color": "#09000F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/Hedge/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Hedge/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Hedge/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
