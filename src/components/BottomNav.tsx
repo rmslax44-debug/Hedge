@@ -38,7 +38,7 @@ const TABS: {
     key: 'pro',
     label: 'Pro',
     icon: (a) => (
-      <svg width="38" height="38" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }}>
+      <svg width="54" height="54" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }}>
         <defs>
           <filter id="bnpro-glow" x="-90%" y="-90%" width="280%" height="280%">
             <feGaussianBlur stdDeviation="6" result="b"/>
@@ -187,7 +187,7 @@ export default function BottomNav({
             <button
               key={t.key}
               onClick={() => onChange(t.key)}
-              className="flex-1 flex flex-col items-center gap-1 py-3 relative transition-colors"
+              className={`flex-1 flex flex-col items-center py-3 relative transition-colors ${t.key === 'pro' ? 'justify-end' : 'gap-1 justify-center'}`}
               style={{ color: active ? ACTIVE : INACTIVE }}
             >
               {active && (
