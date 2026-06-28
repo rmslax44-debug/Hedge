@@ -301,10 +301,18 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
         }
       }
 
+      const currentBets = getAllBets();
+      // Events where the user already has an active bet — suppress from arb list
+      const activeBetEventIds = new Set(
+        currentBets
+          .filter(b => b.eventId && (b.status === 'monitoring' || b.status === 'hedge_ready' || b.status === 'hedged'))
+          .map(b => b.eventId as string),
+      );
+
       foundArbs.sort((a, b) => b.profitPct - a.profitPct);
-      setArbs(foundArbs.filter((a) => a.guaranteedProfit > 0));
+      setArbs(foundArbs.filter((a) => a.guaranteedProfit > 0 && !activeBetEventIds.has(a.event.id)));
       setNearArbs(foundNear.slice(0, 6));
-      setHedgeReadyBets(getAllBets().filter((b) => b.status === 'hedge_ready' && b.eventId));
+      setHedgeReadyBets(currentBets.filter((b) => b.status === 'hedge_ready' && b.eventId));
       setScanned(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Scan failed');
