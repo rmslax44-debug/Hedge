@@ -418,6 +418,8 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                         eventTime: a.event.commence_time,
                       },
                     });
+                    // Remove from list so it doesn't reappear when user comes back
+                    setArbs(prev => prev.filter(arb => arb.event.id !== a.event.id));
                     onSwitchToMyBets?.();
                   }}
                 />
