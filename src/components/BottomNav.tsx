@@ -134,6 +134,25 @@ const TABS: {
 
         {/* PRO text */}
         <text x="195" y="200" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="500" letterSpacing="6" fill="#E9C9FF" filter="url(#bnpro-bloom)">PRO</text>
+
+        {/* Rotating ring — only when active. Perimeter of rx=47 rounded rect ≈ 663 */}
+        {a && (
+          <>
+            <style>{`@keyframes bnpro-ring { to { stroke-dashoffset: -663; } }`}</style>
+            {/* Soft purple bloom */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="#A855F7" strokeWidth="5" strokeDasharray="110 553"
+              strokeLinecap="round" filter="url(#bnpro-glow)" opacity="0.85"
+              style={{ animation: 'bnpro-ring 2s linear infinite' }}
+            />
+            {/* Hard white core */}
+            <rect x="97" y="37" width="186" height="186" rx="47"
+              fill="none" stroke="white" strokeWidth="1.5" strokeDasharray="110 553"
+              strokeLinecap="round" opacity="0.95"
+              style={{ animation: 'bnpro-ring 2s linear infinite' }}
+            />
+          </>
+        )}
       </svg>
     ),
   },
