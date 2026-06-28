@@ -147,30 +147,32 @@ const TABS: {
               @keyframes bnpro-pulse-bloom { 0%,100%{opacity:0}    50%{opacity:0.65} }
             `}</style>
 
-            {/* Outermost ambient halo */}
-            <rect x="90" y="30" width="200" height="200" rx="54"
-              fill="none" stroke="#C084FC" strokeWidth="22"
+            {/* All rings sit on the exact badge rect so corners match perfectly */}
+
+            {/* Outermost ambient halo — heavy blur spreads outward */}
+            <rect x="100" y="40" width="180" height="180" rx="44"
+              fill="none" stroke="#C084FC" strokeWidth="24"
               filter="url(#bnpro-ultra)"
               style={{ animation: 'bnpro-pulse-bloom 2s ease-in-out infinite' }}
             />
 
-            {/* Wide purple glow ring */}
-            <rect x="95" y="35" width="190" height="190" rx="49"
+            {/* Wide purple glow */}
+            <rect x="100" y="40" width="180" height="180" rx="44"
               fill="none" stroke="#A855F7" strokeWidth="10"
               filter="url(#bnpro-ultra)"
               style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
 
             {/* Mid glow */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
+            <rect x="100" y="40" width="180" height="180" rx="44"
               fill="none" stroke="#C084FC" strokeWidth="4"
               filter="url(#bnpro-glow)"
               style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
 
             {/* Hard bright core */}
-            <rect x="97" y="37" width="186" height="186" rx="47"
-              fill="none" stroke="white" strokeWidth="2"
+            <rect x="100" y="40" width="180" height="180" rx="44"
+              fill="none" stroke="white" strokeWidth="2.5"
               filter="url(#bnpro-white-glow)"
               style={{ animation: 'bnpro-pulse 2s ease-in-out infinite' }}
             />
