@@ -38,7 +38,7 @@ const TABS: {
     key: 'pro',
     label: 'Pro',
     icon: (a) => (
-      <svg width="54" height="54" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }}>
+      <svg width="54" height="54" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }} overflow="visible">
         <defs>
           <filter id="bnpro-glow" x="-90%" y="-90%" width="280%" height="280%">
             <feGaussianBlur stdDeviation="6" result="b"/>
