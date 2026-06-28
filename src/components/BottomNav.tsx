@@ -38,7 +38,7 @@ const TABS: {
     key: 'pro',
     label: 'Pro',
     icon: (a) => (
-      <svg width="30" height="30" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }}>
+      <svg width="38" height="38" viewBox="100 40 180 180" xmlns="http://www.w3.org/2000/svg" style={{ opacity: a ? 1 : 0.42 }}>
         <defs>
           <filter id="bnpro-glow" x="-90%" y="-90%" width="280%" height="280%">
             <feGaussianBlur stdDeviation="6" result="b"/>
@@ -207,7 +207,9 @@ export default function BottomNav({
                   </span>
                 )}
               </div>
-              <span className="text-xs font-semibold tracking-wide">{t.label}</span>
+              {t.key !== 'pro' && (
+                <span className="text-xs font-semibold tracking-wide">{t.label}</span>
+              )}
             </button>
           );
         })}
