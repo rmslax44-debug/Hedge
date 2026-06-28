@@ -85,7 +85,7 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
       {/* Content */}
       <div className="pt-2">
         {subTab === 'radar' && (
-          <ProDashboard onOpenCalc={openCalc} fmt={fmt} />
+          <ProDashboard onOpenCalc={openCalc} fmt={fmt} onSwitchToMyBets={onSwitchToMyBets} />
         )}
         {subTab === 'calc' && (
           <ProCalculator

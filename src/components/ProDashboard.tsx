@@ -28,11 +28,12 @@ interface LiveOpp {
 interface Props {
   onOpenCalc: (prefill: CalcPrefill) => void;
   fmt: OddsFormat;
+  onSwitchToMyBets?: () => void;
 }
 
 function fmtAm(price: number) { return price >= 0 ? `+${price}` : `${price}`; }
 
-export default function ProDashboard({ onOpenCalc, fmt }: Props) {
+export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets }: Props) {
   const [scanning, setScanning] = useState(false);
   const [opps, setOpps] = useState<LiveOpp[]>([]);
   const [noEventBets, setNoEventBets] = useState<TrackedBet[]>([]);
@@ -105,8 +106,8 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
             roi,
           };
 
-          // Update storage so MyBets also reflects this
           if (guaranteedProfit > 0) {
+            // Update storage so MyBets reflects the fresh live opportunity
             const hedgeOpp: HedgeOpportunity = {
               hedgeTeam: bet.opposingTeam,
               hedgeBook: bestHedge.bookName,
@@ -117,9 +118,11 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
               foundAt: Date.now(),
             };
             updateBet(bet.id, { status: 'hedge_ready', hedgeOpportunity: hedgeOpp });
+            found.push(opp);
+          } else if (bet.status === 'hedge_ready') {
+            // Mark existing hedge_ready bets as gone_negative so My Bets shows the right state
+            updateBet(bet.id, { hedgeValueTrend: 'gone_negative', previousGuaranteedProfit: bet.hedgeOpportunity?.guaranteedProfit });
           }
-
-          found.push(opp);
         }
       }
 
@@ -276,6 +279,14 @@ export default function ProDashboard({ onOpenCalc, fmt }: Props) {
                     </a>
                   )}
                 </div>
+                {onSwitchToMyBets && (
+                  <button
+                    onClick={onSwitchToMyBets}
+                    className="w-full py-2 rounded-lg text-xs font-mono font-bold bg-green-500/15 border border-green-500/40 text-green-400 hover:bg-green-500/25 transition-colors"
+                  >
+                    VIEW UPDATED HEDGE IN MY BETS →
+                  </button>
+                )}
               </div>
             );
           })}
