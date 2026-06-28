@@ -63,10 +63,10 @@ export default function App() {
         </div>
 
         <div className={tab === 'settings' ? '' : 'hidden'}>
-          <div className="pt-14 pb-4">
-            <div className="px-5 pb-4 border-b border-[#3D1A6E] mb-5">
-              <h1 className="text-lg font-bold text-white">Settings</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Configure your alerts and betting apps</p>
+          <div className="pt-0 pb-4">
+            <div className="px-5 pt-12 pb-4 border-b border-[#1E0840] mb-5">
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Preferences</p>
+              <h1 className="text-xl font-bold text-white mt-0.5 font-grotesk">Settings</h1>
             </div>
             <SettingsPanel onSave={handleSettingsSave} />
           </div>

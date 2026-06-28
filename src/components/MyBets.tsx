@@ -344,16 +344,16 @@ function HedgeActionCard({
           isExpired
             ? 'bg-slate-800/20 border-slate-700/40'
             : liveProfit < 0
-            ? 'bg-red-500/8 border-red-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]'
-            : 'bg-purple-500/8 border-purple-500/25 shadow-[0_0_18px_rgba(168,85,247,0.18)]'
+            ? 'bg-red-500/8 border-red-500/25 shadow-[0_0_18px_rgba(248,113,113,0.15)]'
+            : 'bg-emerald-500/8 border-emerald-500/20 shadow-[0_0_18px_rgba(52,211,153,0.15)]'
         }`}>
           <p className="text-xs text-slate-500 mb-0.5">No matter who wins</p>
           <p className={`text-3xl font-bold font-mono ${
             isExpired
               ? 'text-slate-600 line-through decoration-slate-500'
               : liveProfit < 0
-              ? 'text-red-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'
-              : 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'
+              ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]'
+              : 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]'
           }`}>
             {isExpired
               ? `+$${opp.guaranteedProfit.toFixed(2)}`
@@ -663,7 +663,7 @@ function BetCard({
         />
       )}
 
-      <div className={`card overflow-hidden transition-all ${
+      <div className={`card overflow-hidden transition-all relative ${
         bet.status === 'watching'
           ? 'border-white/10'
           : bet.status === 'hedge_ready' && trend === 'gone_negative'
@@ -676,6 +676,30 @@ function BetCard({
           ? 'border-blue-500/30 shadow-[0_0_14px_rgba(59,130,246,0.12)]'
           : ''
       }`}>
+        {/* Live bar — 2px left edge status indicator */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-[3px]"
+          style={{
+            background:
+              bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
+                ? '#A855F7'
+                : bet.status === 'monitoring'
+                ? '#34D399'
+                : bet.status === 'hedged'
+                ? '#60A5FA'
+                : bet.status === 'watching'
+                ? 'rgba(255,255,255,0.18)'
+                : 'transparent',
+            boxShadow:
+              bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
+                ? '0 0 8px rgba(168,85,247,0.7)'
+                : bet.status === 'monitoring'
+                ? '0 0 8px rgba(52,211,153,0.5)'
+                : bet.status === 'hedged'
+                ? '0 0 6px rgba(96,165,250,0.4)'
+                : 'none',
+          }}
+        />
         <button
           onClick={() => setExpanded(e => !e)}
           className="w-full p-4 text-left"
@@ -888,10 +912,10 @@ function BetCard({
                 )}
 
                 {/* Locked profit */}
-                <div className="bg-purple-500/8 border border-purple-500/30 rounded-xl p-4 text-center space-y-0.5 shadow-[0_0_18px_rgba(168,85,247,0.2)]">
-                  <p className="text-purple-300 font-semibold text-sm">Profit locked in — awaiting payout</p>
+                <div className="bg-emerald-500/8 border border-emerald-500/20 rounded-xl p-4 text-center space-y-0.5 shadow-[0_0_18px_rgba(52,211,153,0.15)]">
+                  <p className="text-emerald-300/80 font-semibold text-sm">Profit locked in — awaiting payout</p>
                   {bet.hedgeOpportunity && (
-                    <p className="text-2xl font-bold font-mono text-purple-400 mt-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
+                    <p className="text-2xl font-bold font-mono text-emerald-400 mt-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">
                       +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)}
                     </p>
                   )}
@@ -914,8 +938,8 @@ function BetCard({
 
             {/* Settled P&L */}
             {bet.status === 'settled' && bet.settledPnl !== undefined && (
-              <div className={`rounded-xl p-3 text-center ${bet.settledPnl >= 0 ? 'bg-purple-500/10' : 'bg-red-500/10'}`}>
-                <p className={`text-lg font-bold font-mono ${bet.settledPnl >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+              <div className={`rounded-xl p-3 text-center ${bet.settledPnl >= 0 ? 'bg-emerald-500/8' : 'bg-red-500/10'}`}>
+                <p className={`text-lg font-bold font-mono ${bet.settledPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {bet.settledPnl >= 0 ? '+' : ''}${bet.settledPnl.toFixed(2)}
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">{bet.result === 'win' ? 'Profit' : bet.result === 'loss' ? 'Lost' : 'P&L'}</p>
@@ -970,6 +994,12 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
 
   return (
     <div className="pb-32">
+      {/* Page header */}
+      <div className="px-5 pt-12 pb-4 border-b border-[#1E0840]">
+        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Portfolio</p>
+        <h1 className="text-xl font-bold text-white mt-0.5 font-grotesk">My Bets</h1>
+      </div>
+
       {/* No bets empty state */}
       {bets.length === 0 && (
         <div className="flex flex-col items-center justify-center px-6 py-20 text-center space-y-5">

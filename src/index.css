@@ -27,8 +27,12 @@
 }
 
 @layer components {
+  .font-grotesk {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
   .card {
-    @apply bg-[#100020] border border-[#3D1A6E] rounded-2xl;
+    @apply bg-[#0D0019] border border-[#3D1A6E] rounded-2xl;
   }
 
   .input-field {

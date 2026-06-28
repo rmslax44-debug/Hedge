@@ -49,7 +49,7 @@ function ArbCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="badge-profit text-xs">Guaranteed Profit</span>
-              <span className="text-purple-400 font-bold text-sm font-mono">
+              <span className="text-emerald-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
               </span>
             </div>
@@ -60,7 +60,7 @@ function ArbCard({
           </div>
           <div className="text-right shrink-0">
             <p className="text-xs text-slate-500">Per $100</p>
-            <p className="text-xl font-bold text-purple-400">+${opp.guaranteedProfit.toFixed(2)}</p>
+            <p className="text-xl font-bold text-emerald-400">+${opp.guaranteedProfit.toFixed(2)}</p>
           </div>
         </div>
 
@@ -142,16 +142,16 @@ function ArbCard({
                   <div className="text-sm">
                     <p className="text-white">Sit back and collect 💰</p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Guaranteed <span className="text-purple-300 font-bold drop-shadow-[0_0_6px_rgba(168,85,247,0.6)]">+${profit.toFixed(2)}</span>{' '}
+                      Guaranteed <span className="text-emerald-400 font-bold drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]">+${profit.toFixed(2)}</span>{' '}
                       profit no matter what happens
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="text-center py-3 bg-purple-500/8 rounded-xl border border-purple-500/35 shadow-[0_0_18px_rgba(168,85,247,0.22)]">
+              <div className="text-center py-3 bg-emerald-500/8 rounded-xl border border-emerald-500/20 shadow-[0_0_18px_rgba(52,211,153,0.15)]">
                 <p className="text-xs text-slate-400">Total invested: <span className="text-white font-mono">${parsed.toFixed(2)}</span></p>
-                <p className="text-2xl font-bold text-purple-400 mt-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">+${profit.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-emerald-400 mt-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">+${profit.toFixed(2)}</p>
                 <p className="text-xs text-slate-500">guaranteed return</p>
               </div>
 
@@ -346,14 +346,12 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
 
   return (
     <div className="pb-32">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-3 space-y-2">
+      {/* Page header */}
+      <div className="px-5 pt-12 pb-4 border-b border-[#1E0840]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold">Guaranteed Profit Opportunities</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Situations where betting both sides locks in profit
-            </p>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Live Markets</p>
+            <h1 className="text-xl font-bold text-white mt-0.5 font-grotesk">Find Hedges</h1>
           </div>
           <button
             onClick={scan}
@@ -363,8 +361,10 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
             {loading ? '…' : '↺ Scan'}
           </button>
         </div>
+      </div>
 
-        {/* What is this? */}
+      {/* How it works info */}
+      <div className="px-4 pt-3">
         <div className="card p-3 border-blue-500/20 bg-blue-500/5">
           <p className="text-xs text-slate-400 leading-relaxed">
             <span className="text-blue-300 font-semibold">How it works:</span> Different sportsbooks sometimes price the same game differently. When the difference is big enough, you can bet on BOTH sides and make money no matter who wins.

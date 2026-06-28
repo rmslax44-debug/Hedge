@@ -97,8 +97,9 @@ export default function FuturesTab() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="px-5 pt-14 pb-3 border-b border-[#3D1A6E]">
-        <h1 className="text-base font-bold tracking-tight text-white font-mono mb-3">FUTURES</h1>
+      <div className="px-5 pt-12 pb-3 border-b border-[#1E0840]">
+        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Outrights</p>
+        <h1 className="text-xl font-bold text-white font-grotesk mb-3">Futures</h1>
 
         {/* Sport pills */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
