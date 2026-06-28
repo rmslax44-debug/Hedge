@@ -396,7 +396,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                 <p className="text-xs font-bold text-purple-400 uppercase tracking-widest">
-                  {arbs.length} guaranteed profit opportunity{arbs.length !== 1 ? 'ies' : 'y'} found
+                  {arbs.length} guaranteed profit opportunit{arbs.length !== 1 ? 'ies' : 'y'} found
                 </p>
               </div>
               {arbs.map((a) => (
