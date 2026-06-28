@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ProDashboard from './ProDashboard';
 import ProCalculator, { type CalcPrefill, type OddsFormat } from './ProCalculator';
 import ProMarkets from './ProMarkets';
@@ -14,9 +14,10 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
 
 interface ProSectionProps {
   onSwitchToMyBets?: () => void;
+  scanTrigger?: number;
 }
 
-export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
+export default function ProSection({ onSwitchToMyBets, scanTrigger }: ProSectionProps) {
   const [subTab, setSubTab] = useState<SubTab>('radar');
   const [calcPrefill, setCalcPrefill] = useState<CalcPrefill | null>(null);
   const [fmt, setFmt] = useState<OddsFormat>('american');
@@ -29,6 +30,11 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
   }, []);
 
   const clearPrefill = useCallback(() => setCalcPrefill(null), []);
+
+  // When triggered from My Bets notification, switch to RADAR sub-tab
+  useEffect(() => {
+    if (scanTrigger && scanTrigger > 0) setSubTab('radar');
+  }, [scanTrigger]);
 
   return (
     <div className="min-h-screen">
@@ -82,12 +88,17 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
         </div>
       )}
 
-      {/* Content */}
+      {/* CSS-hidden sub-tabs keep state alive (Lines sport/data, Calc inputs, Radar results) */}
       <div className="pt-2">
-        {subTab === 'radar' && (
-          <ProDashboard onOpenCalc={openCalc} fmt={fmt} onSwitchToMyBets={onSwitchToMyBets} />
-        )}
-        {subTab === 'calc' && (
+        <div className={subTab === 'radar' ? '' : 'hidden'}>
+          <ProDashboard
+            onOpenCalc={openCalc}
+            fmt={fmt}
+            onSwitchToMyBets={onSwitchToMyBets}
+            scanTrigger={scanTrigger}
+          />
+        </div>
+        <div className={subTab === 'calc' ? '' : 'hidden'}>
           <ProCalculator
             prefill={calcPrefill}
             onClearPrefill={clearPrefill}
@@ -95,10 +106,10 @@ export default function ProSection({ onSwitchToMyBets }: ProSectionProps) {
             onFmtChange={setFmt}
             onSaveToTracker={onSwitchToMyBets}
           />
-        )}
-        {subTab === 'lines' && (
+        </div>
+        <div className={subTab === 'lines' ? '' : 'hidden'}>
           <ProMarkets onPrefill={openCalc} fmt={fmt} />
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   getAllBets,
   getApiKey,
@@ -29,11 +29,12 @@ interface Props {
   onOpenCalc: (prefill: CalcPrefill) => void;
   fmt: OddsFormat;
   onSwitchToMyBets?: () => void;
+  scanTrigger?: number;
 }
 
 function fmtAm(price: number) { return price >= 0 ? `+${price}` : `${price}`; }
 
-export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets }: Props) {
+export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets, scanTrigger }: Props) {
   const [scanning, setScanning] = useState(false);
   const [opps, setOpps] = useState<LiveOpp[]>([]);
   const [noEventBets, setNoEventBets] = useState<TrackedBet[]>([]);
@@ -42,6 +43,10 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets }: Prop
 
   const apiKey = getApiKey();
   const books = getSelectedBooks();
+  const noApi = !apiKey || !books.length;
+
+  // Track which trigger values we've already handled to avoid duplicate scans
+  const handledTrigger = useRef(0);
 
   const scan = useCallback(async () => {
     setScanning(true);
@@ -142,6 +147,14 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets }: Prop
     }
   }, [apiKey, books]);
 
+  // Auto-scan when triggered from a My Bets notification
+  useEffect(() => {
+    if (scanTrigger && scanTrigger > handledTrigger.current && !noApi) {
+      handledTrigger.current = scanTrigger;
+      scan();
+    }
+  }, [scanTrigger]); // eslint-disable-line
+
   const bookUrl = (key: string) => US_SPORTSBOOKS.find((b) => b.key === key)?.url;
 
   function sinceLabel(ts: number) {
@@ -151,8 +164,6 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets }: Prop
     if (m < 60) return `${m}m ago`;
     return `${Math.floor(m / 60)}h ago`;
   }
-
-  const noApi = !apiKey || !books.length;
 
   return (
     <div className="px-4 pt-2 pb-32 space-y-3">

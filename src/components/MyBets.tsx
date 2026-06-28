@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getAllBets,
   deleteBet,
@@ -134,10 +134,12 @@ function HedgeActionCard({
   bet,
   opp,
   onDone,
+  onGoToProRadar,
 }: {
   bet: TrackedBet;
   opp: HedgeOpportunity;
   onDone: () => void;
+  onGoToProRadar?: () => void;
 }) {
   // Derive decimal odds from stored bet values (works for both scanner and manual bets)
   const decA = bet.potentialPayout / bet.stake;
@@ -151,24 +153,22 @@ function HedgeActionCard({
   const [confirmed, setConfirmed] = useState(false);
   const [showAlert, setShowAlert] = useState(bet.hedgeValueTrend === 'up');
   const [showDownAlert, setShowDownAlert] = useState(bet.hedgeValueTrend === 'down');
-  const prevOppRef = useRef(opp);
 
   const isGoneNegative = bet.hedgeValueTrend === 'gone_negative';
   const isExpired = bet.hedgeValueTrend === 'expired';
 
+  // Only show the "better hedge" / "value decreased" banners when hedgeMonitor
+  // has explicitly flagged an improvement or decline — avoids false positives
+  // from tiny floating-point fluctuations caused by re-renders or Pro Radar scans.
   useEffect(() => {
-    const bothDone = betADone && betBDone;
-    if (!confirmed && !bothDone) {
-      if (opp.guaranteedProfit > prevOppRef.current.guaranteedProfit + 0.01) {
-        setShowAlert(true);
-        setShowDownAlert(false);
-      } else if (opp.guaranteedProfit < prevOppRef.current.guaranteedProfit - 0.01 && opp.guaranteedProfit > 0) {
-        setShowDownAlert(true);
-        setShowAlert(false);
-      }
+    if (bet.hedgeValueTrend === 'up') {
+      setShowAlert(true);
+      setShowDownAlert(false);
+    } else if (bet.hedgeValueTrend === 'down') {
+      setShowDownAlert(true);
+      setShowAlert(false);
     }
-    prevOppRef.current = opp;
-  }, [opp]);
+  }, [bet.hedgeValueTrend]);
 
   // Total-investment math: split optimally between Bet A and Bet B
   const parsedTotal = Math.max(0, parseFloat(totalInput) || 0);
@@ -220,17 +220,26 @@ function HedgeActionCard({
   return (
     <div className="space-y-3 animate-slide-up">
 
-      {/* Better hedge alert banner */}
+      {/* Better hedge alert banner — tap to go to Pro Radar */}
       {showAlert && !isGoneNegative && !isExpired && (
-        <div className="flex items-center gap-3 rounded-xl border border-purple-500/40 bg-purple-500/10 px-3 py-2.5 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
-          <RadarPing />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">Better hedge detected</p>
-            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Go to Find Hedges tab to scan for a better deal</p>
-          </div>
+        <div className="relative rounded-xl border border-purple-500/40 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
           <button
-            onClick={() => setShowAlert(false)}
-            className="text-slate-500 hover:text-slate-300 text-sm shrink-0 transition-colors"
+            onClick={() => onGoToProRadar?.()}
+            className="w-full flex items-center gap-3 px-3 py-2.5 pr-8 text-left"
+          >
+            <RadarPing />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">Better hedge detected</p>
+              <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Tap to scan Pro Radar now →</p>
+            </div>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAlert(false);
+              updateBet(bet.id, { hedgeValueTrend: undefined, previousGuaranteedProfit: undefined });
+            }}
+            className="absolute top-2.5 right-3 text-slate-500 hover:text-slate-300 text-sm transition-colors"
           >✕</button>
         </div>
       )}
@@ -246,7 +255,10 @@ function HedgeActionCard({
             <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed now · Lines moved since you found this</p>
           </div>
           <button
-            onClick={() => setShowDownAlert(false)}
+            onClick={() => {
+              setShowDownAlert(false);
+              updateBet(bet.id, { hedgeValueTrend: undefined, previousGuaranteedProfit: undefined });
+            }}
             className="text-slate-500 hover:text-slate-300 text-sm shrink-0 transition-colors"
           >✕</button>
         </div>
@@ -647,10 +659,12 @@ function BetCard({
   bet,
   onDelete,
   onRefresh,
+  onGoToProRadar,
 }: {
   bet: TrackedBet;
   onDelete: () => void;
   onRefresh: () => void;
+  onGoToProRadar?: () => void;
 }) {
   const [expanded, setExpanded] = useState(bet.status === 'hedge_ready');
   const [showManual, setShowManual] = useState(false);
@@ -936,6 +950,7 @@ function BetCard({
                 bet={bet}
                 opp={bet.hedgeOpportunity}
                 onDone={onRefresh}
+                onGoToProRadar={onGoToProRadar}
               />
             )}
 
@@ -1049,7 +1064,7 @@ function BetCard({
 
 // ─── My Bets Screen ───────────────────────────────────────────────────────────
 
-export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: number) => void }) {
+export default function MyBets({ onBadgeChange, onGoToProRadar }: { onBadgeChange?: (count: number) => void; onGoToProRadar?: () => void }) {
   const [bets, setBets] = useState<TrackedBet[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'history'>('active');
@@ -1146,6 +1161,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                     <BetCard key={bet.id} bet={bet}
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
+                      onGoToProRadar={onGoToProRadar}
                     />
                   ))}
                 </div>
@@ -1164,6 +1180,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                     <BetCard key={bet.id} bet={bet}
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
+                      onGoToProRadar={onGoToProRadar}
                     />
                   ))}
                 </div>
@@ -1182,6 +1199,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                     <BetCard key={bet.id} bet={bet}
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
+                      onGoToProRadar={onGoToProRadar}
                     />
                   ))}
                 </div>
@@ -1200,6 +1218,7 @@ export default function MyBets({ onBadgeChange }: { onBadgeChange?: (count: numb
                     <BetCard key={bet.id} bet={bet}
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
+                      onGoToProRadar={onGoToProRadar}
                     />
                   ))}
                 </div>
