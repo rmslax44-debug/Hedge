@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
@@ -257,13 +257,14 @@ function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: stri
 
 // ─── Opportunities Screen ─────────────────────────────────────────────────────
 
-export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?: () => void }) {
+export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { onSwitchToMyBets?: () => void; refreshTrigger?: number }) {
   const [arbs, setArbs] = useState<ArbOpportunity[]>([]);
   const [nearArbs, setNearArbs] = useState<OddsEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState(false);
   const [hedgeReadyBets, setHedgeReadyBets] = useState<TrackedBet[]>([]);
+  const handledTrigger = useRef(0);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -312,9 +313,13 @@ export default function Opportunities({ onSwitchToMyBets }: { onSwitchToMyBets?:
     }
   }
 
+  // Scan whenever the tab is focused (refreshTrigger increments on each visit)
   useEffect(() => {
-    if (isConfigured) scan();
-  }, []); // eslint-disable-line
+    if (refreshTrigger && refreshTrigger > handledTrigger.current && isConfigured) {
+      handledTrigger.current = refreshTrigger;
+      scan();
+    }
+  }, [refreshTrigger]); // eslint-disable-line
 
   if (!isConfigured) {
     return (

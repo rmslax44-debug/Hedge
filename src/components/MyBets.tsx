@@ -11,7 +11,7 @@ import {
   type BetResult,
 } from '../utils/storage';
 import { checkMonitoredBets } from '../utils/hedgeMonitor';
-import { calcLiveHedge, americanToDecimal } from '../utils/arb';
+import { americanToDecimal } from '../utils/arb';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
 import { calcRisk } from '../utils/risk';
 import AddBetWizard from './AddBetWizard';
@@ -446,128 +446,6 @@ function HedgeActionCard({
   );
 }
 
-// ─── Manual Hedge Input ───────────────────────────────────────────────────────
-
-function ManualHedgePanel({
-  bet,
-  onFound,
-}: {
-  bet: TrackedBet;
-  onFound: (opp: HedgeOpportunity) => void;
-}) {
-  const [winback, setWinback] = useState('');
-  const [teamName, setTeamName] = useState(bet.opposingTeam ?? '');
-  const [bookKey, setBookKey] = useState('');
-
-  const parsed = parseFloat(winback);
-  const per100 = !isNaN(parsed) && parsed > 100 ? parsed : null;
-  const calc =
-    per100
-      ? calcLiveHedge(bet.stake, bet.potentialPayout, per100 / 100)
-      : null;
-
-  function handleSave() {
-    if (!calc || !teamName || !bookKey) return;
-    const dec = (per100 ?? 0) / 100;
-    const americanOdds = dec >= 2 ? Math.round((dec - 1) * 100) : Math.round(-100 / (dec - 1));
-    onFound({
-      hedgeTeam: teamName,
-      hedgeBook: US_SPORTSBOOKS.find(b => b.key === bookKey)?.name ?? bookKey,
-      hedgeBookKey: bookKey,
-      hedgeStake: calc.hedgeStake,
-      hedgeOdds: americanOdds,
-      guaranteedProfit: calc.guaranteedProfit,
-      foundAt: Date.now(),
-    });
-  }
-
-  return (
-    <div className="card p-4 space-y-4 border-blue-500/20 bg-blue-500/5">
-      <p className="text-xs font-semibold text-blue-300 uppercase tracking-widest">Find your hedge manually</p>
-      <p className="text-xs text-slate-400">
-        Open any sportsbook, find the opposite outcome from your bet, and answer:
-      </p>
-
-      <div className="space-y-3">
-        <div className="space-y-1.5">
-          <p className="text-xs text-slate-400">What outcome are you hedging? (the opposite of your bet)</p>
-          <input
-            type="text"
-            placeholder={bet.opposingTeam ?? 'e.g. Eagles to win'}
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            className="input-field text-sm"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <p className="text-xs text-slate-400">
-            If you bet $100 on that outcome, how much total would you get back?
-          </p>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
-            <input
-              type="number"
-              placeholder="195"
-              value={winback}
-              onChange={(e) => setWinback(e.target.value)}
-              className="input-field pl-8 text-sm"
-              min="100"
-            />
-          </div>
-          <p className="text-xs text-slate-500">Must be more than $100 (your bet back + profit)</p>
-        </div>
-
-        {calc && calc.guaranteedProfit > 0 && (
-          <>
-            <div className="space-y-1.5">
-              <p className="text-xs text-slate-400">Which app did you find these odds on?</p>
-              <div className="grid grid-cols-3 gap-1.5">
-                {US_SPORTSBOOKS.slice(0, 6).map(b => (
-                  <button key={b.key} onClick={() => setBookKey(b.key)}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
-                      bookKey === b.key
-                        ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
-                        : 'bg-[#180032] border-[#3D1A6E] text-slate-400'
-                    }`}>
-                    {b.shortName}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-purple-500/10 rounded-xl p-3 text-center space-y-0.5">
-              <p className="text-xs text-purple-400 font-semibold">Hedge this to guarantee</p>
-              <p className="text-2xl font-bold text-purple-400">+${calc.guaranteedProfit.toFixed(2)}</p>
-              <p className="text-xs text-slate-500">by betting ${calc.hedgeStake.toFixed(2)} on the opposite outcome</p>
-            </div>
-
-            <button
-              onClick={handleSave}
-              disabled={!bookKey}
-              className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
-                bookKey
-                  ? 'bg-purple-500 text-white hover:bg-purple-400'
-                  : 'bg-[#180032] text-slate-500 cursor-not-allowed'
-              }`}
-            >
-              Show me exactly what to do
-            </button>
-          </>
-        )}
-
-        {calc && calc.guaranteedProfit <= 0 && (
-          <div className="card p-3 border-amber-500/30 bg-amber-500/5">
-            <p className="text-xs text-amber-400">
-              At those odds, hedging would result in a small loss. Try checking other sportsbooks for better odds on the opposing outcome.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Settle Panel ─────────────────────────────────────────────────────────────
 
 function SettlePanel({ bet, onSettled }: { bet: TrackedBet; onSettled: () => void }) {
@@ -667,7 +545,7 @@ function BetCard({
   onGoToProRadar?: () => void;
 }) {
   const [expanded, setExpanded] = useState(bet.status === 'hedge_ready');
-  const [showManual, setShowManual] = useState(false);
+
   const [showLink, setShowLink] = useState(false);
   const [localNotify, setLocalNotify] = useState(bet.notifyHedge ?? false);
   const [showActivate, setShowActivate] = useState(false);
@@ -714,12 +592,6 @@ function BetCard({
       : bet.result === 'loss' ? 'Lost'
       : bet.result === 'push' ? 'Push'
       : 'Settled';
-
-  function handleOppFound(opp: HedgeOpportunity) {
-    updateBet(bet.id, { status: 'hedge_ready', hedgeOpportunity: opp });
-    setShowManual(false);
-    onRefresh();
-  }
 
   function toggleNotify() {
     const newVal = !localNotify;
@@ -967,20 +839,6 @@ function BetCard({
               </button>
             )}
 
-            {/* Manual hedge for monitoring bets */}
-            {bet.status === 'monitoring' && !showManual && (
-              <button
-                onClick={() => setShowManual(true)}
-                className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-400 text-sm hover:border-purple-500/60 hover:shadow-[0_0_14px_rgba(168,85,247,0.22)] transition-all"
-              >
-                Check if I can hedge now →
-              </button>
-            )}
-
-            {bet.status === 'monitoring' && showManual && (
-              <ManualHedgePanel bet={bet} onFound={handleOppFound} />
-            )}
-
             {bet.status === 'hedged' && (
               <div className="space-y-3">
                 {/* Bet A pill — completed */}
@@ -1064,7 +922,7 @@ function BetCard({
 
 // ─── My Bets Screen ───────────────────────────────────────────────────────────
 
-export default function MyBets({ onBadgeChange, onGoToProRadar }: { onBadgeChange?: (count: number) => void; onGoToProRadar?: () => void }) {
+export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }: { onBadgeChange?: (count: number) => void; onGoToProRadar?: () => void; refreshTrigger?: number }) {
   const [bets, setBets] = useState<TrackedBet[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'history'>('active');
@@ -1081,6 +939,11 @@ export default function MyBets({ onBadgeChange, onGoToProRadar }: { onBadgeChang
     const interval = setInterval(() => checkMonitoredBets(refresh), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [refresh]);
+
+  // Re-read localStorage whenever the My Bets tab is focused (e.g. after Pro Radar updates a hedge)
+  useEffect(() => {
+    if (refreshTrigger) refresh();
+  }, [refreshTrigger]); // eslint-disable-line
 
   const hedgeReady = bets.filter(b => b.status === 'hedge_ready');
   const active = bets.filter(b => b.status === 'monitoring');

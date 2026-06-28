@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import BottomNav from './components/BottomNav';
 import MyBets from './components/MyBets';
 import Opportunities from './components/Opportunities';
@@ -16,6 +16,14 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(isConfigured() ? 'bets' : 'settings');
   const [badge, setBadge] = useState<{ bets?: number }>({});
   const [proScanTrigger, setProScanTrigger] = useState(0);
+  const [betsRefreshTrigger, setBetsRefreshTrigger] = useState(0);
+  const [oppsRefreshTrigger, setOppsRefreshTrigger] = useState(0);
+
+  // Refresh data automatically whenever the user switches to these tabs
+  useEffect(() => {
+    if (tab === 'bets') setBetsRefreshTrigger(n => n + 1);
+    if (tab === 'opportunities') setOppsRefreshTrigger(n => n + 1);
+  }, [tab]);
 
   const handleBadgeChange = useCallback((count: number) => {
     setBadge({ bets: count });
@@ -35,13 +43,12 @@ export default function App() {
       <main className="max-w-2xl mx-auto">
         {/* CSS-hidden tabs keep component state alive across tab switches */}
         <div className={tab === 'bets' ? '' : 'hidden'}>
-          <MyBets onBadgeChange={handleBadgeChange} onGoToProRadar={goToProRadar} />
+          <MyBets onBadgeChange={handleBadgeChange} onGoToProRadar={goToProRadar} refreshTrigger={betsRefreshTrigger} />
         </div>
 
-        {/* Opportunities re-mounts on each visit so its auto-scan fires once per visit */}
-        {tab === 'opportunities' && (
-          <Opportunities onSwitchToMyBets={() => setTab('bets')} />
-        )}
+        <div className={tab === 'opportunities' ? '' : 'hidden'}>
+          <Opportunities onSwitchToMyBets={() => setTab('bets')} refreshTrigger={oppsRefreshTrigger} />
+        </div>
 
         <div className={tab === 'pro' ? '' : 'hidden'}>
           <ProSection
