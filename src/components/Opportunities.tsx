@@ -450,6 +450,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState(false);
   const [hedgeReadyBets, setHedgeReadyBets] = useState<TrackedBet[]>([]);
+  const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
   const handledTrigger = useRef(0);
 
   const apiKey = getApiKey();
@@ -504,6 +505,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
       setUpcomingGames(foundUpcoming);
 
       setHedgeReadyBets(currentBets.filter((b) => b.status === 'hedge_ready' && b.eventId));
+      setLastScanTime(new Date());
       setScanned(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Scan failed');
@@ -543,6 +545,11 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
           <div>
             <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Live Markets</p>
             <h1 className="text-xl font-bold text-white mt-0.5 font-grotesk">Find Hedges</h1>
+            {lastScanTime && (
+              <p className="text-[10px] text-slate-600 font-mono mt-0.5">
+                scanned {lastScanTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            )}
           </div>
           <button
             onClick={scan}
