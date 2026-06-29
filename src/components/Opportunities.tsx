@@ -3,7 +3,7 @@ import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import { SPORTS } from '../utils/sportsbooks';
-import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
+import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, getFavoriteSports, type TrackedBet } from '../utils/storage';
 
 // Derived from the single source of truth — all sports the app supports
 const SCAN_SPORTS = SPORTS.map(s => s.key);
@@ -30,11 +30,13 @@ function formatGameTime(iso: string): string {
 function ArbCard({
   opp,
   matchingBet,
+  isFavorite,
   onAddToTracker,
   onSwitchToMyBets,
 }: {
   opp: ArbOpportunity;
   matchingBet?: TrackedBet;
+  isFavorite?: boolean;
   onAddToTracker: (stakeA: number, stakeB: number, profit: number) => void;
   onSwitchToMyBets?: () => void;
 }) {
@@ -88,6 +90,9 @@ function ArbCard({
               <span className="text-emerald-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
               </span>
+              {isFavorite && (
+                <span className="text-yellow-400 text-xs leading-none" title="Favorite sport">⭐</span>
+              )}
             </div>
             <p className="text-sm font-semibold text-white">
               {opp.event.away_team} @ {opp.event.home_team}
@@ -474,17 +479,34 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
   const [scanned, setScanned] = useState(false);
   const [hedgeReadyBets, setHedgeReadyBets] = useState<TrackedBet[]>([]);
   const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
+  const [showAllArbs, setShowAllArbs] = useState(false);
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
   const handledTrigger = useRef(0);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
   const isConfigured = apiKey.length > 0 && userBooks.length > 0;
 
+  const favSports = getFavoriteSports();
+  const hasFavorites = favSports.length > 0;
+  const TOP_N = 10;
+  const UPCOMING_LIMIT = 6;
+  const sortedArbs = hasFavorites
+    ? [...arbs.filter(a => favSports.includes(a.event.sport_key)),
+       ...arbs.filter(a => !favSports.includes(a.event.sport_key))]
+    : arbs;
+  const visibleArbs = showAllArbs ? sortedArbs : sortedArbs.slice(0, TOP_N);
+  const hasMoreArbs = sortedArbs.length > TOP_N && !showAllArbs;
+  const visibleUpcoming = showAllUpcoming ? upcomingGames : upcomingGames.slice(0, UPCOMING_LIMIT);
+  const hasMoreUpcoming = upcomingGames.length > UPCOMING_LIMIT && !showAllUpcoming;
+
   async function scan() {
     setLoading(true);
     setError(null);
     setArbs([]);
     setUpcomingGames([]);
+    setShowAllArbs(false);
+    setShowAllUpcoming(false);
     try {
       const results = await Promise.allSettled(
         SCAN_SPORTS.map((s) => fetchOdds(s, apiKey, userBooks)),
@@ -530,7 +552,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
           return diff < 0; // include if already started (live)
         })
         .sort((a, b) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
-        .slice(0, 12);
+        .slice(0, 50);
       setUpcomingGames(foundUpcoming);
 
       setHedgeReadyBets(currentBets.filter((b) => b.status === 'hedge_ready' && b.eventId));
@@ -618,18 +640,19 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
       {!loading && scanned && (
         <div className="px-4 space-y-5">
           {/* True arbs */}
-          {arbs.length > 0 ? (
+          {sortedArbs.length > 0 ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                 <p className="text-xs font-bold text-purple-400 uppercase tracking-widest font-grotesk">
-                  {arbs.length} guaranteed profit opportunit{arbs.length !== 1 ? 'ies' : 'y'} found
+                  {sortedArbs.length} guaranteed profit opportunit{sortedArbs.length !== 1 ? 'ies' : 'y'} found
                 </p>
               </div>
-              {arbs.map((a) => (
+              {visibleArbs.map((a) => (
                 <ArbCard
                   key={a.event.id}
                   opp={a}
+                  isFavorite={hasFavorites && favSports.includes(a.event.sport_key)}
                   matchingBet={hedgeReadyBets.find((b) => b.eventId === a.event.id)}
                   onSwitchToMyBets={onSwitchToMyBets}
                   onAddToTracker={(scaledStakeA, scaledStakeB, scaledProfit) => {
@@ -659,6 +682,14 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                   }}
                 />
               ))}
+              {hasMoreArbs && (
+                <button
+                  onClick={() => setShowAllArbs(true)}
+                  className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-400 text-xs font-semibold hover:border-purple-500/60 hover:text-purple-300 transition-all"
+                >
+                  Show {sortedArbs.length - TOP_N} more opportunit{sortedArbs.length - TOP_N !== 1 ? 'ies' : 'y'} ↓
+                </button>
+              )}
             </div>
           ) : (
             <div className="card p-5 text-center space-y-2">
@@ -676,9 +707,17 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">Live & Upcoming Today</p>
                 <p className="text-xs text-slate-500 mt-0.5">Watch a team — get alerted the moment a hedge opportunity appears</p>
               </div>
-              {upcomingGames.map((e) => (
+              {visibleUpcoming.map((e) => (
                 <UpcomingGameCard key={e.id} event={e} userBooks={userBooks} />
               ))}
+              {hasMoreUpcoming && (
+                <button
+                  onClick={() => setShowAllUpcoming(true)}
+                  className="w-full py-3 rounded-xl border border-[#3D1A6E] text-slate-500 text-xs font-semibold hover:border-purple-500/30 hover:text-slate-400 transition-all"
+                >
+                  Show {upcomingGames.length - UPCOMING_LIMIT} more game{upcomingGames.length - UPCOMING_LIMIT !== 1 ? 's' : ''} ↓
+                </button>
+              )}
             </div>
           )}
         </div>

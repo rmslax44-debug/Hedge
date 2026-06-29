@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { US_SPORTSBOOKS } from '../utils/sportsbooks';
+import { US_SPORTSBOOKS, SPORT_GROUPS, SPORTS } from '../utils/sportsbooks';
 import {
   getApiKey, setApiKey,
   getSelectedBooks, setSelectedBooks,
   getNotificationsEnabled, setNotificationsEnabled,
+  getFavoriteSports, setFavoriteSports,
 } from '../utils/storage';
 import { requestNotificationPermission, canNotify } from '../utils/hedgeMonitor';
+
+const sportMap = Object.fromEntries(SPORTS.map(s => [s.key, s]));
 
 export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
   const [apiKey, setApiKeyState] = useState('');
@@ -14,11 +17,14 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
   const [notifStatus, setNotifStatus] = useState<'idle' | 'requesting' | 'denied'>('idle');
   const [saved, setSaved] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const [favSports, setFavSports] = useState<string[]>([]);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setApiKeyState(getApiKey());
     setSelectedBooksState(getSelectedBooks());
     setNotificationsOn(getNotificationsEnabled());
+    setFavSports(getFavoriteSports());
   }, []);
 
   async function handleNotifToggle() {
@@ -48,6 +54,23 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
     setSaved(false);
+  }
+
+  function toggleFavSport(key: string) {
+    setFavSports(prev => {
+      const next = prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key];
+      setFavoriteSports(next);
+      return next;
+    });
+  }
+
+  function toggleGroup(label: string) {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
   }
 
   function handleSave() {
@@ -190,6 +213,87 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         )}
       </div>
 
+      {/* Favorite Sports */}
+      <div className="card p-5 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Favorite Sports</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              {favSports.length === 0
+                ? "Leave empty — we'll show the best across all leagues"
+                : `${favSports.length} sport${favSports.length !== 1 ? 's' : ''} selected · shown first in Find Hedges`}
+            </p>
+          </div>
+          {favSports.length > 0 && (
+            <button
+              onClick={() => { setFavSports([]); setFavoriteSports([]); }}
+              className="text-[10px] text-slate-600 hover:text-red-400 transition-colors shrink-0 mt-0.5"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          {SPORT_GROUPS.map(group => {
+            const sports = group.keys.map(k => sportMap[k]).filter(Boolean);
+            const selectedCount = group.keys.filter(k => favSports.includes(k)).length;
+            const isOpen = openGroups.has(group.label);
+
+            return (
+              <div key={group.label} className="rounded-xl border border-[#3D1A6E] overflow-hidden">
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+                >
+                  <span className="text-xs font-semibold text-slate-300">{group.label}</span>
+                  <div className="flex items-center gap-2">
+                    {selectedCount > 0 && (
+                      <span className="text-[10px] font-bold text-purple-400 bg-purple-500/15 px-1.5 py-0.5 rounded-full">
+                        {selectedCount}
+                      </span>
+                    )}
+                    <svg
+                      width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      className={`text-slate-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    >
+                      <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-3 pb-3 pt-2.5 grid grid-cols-2 gap-1.5 border-t border-[#3D1A6E]/50">
+                    {sports.map(s => {
+                      const selected = favSports.includes(s.key);
+                      return (
+                        <button
+                          key={s.key}
+                          onClick={() => toggleFavSport(s.key)}
+                          className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border text-left text-xs transition-all duration-150 ${
+                            selected
+                              ? 'bg-purple-500/12 border-purple-500/50 text-purple-300'
+                              : 'bg-[#180032] border-[#2D1A4E] text-slate-400 hover:border-purple-500/30 hover:text-slate-300'
+                          }`}
+                        >
+                          <span className="shrink-0 text-sm leading-none">{s.emoji}</span>
+                          <span className="truncate font-medium flex-1">{s.name}</span>
+                          {selected && (
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+                              <path d="M2 5l2.5 2.5L8 3" stroke="#A855F7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Save button */}
       <button
         onClick={handleSave}
@@ -219,7 +323,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         </div>
       )}
 
-      <p className="text-center text-[10px] text-slate-700 pt-2 select-none">Hedge v1.2 · Jun 2026</p>
+      <p className="text-center text-[10px] text-slate-700 pt-2 select-none">Hedge v1.3 · Jun 2026</p>
     </div>
   );
 }
