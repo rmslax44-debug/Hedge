@@ -2,28 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
-import {} from '../utils/sportsbooks';
+import { SPORTS } from '../utils/sportsbooks';
 import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
 
-const SCAN_SPORTS = [
-  'americanfootball_nfl',
-  'basketball_nba',
-  'baseball_mlb',
-  'icehockey_nhl',
-  'mma_mixed_martial_arts',
-  'soccer_fifa_world_cup',
-  'soccer_usa_mls',
-];
+// Derived from the single source of truth — all sports the app supports
+const SCAN_SPORTS = SPORTS.map(s => s.key);
 
-const SPORT_LABEL: Record<string, string> = {
-  americanfootball_nfl: '🏈 NFL',
-  basketball_nba: '🏀 NBA',
-  baseball_mlb: '⚾ MLB',
-  icehockey_nhl: '🏒 NHL',
-  mma_mixed_martial_arts: '🥊 MMA',
-  soccer_fifa_world_cup: '⚽ World Cup',
-  soccer_usa_mls: '⚽ MLS',
-};
+const SPORT_LABEL: Record<string, string> = Object.fromEntries(
+  SPORTS.map(s => [s.key, `${s.emoji} ${s.name}`])
+);
 
 function formatOdds(price: number): string {
   return price > 0 ? `+${price}` : `${price}`;

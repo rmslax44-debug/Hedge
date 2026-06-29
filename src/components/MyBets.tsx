@@ -365,8 +365,27 @@ function HedgeActionCard({
         </div>
       )}
 
-      {/* Step-by-step bet instructions */}
-      {parsedTotal > 0 && (
+      {/* Not-viable live warning — shown when live calc is negative but not yet flagged by monitor */}
+      {parsedTotal > 0 && liveProfit < 0 && !isGoneNegative && !isExpired && !confirmed && (
+        <div className="rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-3 space-y-2 shadow-[0_0_18px_rgba(239,68,68,0.2)]">
+          <div className="flex items-center gap-2">
+            <span className="text-red-400 font-bold text-base">⚠</span>
+            <p className="text-xs font-bold text-red-400 uppercase tracking-wider">Hedge not profitable at current odds</p>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Placing these bets would result in a <span className="text-red-400 font-semibold">${Math.abs(liveProfit).toFixed(2)} loss</span>. Odds have likely shifted since this opportunity was found.
+          </p>
+          <button
+            onClick={() => { updateBet(bet.id, { status: 'monitoring', hedgeOpportunity: undefined, hedgeValueTrend: undefined }); onDone(); }}
+            className="w-full py-2 rounded-lg border border-red-500/40 text-red-400 text-xs font-semibold hover:border-red-500/70 hover:bg-red-500/10 transition-all"
+          >
+            Back to monitoring — wait for better odds →
+          </button>
+        </div>
+      )}
+
+      {/* Step-by-step bet instructions — only shown when hedge is actually profitable */}
+      {parsedTotal > 0 && liveProfit >= 0 && (
         <div className="space-y-2">
 
           {/* Bet 1 */}
