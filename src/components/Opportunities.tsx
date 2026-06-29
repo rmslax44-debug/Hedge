@@ -239,13 +239,33 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
   const now = Date.now();
   const startMs = new Date(event.commence_time).getTime();
   const diffMs = startMs - now;
-  const isLive = diffMs < 0 && diffMs > -4 * 3_600_000;
-  const isSoon = diffMs >= 0 && diffMs < 2 * 3_600_000;
+  // Status tiers
+  const isLive      = diffMs < 0 && diffMs > -4 * 3_600_000;        // started in last 4h
+  const isImminent  = !isLive && diffMs < 30 * 60_000;               // < 30 min away
+  const isSoon      = !isLive && !isImminent && diffMs < 2 * 3_600_000; // 30 min – 2h
 
   const isNearArb =
     bestHome && bestAway
       ? 1 / americanToDecimal(bestHome.price) + 1 / americanToDecimal(bestAway.price) < 1.04
       : false;
+
+  // Card border + glow
+  const cardStyle = isLive
+    ? 'border-red-500/60 shadow-[0_0_28px_rgba(239,68,68,0.28),inset_0_0_0_1px_rgba(239,68,68,0.08)]'
+    : isImminent
+    ? 'border-amber-500/50 shadow-[0_0_18px_rgba(245,158,11,0.22)]'
+    : isNearArb
+    ? 'border-purple-500/30'
+    : '';
+
+  // Left-edge status bar
+  const barBg = isLive     ? '#EF4444'
+    : isImminent           ? '#F59E0B'
+    : isSoon               ? 'rgba(245,158,11,0.35)'
+    : 'transparent';
+  const barShadow = isLive     ? '0 0 10px rgba(239,68,68,0.9)'
+    : isImminent               ? '0 0 8px rgba(245,158,11,0.7)'
+    : 'none';
 
   function watchTeam(team: string, opponent: string, best: { price: number; bookKey: string } | null) {
     if (watchedTeams.has(team)) return;
@@ -296,101 +316,126 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
     setWatchedTeams(new Set([event.home_team, event.away_team]));
   }
 
-  const bothWatched = watchedTeams.has(event.home_team) && watchedTeams.has(event.away_team);
+  const bothWatched   = watchedTeams.has(event.home_team) && watchedTeams.has(event.away_team);
   const neitherWatched = !watchedTeams.has(event.home_team) && !watchedTeams.has(event.away_team);
 
   return (
-    <div className={`card p-4 space-y-3 ${isNearArb ? 'border-purple-500/30 bg-purple-500/5' : ''}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {isLive ? (
-            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-400 tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
-              Live
+    <div className={`card overflow-hidden relative ${cardStyle}`}>
+      {/* Left-edge status bar */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0"
+        style={{ background: barBg, boxShadow: barShadow }}
+      />
+
+      <div className="p-4 space-y-3">
+        {/* Status row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isLive ? (
+              /* ── LIVE pill — red, pulsing, unmissable ── */
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-red-500/70 bg-red-500/20 text-red-400 text-xs font-bold tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.35)]">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse shrink-0" />
+                LIVE NOW
+              </span>
+            ) : isImminent ? (
+              /* ── IMMINENT pill — amber countdown ── */
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-amber-500/60 bg-amber-500/15 text-amber-400 text-xs font-bold tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                {Math.round(diffMs / 60_000)} MIN
+              </span>
+            ) : isSoon ? (
+              /* ── SOON — amber time ── */
+              <span className="text-xs font-semibold text-amber-400/80 font-mono">
+                {formatGameTime(event.commence_time)}
+              </span>
+            ) : (
+              /* ── standard time ── */
+              <span className="text-xs text-slate-500 font-mono">{formatGameTime(event.commence_time)}</span>
+            )}
+            <span className="text-[10px] text-slate-600 font-mono">
+              {SPORT_LABEL[event.sport_key] ?? '🏟️'}
             </span>
-          ) : isSoon ? (
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
-              {Math.round(diffMs / 60000)}m
+          </div>
+
+          {isNearArb && (
+            <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest border border-purple-500/30 rounded-full px-2 py-0.5 bg-purple-500/10 shrink-0">
+              Near Arb
             </span>
-          ) : (
-            <span className="text-xs text-slate-500 font-mono">{formatGameTime(event.commence_time)}</span>
           )}
-          <span className="text-[10px] text-slate-600 font-mono">
-            {SPORT_LABEL[event.sport_key] ?? '🏟️'}
-          </span>
         </div>
-        {isNearArb && (
-          <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest border border-purple-500/30 rounded-full px-2 py-0.5 bg-purple-500/10">
-            Near Arb
-          </span>
-        )}
-      </div>
 
-      {/* Matchup */}
-      <p className="text-sm font-semibold text-white leading-snug">
-        {event.away_team} <span className="text-slate-500 font-normal text-xs">@</span> {event.home_team}
-      </p>
+        {/* Matchup */}
+        <p className={`text-sm font-semibold leading-snug ${isLive ? 'text-white' : 'text-white'}`}>
+          {event.away_team}{' '}
+          <span className="text-slate-500 font-normal text-xs">@</span>{' '}
+          {event.home_team}
+        </p>
 
-      {/* Best odds */}
-      {(bestHome || bestAway) && (
-        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-          {[
-            { team: event.home_team, best: bestHome },
-            { team: event.away_team, best: bestAway },
-          ].map(({ team, best }) => (
-            <div key={team} className="bg-[#180032] rounded-xl p-2.5 space-y-0.5">
-              <p className="text-slate-500 truncate text-[11px]">{team.split(' ').slice(-1)[0]}</p>
-              {best ? (
-                <>
-                  <p className={`font-bold text-sm ${best.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
-                    {formatOdds(best.price)}
-                  </p>
-                  <p className="text-slate-600 text-[10px]">{best.bookName}</p>
-                </>
-              ) : (
-                <p className="text-slate-700 text-sm">—</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Watch buttons */}
-      <div className="space-y-1.5">
-        <div className="flex gap-2">
-          {[
-            { team: event.home_team, opponent: event.away_team, best: bestHome },
-            { team: event.away_team, opponent: event.home_team, best: bestAway },
-          ].map(({ team, opponent, best }) => {
-            const isWatched = watchedTeams.has(team);
-            return (
-              <button
+        {/* Best odds grid */}
+        {(bestHome || bestAway) && (
+          <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+            {[
+              { team: event.home_team, best: bestHome },
+              { team: event.away_team, best: bestAway },
+            ].map(({ team, best }) => (
+              <div
                 key={team}
-                disabled={isWatched}
-                onClick={() => watchTeam(team, opponent, best)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  isWatched
-                    ? 'border-white/20 text-white/50 cursor-default'
-                    : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                className={`rounded-xl p-2.5 space-y-0.5 ${
+                  isLive ? 'bg-red-500/8 border border-red-500/15' : 'bg-[#180032]'
                 }`}
               >
-                {isWatched ? `✓ ${team.split(' ').slice(-1)[0]}` : `+ Watch ${team.split(' ').slice(-1)[0]}`}
-              </button>
-            );
-          })}
+                <p className="text-slate-500 truncate text-[11px]">{team.split(' ').slice(-1)[0]}</p>
+                {best ? (
+                  <>
+                    <p className={`font-bold text-sm ${best.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
+                      {formatOdds(best.price)}
+                    </p>
+                    <p className="text-slate-600 text-[10px]">{best.bookName}</p>
+                  </>
+                ) : (
+                  <p className="text-slate-700 text-sm">—</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Watch buttons */}
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            {[
+              { team: event.home_team, opponent: event.away_team, best: bestHome },
+              { team: event.away_team, opponent: event.home_team, best: bestAway },
+            ].map(({ team, opponent, best }) => {
+              const isWatched = watchedTeams.has(team);
+              return (
+                <button
+                  key={team}
+                  disabled={isWatched}
+                  onClick={() => watchTeam(team, opponent, best)}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                    isWatched
+                      ? 'border-white/20 text-white/50 cursor-default'
+                      : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                  }`}
+                >
+                  {isWatched ? `✓ ${team.split(' ').slice(-1)[0]}` : `+ Watch ${team.split(' ').slice(-1)[0]}`}
+                </button>
+              );
+            })}
+          </div>
+          {neitherWatched && (
+            <button
+              onClick={watchBoth}
+              className="w-full py-1.5 rounded-lg text-xs font-semibold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+            >
+              + Watch Both Teams
+            </button>
+          )}
+          {bothWatched && (
+            <p className="text-center text-[10px] text-slate-600 font-mono pt-0.5">Both teams tracked in My Bets</p>
+          )}
         </div>
-        {neitherWatched && (
-          <button
-            onClick={watchBoth}
-            className="w-full py-1.5 rounded-lg text-xs font-semibold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
-          >
-            + Watch Both Teams
-          </button>
-        )}
-        {bothWatched && (
-          <p className="text-center text-[10px] text-slate-600 font-mono pt-0.5">Both teams tracked in My Bets</p>
-        )}
       </div>
     </div>
   );
