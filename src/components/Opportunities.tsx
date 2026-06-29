@@ -60,12 +60,43 @@ function ArbCard({
   const stakeB = opp.stakeB * multiplier;
   const profit = opp.guaranteedProfit * multiplier;
 
+  const now = Date.now();
+  const startMs = new Date(opp.event.commence_time).getTime();
+  const diffMs = startMs - now;
+  const arbIsLive     = diffMs < 0 && diffMs > -4 * 3_600_000;
+  const arbIsImminent = !arbIsLive && diffMs >= 0 && diffMs < 30 * 60_000;
+  const arbMinsAway   = Math.max(0, Math.round(diffMs / 60_000));
+
+  const cardBorder = arbIsLive
+    ? 'border-red-500/70 bg-red-500/5 shadow-[0_0_28px_rgba(239,68,68,0.28),0_0_0_1px_rgba(239,68,68,0.08)]'
+    : arbIsImminent
+    ? 'border-amber-500/60 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+    : 'border-purple-500/50 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.18)]';
+
   return (
-    <div className="card overflow-hidden border-purple-500/50 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.18)]">
+    <div className={`card overflow-hidden relative ${cardBorder}`}>
+      {/* Left-edge live bar */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3px]"
+        style={{
+          background: arbIsLive ? '#EF4444' : arbIsImminent ? '#F59E0B' : '#A855F7',
+          boxShadow: arbIsLive ? '0 0 10px rgba(239,68,68,0.9)' : arbIsImminent ? '0 0 8px rgba(245,158,11,0.7)' : '0 0 8px rgba(168,85,247,0.7)',
+        }}
+      />
       <button onClick={() => setExpanded(e => !e)} className="w-full p-4 text-left space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              {arbIsLive ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-red-500/70 bg-red-500/20 text-red-400 text-xs font-bold tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.35)]">
+                  <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse shrink-0" />
+                  LIVE NOW
+                </span>
+              ) : arbIsImminent ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-amber-500/60 bg-amber-500/15 text-amber-400 text-xs font-bold tracking-wider">
+                  ⚡ {arbMinsAway}m
+                </span>
+              ) : null}
               <span className="badge-profit text-xs">Guaranteed Profit</span>
               <span className="text-emerald-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
@@ -74,7 +105,9 @@ function ArbCard({
             <p className="text-sm font-semibold text-white">
               {opp.event.away_team} @ {opp.event.home_team}
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">{formatGameTime(opp.event.commence_time)}</p>
+            <p className={`text-xs mt-0.5 ${arbIsLive ? 'text-red-400/80 font-semibold' : 'text-slate-500'}`}>
+              {arbIsLive ? 'In progress — bet now before odds move' : formatGameTime(opp.event.commence_time)}
+            </p>
           </div>
           <div className="text-right shrink-0">
             <p className="text-xs text-slate-500">Per $100</p>
@@ -502,7 +535,13 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
           const diff = new Date(e.commence_time).getTime() - now;
           return diff > -4 * 3_600_000 && diff < 24 * 3_600_000;
         })
-        .filter((e) => !arbEventIds.has(e.id)) // true arbs are already shown above
+        .filter((e) => {
+          // Always include live games so they appear in Live & Upcoming
+          // Only exclude future arb games (they're already shown in the arb section above)
+          if (!arbEventIds.has(e.id)) return true;
+          const diff = new Date(e.commence_time).getTime() - now;
+          return diff < 0; // include if already started (live)
+        })
         .sort((a, b) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
         .slice(0, 12);
       setUpcomingGames(foundUpcoming);
