@@ -82,6 +82,8 @@ export interface TrackedBet {
   result?: BetResult;
   settledAt?: number;
   settledPnl?: number; // actual realized P&L
+  // Game start time (ISO string) — used for LIVE/upcoming indicators
+  eventStartTime?: string;
   // Futures / props metadata
   isFutures?: boolean;
   futuresMarket?: string;

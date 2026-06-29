@@ -572,6 +572,21 @@ function BetCard({
 
   const trend = bet.hedgeValueTrend;
 
+  // Live/imminent status from stored eventStartTime
+  const gameIsLive = (() => {
+    if (!bet.eventStartTime) return false;
+    const diff = new Date(bet.eventStartTime).getTime() - Date.now();
+    return diff < 0 && diff > -4 * 3_600_000;
+  })();
+  const gameIsImminent = (() => {
+    if (!bet.eventStartTime || gameIsLive) return false;
+    const diff = new Date(bet.eventStartTime).getTime() - Date.now();
+    return diff >= 0 && diff < 30 * 60_000;
+  })();
+  const gameMinsAway = bet.eventStartTime
+    ? Math.max(0, Math.round((new Date(bet.eventStartTime).getTime() - Date.now()) / 60_000))
+    : null;
+
   const statusDot =
     bet.status === 'watching'
       ? 'bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
@@ -683,12 +698,14 @@ function BetCard({
           ? 'border-blue-500/30 shadow-[0_0_14px_rgba(59,130,246,0.12)]'
           : ''
       }`}>
-        {/* Live bar — 2px left edge status indicator */}
+        {/* Left edge status bar */}
         <div
           className="absolute left-0 top-0 bottom-0 w-[3px]"
           style={{
             background:
-              bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
+              gameIsLive ? '#EF4444'
+              : gameIsImminent ? '#F59E0B'
+              : bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
                 ? '#A855F7'
                 : bet.status === 'monitoring'
                 ? '#34D399'
@@ -698,7 +715,9 @@ function BetCard({
                 ? 'rgba(255,255,255,0.18)'
                 : 'transparent',
             boxShadow:
-              bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
+              gameIsLive ? '0 0 8px rgba(239,68,68,0.9)'
+              : gameIsImminent ? '0 0 6px rgba(245,158,11,0.7)'
+              : bet.status === 'hedge_ready' && trend !== 'gone_negative' && trend !== 'expired'
                 ? '0 0 8px rgba(168,85,247,0.7)'
                 : bet.status === 'monitoring'
                 ? '0 0 8px rgba(52,211,153,0.5)'
@@ -714,8 +733,19 @@ function BetCard({
           {/* Row 1: dot + title + status + chevron */}
           <div className="flex items-center gap-3">
             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDot}`} />
-            <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <div className="flex-1 min-w-0 flex items-center gap-1.5 flex-wrap">
               <p className="text-sm font-semibold text-white truncate">{headerTitle}</p>
+              {gameIsLive && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-red-500/70 bg-red-500/20 text-red-400 text-[10px] font-bold tracking-wider shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.3)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
+                  LIVE
+                </span>
+              )}
+              {gameIsImminent && !gameIsLive && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-amber-500/60 bg-amber-500/15 text-amber-400 text-[10px] font-bold tracking-wider shrink-0">
+                  ⚡ {gameMinsAway}m
+                </span>
+              )}
               {bet.isParlay && (
                 <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 shrink-0">PARLAY</span>
               )}

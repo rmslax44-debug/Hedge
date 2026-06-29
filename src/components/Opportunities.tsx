@@ -280,6 +280,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
       potentialPayout: 0,
       initialOdds: best?.price,
       notifyHedge: false,
+      eventStartTime: event.commence_time,
     });
     setWatchedTeams((prev) => new Set([...prev, team]));
   }
@@ -297,6 +298,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
         potentialPayout: 0,
         initialOdds: bestHome?.price,
         notifyHedge: false,
+        eventStartTime: event.commence_time,
       });
     }
     if (!watchedTeams.has(event.away_team)) {
@@ -311,6 +313,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
         potentialPayout: 0,
         initialOdds: bestAway?.price,
         notifyHedge: false,
+        eventStartTime: event.commence_time,
       });
     }
     setWatchedTeams(new Set([event.home_team, event.away_team]));

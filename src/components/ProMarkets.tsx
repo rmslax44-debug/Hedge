@@ -26,6 +26,17 @@ function commenceLabel(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
+function gameStatus(iso: string) {
+  const now = Date.now();
+  const startMs = new Date(iso).getTime();
+  const diffMs = startMs - now;
+  const isLive     = diffMs < 0 && diffMs > -4 * 3_600_000;
+  const isImminent = !isLive && diffMs < 30 * 60_000;
+  const isSoon     = !isLive && !isImminent && diffMs < 2 * 3_600_000;
+  const minsAway   = Math.round(diffMs / 60_000);
+  return { isLive, isImminent, isSoon, minsAway };
+}
+
 export default function ProMarkets({ onPrefill, fmt }: Props) {
   const [sport, setSport] = useState('americanfootball_nfl');
   const [events, setEvents] = useState<OddsEvent[]>([]);
@@ -164,19 +175,50 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
         const awayDecBest = bestPrices[1] !== null ? americanToDecimal(bestPrices[1]) : null;
         const hold = holdPct(homeDecBest, awayDecBest);
 
+        const { isLive, isImminent, isSoon, minsAway } = gameStatus(event.commence_time);
+        const cardGlow = isLive
+          ? 'border-red-500/60 shadow-[0_0_24px_rgba(239,68,68,0.25)]'
+          : isImminent
+          ? 'border-amber-500/50 shadow-[0_0_16px_rgba(245,158,11,0.2)]'
+          : '';
+        const barBg = isLive ? '#EF4444' : isImminent ? '#F59E0B' : isSoon ? 'rgba(245,158,11,0.3)' : 'transparent';
+        const barGlow = isLive ? '0 0 8px rgba(239,68,68,0.9)' : isImminent ? '0 0 6px rgba(245,158,11,0.7)' : 'none';
+
         return (
-          <div key={event.id} className="card overflow-hidden">
+          <div key={event.id} className={`card overflow-hidden relative ${cardGlow}`}>
+            {/* Left-edge status bar */}
+            <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: barBg, boxShadow: barGlow }} />
+
             {/* Event header */}
             <button
               onClick={() => setExpandedId(expanded ? null : event.id)}
               className="w-full p-4 flex items-center justify-between text-left hover:bg-[#180032]/30 transition-colors"
             >
               <div className="min-w-0 flex-1">
+                {/* Status pill */}
+                {isLive ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-red-500/70 bg-red-500/20 text-red-400 text-[10px] font-bold tracking-wider mb-1.5 shadow-[0_0_8px_rgba(239,68,68,0.3)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
+                    LIVE NOW
+                  </span>
+                ) : isImminent ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-amber-500/60 bg-amber-500/15 text-amber-400 text-[10px] font-bold tracking-wider mb-1.5">
+                    ⚡ {minsAway}m
+                  </span>
+                ) : isSoon ? (
+                  <span className="inline-flex items-center gap-1 text-amber-400/70 text-[10px] font-mono font-bold mb-1 block">
+                    SOON · {commenceLabel(event.commence_time)}
+                  </span>
+                ) : null}
                 <p className="text-sm font-semibold text-white truncate">
                   {event.away_team} <span className="text-slate-500">@</span> {event.home_team}
                 </p>
                 <div className="flex gap-3 mt-0.5 text-xs font-mono text-slate-500">
-                  <span>{commenceLabel(event.commence_time)}</span>
+                  {isLive ? (
+                    <span className="text-red-400/80">In progress</span>
+                  ) : (
+                    <span>{commenceLabel(event.commence_time)}</span>
+                  )}
                   {hold !== null && (
                     <span className={hold > 6 ? 'text-amber-400' : hold > 3.5 ? 'text-amber-400/70' : 'text-slate-500'}>
                       HOLD {hold.toFixed(1)}%
@@ -335,6 +377,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                 potentialPayout: 0,
                                 initialOdds: bstPrice ?? undefined,
                                 notifyHedge: false,
+                                eventStartTime: event.commence_time,
                               });
                               setWatchedKeys((prev) => new Set([...prev, watchKey]));
                             }}
@@ -390,6 +433,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                             potentialPayout: 0,
                             initialOdds: bstPrice ?? undefined,
                             notifyHedge: false,
+                            eventStartTime: event.commence_time,
                           });
                         });
                         setWatchedKeys((prev) => {
