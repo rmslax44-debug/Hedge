@@ -631,16 +631,23 @@ function BetCard({
     : 0;
 
   const isHedgeView = bet.opposingTeam && (bet.status === 'hedge_ready' || bet.status === 'hedged');
+  // Prefer myTeam as the headline so it's always clear which side was picked
   const headerTitle = isHedgeView
     ? `${bet.myTeam} vs ${bet.opposingTeam}`
+    : (bet.myTeam && bet.myTeam !== bet.label && !bet.isParlay)
+    ? bet.myTeam
     : bet.label;
+  // Prefix opponent context into subtitle for non-hedge-view bets that have an opponent
+  const opponentPrefix = (bet.opposingTeam && !isHedgeView && !bet.isParlay)
+    ? `vs ${bet.opposingTeam} · `
+    : '';
   const eventTime = bet.hedgeOpportunity?.eventTime;
   const fmtInitialOdds = bet.initialOdds !== undefined
     ? (bet.initialOdds >= 0 ? `+${bet.initialOdds}` : `${bet.initialOdds}`)
     : null;
   const prevProfit = bet.previousGuaranteedProfit;
   const headerSub = bet.status === 'watching'
-    ? `Monitoring${fmtInitialOdds ? ` · ${fmtInitialOdds}` : ''} · ${bookName}`
+    ? `${opponentPrefix}${bookName}${fmtInitialOdds ? ` · ${fmtInitialOdds}` : ''}`
     : bet.status === 'hedge_ready' && trend === 'gone_negative'
     ? `Hedge no longer profitable${prevProfit !== undefined ? ` · was +$${prevProfit.toFixed(2)}` : ''}`
     : bet.status === 'hedge_ready' && trend === 'expired'
@@ -651,7 +658,7 @@ function BetCard({
     ? `↓ Now +$${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)} · was +$${prevProfit.toFixed(2)}`
     : isHedgeView && eventTime
     ? new Date(eventTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-    : `$${bet.stake.toFixed(2)} at ${bookName} · win +$${profit.toFixed(2)}`;
+    : `${opponentPrefix}$${bet.stake.toFixed(2)} at ${bookName} · win +$${profit.toFixed(2)}`;
 
   return (
     <>

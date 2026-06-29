@@ -309,64 +309,100 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                   </tbody>
                 </table>
                 {/* Watch buttons */}
-                <div className="border-t border-[#3D1A6E] px-4 py-2 flex gap-2">
-                  {teams.map((team, ti) => {
-                    const watchKey = `${event.id}-${team}`;
-                    const isWatched = watchedKeys.has(watchKey);
-                    const opponent = teams[1 - ti];
-                    const bstPrice = bestPrices[ti];
-                    const bestBookKey = userBooks.find(
-                      (bk) => getOddsForTeamAtBook(event, team, bk) === bstPrice,
-                    ) ?? '';
-                    return (
-                      <div key={team} className="flex-1 flex gap-1">
-                        <button
-                          disabled={isWatched}
-                          onClick={() => {
-                            addWatchedBet({
-                              label: `${team} vs ${opponent}`,
-                              myTeam: team,
-                              opposingTeam: opponent,
-                              sport,
-                              eventId: event.id,
-                              sportsbook: bestBookKey,
-                              stake: 0,
-                              potentialPayout: 0,
-                              initialOdds: bstPrice ?? undefined,
-                              notifyHedge: false,
-                            });
-                            setWatchedKeys((prev) => new Set([...prev, watchKey]));
-                          }}
-                          className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                            isWatched
-                              ? 'border-white/20 text-white/50 cursor-default'
-                              : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
-                          }`}
-                        >
-                          {isWatched ? `✓ ${team.split(' ').pop()}` : `+ Watch ${team.split(' ').pop()}`}
-                        </button>
-                        {!isWatched && (
+                <div className="border-t border-[#3D1A6E] px-4 py-2 space-y-1.5">
+                  <div className="flex gap-2">
+                    {teams.map((team, ti) => {
+                      const watchKey = `${event.id}-${team}`;
+                      const isWatched = watchedKeys.has(watchKey);
+                      const opponent = teams[1 - ti];
+                      const bstPrice = bestPrices[ti];
+                      const bestBookKey = userBooks.find(
+                        (bk) => getOddsForTeamAtBook(event, team, bk) === bstPrice,
+                      ) ?? '';
+                      return (
+                        <div key={team} className="flex-1 flex gap-1">
                           <button
-                            onClick={() =>
-                              setSheetPrefill({
+                            disabled={isWatched}
+                            onClick={() => {
+                              addWatchedBet({
                                 label: `${team} vs ${opponent}`,
                                 myTeam: team,
                                 opposingTeam: opponent,
                                 sport,
                                 eventId: event.id,
                                 sportsbook: bestBookKey,
+                                stake: 0,
+                                potentialPayout: 0,
                                 initialOdds: bstPrice ?? undefined,
-                              })
-                            }
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
-                            title="Add to parlay"
+                                notifyHedge: false,
+                              });
+                              setWatchedKeys((prev) => new Set([...prev, watchKey]));
+                            }}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
+                              isWatched
+                                ? 'border-white/20 text-white/50 cursor-default'
+                                : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                            }`}
                           >
-                            ⋯
+                            {isWatched ? `✓ ${team.split(' ').pop()}` : `+ Watch ${team.split(' ').pop()}`}
                           </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                          {!isWatched && (
+                            <button
+                              onClick={() =>
+                                setSheetPrefill({
+                                  label: `${team} vs ${opponent}`,
+                                  myTeam: team,
+                                  opposingTeam: opponent,
+                                  sport,
+                                  eventId: event.id,
+                                  sportsbook: bestBookKey,
+                                  initialOdds: bstPrice ?? undefined,
+                                })
+                              }
+                              className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+                              title="Add to parlay"
+                            >
+                              ⋯
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Watch Both — visible only when neither team is tracked yet */}
+                  {!teams.some((t) => watchedKeys.has(`${event.id}-${t}`)) && (
+                    <button
+                      onClick={() => {
+                        teams.forEach((team, ti) => {
+                          const opponent = teams[1 - ti];
+                          const bstPrice = bestPrices[ti];
+                          const bestBookKey = userBooks.find(
+                            (bk) => getOddsForTeamAtBook(event, team, bk) === bstPrice,
+                          ) ?? '';
+                          addWatchedBet({
+                            label: `${team} vs ${opponent}`,
+                            myTeam: team,
+                            opposingTeam: opponent,
+                            sport,
+                            eventId: event.id,
+                            sportsbook: bestBookKey,
+                            stake: 0,
+                            potentialPayout: 0,
+                            initialOdds: bstPrice ?? undefined,
+                            notifyHedge: false,
+                          });
+                        });
+                        setWatchedKeys((prev) => {
+                          const next = new Set(prev);
+                          teams.forEach((t) => next.add(`${event.id}-${t}`));
+                          return next;
+                        });
+                      }}
+                      className="w-full py-1.5 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+                    >
+                      + Watch Both Teams
+                    </button>
+                  )}
                 </div>
 
               </div>
