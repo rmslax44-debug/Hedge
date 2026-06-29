@@ -218,6 +218,8 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
           </ol>
         </div>
       )}
+
+      <p className="text-center text-[10px] text-slate-700 pt-2 select-none">Hedge v1.2 · Jun 2026</p>
     </div>
   );
 }
