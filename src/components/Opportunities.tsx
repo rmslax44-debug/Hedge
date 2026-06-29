@@ -3,9 +3,27 @@ import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import {} from '../utils/sportsbooks';
-import { getApiKey, getSelectedBooks, addBetWithHedge, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
+import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
 
-const SCAN_SPORTS = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'mma_mixed_martial_arts'];
+const SCAN_SPORTS = [
+  'americanfootball_nfl',
+  'basketball_nba',
+  'baseball_mlb',
+  'icehockey_nhl',
+  'mma_mixed_martial_arts',
+  'soccer_fifa_world_cup',
+  'soccer_usa_mls',
+];
+
+const SPORT_LABEL: Record<string, string> = {
+  americanfootball_nfl: '🏈 NFL',
+  basketball_nba: '🏀 NBA',
+  baseball_mlb: '⚾ MLB',
+  icehockey_nhl: '🏒 NHL',
+  mma_mixed_martial_arts: '🥊 MMA',
+  soccer_fifa_world_cup: '⚽ World Cup',
+  soccer_usa_mls: '⚽ MLS',
+};
 
 function formatOdds(price: number): string {
   return price > 0 ? `+${price}` : `${price}`;
@@ -210,46 +228,169 @@ function ArbCard({
   );
 }
 
-// ─── Near-Arb / Best Lines Card ───────────────────────────────────────────────
+// ─── Live & Upcoming Game Card ────────────────────────────────────────────────
 
-function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: string[] }) {
+function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: string[] }) {
+  const [watchedTeams, setWatchedTeams] = useState<Set<string>>(new Set());
+
   const bestHome = findBestOddsForTeam(event, event.home_team, userBooks);
   const bestAway = findBestOddsForTeam(event, event.away_team, userBooks);
-  if (!bestHome || !bestAway) return null;
 
-  const decH = americanToDecimal(bestHome.price);
-  const decA = americanToDecimal(bestAway.price);
-  const impliedTotal = 1 / decH + 1 / decA;
-  const margin = ((impliedTotal - 1) * 100).toFixed(1);
+  const now = Date.now();
+  const startMs = new Date(event.commence_time).getTime();
+  const diffMs = startMs - now;
+  const isLive = diffMs < 0 && diffMs > -4 * 3_600_000;
+  const isSoon = diffMs >= 0 && diffMs < 2 * 3_600_000;
+
+  const isNearArb =
+    bestHome && bestAway
+      ? 1 / americanToDecimal(bestHome.price) + 1 / americanToDecimal(bestAway.price) < 1.04
+      : false;
+
+  function watchTeam(team: string, opponent: string, best: { price: number; bookKey: string } | null) {
+    if (watchedTeams.has(team)) return;
+    addWatchedBet({
+      label: `${team} vs ${opponent}`,
+      myTeam: team,
+      opposingTeam: opponent,
+      sport: event.sport_key,
+      eventId: event.id,
+      sportsbook: best?.bookKey ?? '',
+      stake: 0,
+      potentialPayout: 0,
+      initialOdds: best?.price,
+      notifyHedge: false,
+    });
+    setWatchedTeams((prev) => new Set([...prev, team]));
+  }
+
+  function watchBoth() {
+    if (!watchedTeams.has(event.home_team)) {
+      addWatchedBet({
+        label: `${event.home_team} vs ${event.away_team}`,
+        myTeam: event.home_team,
+        opposingTeam: event.away_team,
+        sport: event.sport_key,
+        eventId: event.id,
+        sportsbook: bestHome?.bookKey ?? '',
+        stake: 0,
+        potentialPayout: 0,
+        initialOdds: bestHome?.price,
+        notifyHedge: false,
+      });
+    }
+    if (!watchedTeams.has(event.away_team)) {
+      addWatchedBet({
+        label: `${event.away_team} vs ${event.home_team}`,
+        myTeam: event.away_team,
+        opposingTeam: event.home_team,
+        sport: event.sport_key,
+        eventId: event.id,
+        sportsbook: bestAway?.bookKey ?? '',
+        stake: 0,
+        potentialPayout: 0,
+        initialOdds: bestAway?.price,
+        notifyHedge: false,
+      });
+    }
+    setWatchedTeams(new Set([event.home_team, event.away_team]));
+  }
+
+  const bothWatched = watchedTeams.has(event.home_team) && watchedTeams.has(event.away_team);
+  const neitherWatched = !watchedTeams.has(event.home_team) && !watchedTeams.has(event.away_team);
 
   return (
-    <div className="card p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs text-slate-500 mb-1">{formatGameTime(event.commence_time)}</p>
-          <p className="text-sm font-semibold text-white truncate">
-            {event.away_team} @ {event.home_team}
-          </p>
+    <div className={`card p-4 space-y-3 ${isNearArb ? 'border-purple-500/30 bg-purple-500/5' : ''}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {isLive ? (
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-400 tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
+              Live
+            </span>
+          ) : isSoon ? (
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+              {Math.round(diffMs / 60000)}m
+            </span>
+          ) : (
+            <span className="text-xs text-slate-500 font-mono">{formatGameTime(event.commence_time)}</span>
+          )}
+          <span className="text-[10px] text-slate-600 font-mono">
+            {SPORT_LABEL[event.sport_key] ?? '🏟️'}
+          </span>
         </div>
-        <span className="text-xs text-slate-500 shrink-0 font-mono">
-          {margin}% juice
-        </span>
+        {isNearArb && (
+          <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest border border-purple-500/30 rounded-full px-2 py-0.5 bg-purple-500/10">
+            Near Arb
+          </span>
+        )}
       </div>
-      <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-        <div className="bg-[#180032] rounded-lg p-2 space-y-0.5">
-          <p className="text-slate-500 truncate">{event.home_team.split(' ').slice(-1)}</p>
-          <p className={`font-bold ${bestHome.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
-            {formatOdds(bestHome.price)}
-          </p>
-          <p className="text-slate-500 text-xs">{bestHome.bookName}</p>
+
+      {/* Matchup */}
+      <p className="text-sm font-semibold text-white leading-snug">
+        {event.away_team} <span className="text-slate-500 font-normal text-xs">@</span> {event.home_team}
+      </p>
+
+      {/* Best odds */}
+      {(bestHome || bestAway) && (
+        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+          {[
+            { team: event.home_team, best: bestHome },
+            { team: event.away_team, best: bestAway },
+          ].map(({ team, best }) => (
+            <div key={team} className="bg-[#180032] rounded-xl p-2.5 space-y-0.5">
+              <p className="text-slate-500 truncate text-[11px]">{team.split(' ').slice(-1)[0]}</p>
+              {best ? (
+                <>
+                  <p className={`font-bold text-sm ${best.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
+                    {formatOdds(best.price)}
+                  </p>
+                  <p className="text-slate-600 text-[10px]">{best.bookName}</p>
+                </>
+              ) : (
+                <p className="text-slate-700 text-sm">—</p>
+              )}
+            </div>
+          ))}
         </div>
-        <div className="bg-[#180032] rounded-lg p-2 space-y-0.5">
-          <p className="text-slate-500 truncate">{event.away_team.split(' ').slice(-1)}</p>
-          <p className={`font-bold ${bestAway.price > 0 ? 'text-purple-400' : 'text-slate-200'}`}>
-            {formatOdds(bestAway.price)}
-          </p>
-          <p className="text-slate-500 text-xs">{bestAway.bookName}</p>
+      )}
+
+      {/* Watch buttons */}
+      <div className="space-y-1.5">
+        <div className="flex gap-2">
+          {[
+            { team: event.home_team, opponent: event.away_team, best: bestHome },
+            { team: event.away_team, opponent: event.home_team, best: bestAway },
+          ].map(({ team, opponent, best }) => {
+            const isWatched = watchedTeams.has(team);
+            return (
+              <button
+                key={team}
+                disabled={isWatched}
+                onClick={() => watchTeam(team, opponent, best)}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  isWatched
+                    ? 'border-white/20 text-white/50 cursor-default'
+                    : 'border-[#3D1A6E] text-slate-400 hover:border-purple-500/40 hover:text-purple-400'
+                }`}
+              >
+                {isWatched ? `✓ ${team.split(' ').slice(-1)[0]}` : `+ Watch ${team.split(' ').slice(-1)[0]}`}
+              </button>
+            );
+          })}
         </div>
+        {neitherWatched && (
+          <button
+            onClick={watchBoth}
+            className="w-full py-1.5 rounded-lg text-xs font-semibold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+          >
+            + Watch Both Teams
+          </button>
+        )}
+        {bothWatched && (
+          <p className="text-center text-[10px] text-slate-600 font-mono pt-0.5">Both teams tracked in My Bets</p>
+        )}
       </div>
     </div>
   );
@@ -259,7 +400,7 @@ function BestLinesCard({ event, userBooks }: { event: OddsEvent; userBooks: stri
 
 export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { onSwitchToMyBets?: () => void; refreshTrigger?: number }) {
   const [arbs, setArbs] = useState<ArbOpportunity[]>([]);
-  const [nearArbs, setNearArbs] = useState<OddsEvent[]>([]);
+  const [upcomingGames, setUpcomingGames] = useState<OddsEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState(false);
@@ -274,7 +415,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
     setLoading(true);
     setError(null);
     setArbs([]);
-    setNearArbs([]);
+    setUpcomingGames([]);
     try {
       const results = await Promise.allSettled(
         SCAN_SPORTS.map((s) => fetchOdds(s, apiKey, userBooks)),
@@ -284,20 +425,13 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
         .flatMap((r) => r.value);
 
       const foundArbs: ArbOpportunity[] = [];
-      const foundNear: OddsEvent[] = [];
+      const arbEventIds = new Set<string>();
 
       for (const event of allEvents) {
         const arb = findArb(event, userBooks);
         if (arb) {
           foundArbs.push(arb);
-        } else {
-          // Show events with < 3% vig as "near arb" (close lines worth watching)
-          const bA = findBestOddsForTeam(event, event.home_team, userBooks);
-          const bB = findBestOddsForTeam(event, event.away_team, userBooks);
-          if (bA && bB) {
-            const implied = 1 / americanToDecimal(bA.price) + 1 / americanToDecimal(bB.price);
-            if (implied < 1.04) foundNear.push(event);
-          }
+          arbEventIds.add(event.id);
         }
       }
 
@@ -311,7 +445,19 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
 
       foundArbs.sort((a, b) => b.profitPct - a.profitPct);
       setArbs(foundArbs.filter((a) => a.guaranteedProfit > 0 && !activeBetEventIds.has(a.event.id)));
-      setNearArbs(foundNear.slice(0, 6));
+
+      // Live & upcoming: games starting within the next 24h or started < 4h ago
+      const now = Date.now();
+      const foundUpcoming = allEvents
+        .filter((e) => {
+          const diff = new Date(e.commence_time).getTime() - now;
+          return diff > -4 * 3_600_000 && diff < 24 * 3_600_000;
+        })
+        .filter((e) => !arbEventIds.has(e.id)) // true arbs are already shown above
+        .sort((a, b) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
+        .slice(0, 12);
+      setUpcomingGames(foundUpcoming);
+
       setHedgeReadyBets(currentBets.filter((b) => b.status === 'hedge_ready' && b.eventId));
       setScanned(true);
     } catch (e) {
@@ -442,15 +588,15 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
             </div>
           )}
 
-          {/* Near arbs */}
-          {nearArbs.length > 0 && (
+          {/* Live & Upcoming Games */}
+          {upcomingGames.length > 0 && (
             <div className="space-y-3">
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">Best Lines Right Now</p>
-                <p className="text-xs text-slate-500 mt-0.5">Lowest juice across your books — closer to equal odds means less risk</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">Live & Upcoming Today</p>
+                <p className="text-xs text-slate-500 mt-0.5">Watch a team — get alerted the moment a hedge opportunity appears</p>
               </div>
-              {nearArbs.map((e) => (
-                <BestLinesCard key={e.id} event={e} userBooks={userBooks} />
+              {upcomingGames.map((e) => (
+                <UpcomingGameCard key={e.id} event={e} userBooks={userBooks} />
               ))}
             </div>
           )}
