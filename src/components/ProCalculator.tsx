@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { calculate, parseOdds, decimalToAmerican } from '../utils/odds';
 import { US_SPORTSBOOKS } from '../utils/sportsbooks';
 import { addBetWithHedge } from '../utils/storage';
+import ProEdgeFinder from './ProEdgeFinder';
 
 export type OddsFormat = 'american' | 'decimal';
 
@@ -351,6 +352,11 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
               }
             </div>
           </div>
+
+          {/* Pro analytics: vig removal, EV, Kelly staking — additive, not parlay-aware */}
+          {!isParlay && origDecOdds && hedgeDecOdds && (
+            <ProEdgeFinder origDecOdds={origDecOdds} hedgeDecOdds={hedgeDecOdds} stake={parsedStake} />
+          )}
 
           {/* Quick launch */}
           {bookName && bookUrl && (

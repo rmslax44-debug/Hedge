@@ -1,4 +1,4 @@
-import { fetchOdds, findBestOddsForTeam } from './oddsApi';
+import { fetchOdds, findBestOddsForTeam, getOddsForTeamAtBook } from './oddsApi';
 import {
   getAllBets,
   updateBet,
@@ -72,6 +72,22 @@ export async function checkMonitoredBets(
 
       for (const bet of sportBets) {
         const event = events.find((e) => e.id === bet.eventId);
+
+        // Closing-line capture for CLV tracking — additive, runs regardless of
+        // hedge status below and only fires once per bet (closingOdds unset).
+        if (
+          event &&
+          bet.opposingTeam &&
+          bet.eventStartTime &&
+          Date.now() >= new Date(bet.eventStartTime).getTime() &&
+          bet.closingOdds === undefined
+        ) {
+          const ownClosing = getOddsForTeamAtBook(event, bet.myTeam, bet.sportsbook);
+          const bestOppClosing = findBestOddsForTeam(event, bet.opposingTeam, books);
+          if (ownClosing !== null && bestOppClosing) {
+            updateBet(bet.id, { closingOdds: ownClosing, closingOpposingOdds: bestOppClosing.price });
+          }
+        }
 
         if (bet.status === 'monitoring') {
           if (!event || !bet.opposingTeam) continue;

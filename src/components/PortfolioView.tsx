@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getAllBets, getPortfolioStats, deleteBet, type TrackedBet, type BetResult } from '../utils/storage';
+import CLVTracker from './CLVTracker';
 
 function resultBadge(result: BetResult | undefined, status: string) {
   if (status === 'hedged' || result === 'hedged') return { label: 'HEDGED', cls: 'bg-blue-500/15 text-blue-400 border border-blue-500/30 shadow-[0_0_8px_rgba(59,130,246,0.18)]' };
@@ -114,6 +115,8 @@ export default function PortfolioView() {
 
         {history.length >= 2 && <MiniPnlChart bets={allBets} />}
       </div>
+
+      <CLVTracker bets={allBets} />
 
       {/* History list */}
       {history.length === 0 ? (

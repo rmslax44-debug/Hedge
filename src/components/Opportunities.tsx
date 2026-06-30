@@ -352,6 +352,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
 
   function watchTeam(team: string, opponent: string, best: { price: number; bookKey: string } | null) {
     if (watchedTeams.has(team)) return;
+    const opponentBest = team === event.home_team ? bestAway : bestHome;
     addWatchedBet({
       label: `${team} vs ${opponent}`,
       myTeam: team,
@@ -362,6 +363,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
       stake: 0,
       potentialPayout: 0,
       initialOdds: best?.price,
+      initialOpposingOdds: opponentBest?.price,
       notifyHedge: false,
       eventStartTime: event.commence_time,
     });
@@ -380,6 +382,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
         stake: 0,
         potentialPayout: 0,
         initialOdds: bestHome?.price,
+        initialOpposingOdds: bestAway?.price,
         notifyHedge: false,
         eventStartTime: event.commence_time,
       });
@@ -395,6 +398,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
         stake: 0,
         potentialPayout: 0,
         initialOdds: bestAway?.price,
+        initialOpposingOdds: bestHome?.price,
         notifyHedge: false,
         eventStartTime: event.commence_time,
       });

@@ -78,6 +78,11 @@ export interface TrackedBet {
   // Notification / watch fields
   notifyHedge?: boolean;
   initialOdds?: number; // American odds when added to watch list
+  // Pro-tab analytics: closing-line value (CLV) tracking fields
+  initialOpposingOdds?: number; // opposing side's American odds at placement
+  closingOdds?: number; // own side American odds captured at game start
+  closingOpposingOdds?: number; // opposing side American odds captured at game start
+  userProbEstimate?: number; // last probability estimate (0-1) entered in the Pro Edge Finder
   // Settlement fields
   result?: BetResult;
   settledAt?: number;
