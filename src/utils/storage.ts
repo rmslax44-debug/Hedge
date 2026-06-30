@@ -211,6 +211,14 @@ export function updateParlayLeg(betId: string, legId: string, status: ParlayLeg[
   saveBets(bets);
 }
 
+export function getFavoriteSports(): string[] {
+  try { return JSON.parse(localStorage.getItem('hedge_fav_sports') ?? '[]'); }
+  catch { return []; }
+}
+export function setFavoriteSports(v: string[]) {
+  localStorage.setItem('hedge_fav_sports', JSON.stringify(v));
+}
+
 export function getPortfolioStats(): PortfolioStats {
   const bets = loadBets();
   const settled = bets.filter((b) => b.status === 'settled' || b.status === 'hedged');

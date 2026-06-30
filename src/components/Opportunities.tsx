@@ -3,7 +3,7 @@ import { fetchOdds, type OddsEvent } from '../utils/oddsApi';
 import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '../utils/arb';
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import { SPORTS } from '../utils/sportsbooks';
-import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, type TrackedBet } from '../utils/storage';
+import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, getFavoriteSports, type TrackedBet } from '../utils/storage';
 
 // Derived from the single source of truth — all sports the app supports
 const SCAN_SPORTS = SPORTS.map(s => s.key);
@@ -30,11 +30,13 @@ function formatGameTime(iso: string): string {
 function ArbCard({
   opp,
   matchingBet,
+  isFavorite,
   onAddToTracker,
   onSwitchToMyBets,
 }: {
   opp: ArbOpportunity;
   matchingBet?: TrackedBet;
+  isFavorite?: boolean;
   onAddToTracker: (stakeA: number, stakeB: number, profit: number) => void;
   onSwitchToMyBets?: () => void;
 }) {
@@ -45,7 +47,9 @@ function ArbCard({
   const multiplier = isNaN(parsed) || parsed <= 0 ? 1 : parsed / 100;
   const stakeA = opp.stakeA * multiplier;
   const stakeB = opp.stakeB * multiplier;
+  const stakeC = (opp.stakeC ?? 0) * multiplier;
   const profit = opp.guaranteedProfit * multiplier;
+  const isThreeWay = !!opp.teamC;
 
   const now = Date.now();
   const startMs = new Date(opp.event.commence_time).getTime();
@@ -88,6 +92,9 @@ function ArbCard({
               <span className="text-emerald-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
               </span>
+              {isFavorite && (
+                <span className="text-yellow-400 text-xs leading-none" title="Favorite sport">⭐</span>
+              )}
             </div>
             <p className="text-sm font-semibold text-white">
               {opp.event.away_team} @ {opp.event.home_team}
@@ -111,6 +118,17 @@ function ArbCard({
             <p className="text-slate-500 text-xs">{opp.bookAName}</p>
           </div>
           <div className="flex items-center text-slate-500 font-sans text-xs">+</div>
+          {isThreeWay && (
+            <>
+              <div className="flex-1 rounded-lg px-3 py-2 space-y-0.5 pill-glow-white">
+                <p className="text-slate-500">Bet C</p>
+                <p className="text-white font-semibold">Draw</p>
+                <p className="text-white font-bold">{formatOdds(opp.oddsC!)}</p>
+                <p className="text-slate-500 text-xs">{opp.bookCName}</p>
+              </div>
+              <div className="flex items-center text-slate-500 font-sans text-xs">+</div>
+            </>
+          )}
           <div className="flex-1 rounded-lg px-3 py-2 space-y-0.5 pill-glow-purple">
             <p className="text-purple-400/70">Bet B</p>
             <p className="text-white font-semibold">{opp.teamB.split(' ').slice(-1)[0]}</p>
@@ -118,6 +136,9 @@ function ArbCard({
             <p className="text-purple-400/50 text-xs">{opp.bookBName}</p>
           </div>
         </div>
+        {isThreeWay && (
+          <p className="text-[10px] text-amber-400/80">3-way market — all three results must be covered to guarantee profit</p>
+        )}
       </button>
 
       {expanded && (
@@ -126,8 +147,12 @@ function ArbCard({
           <div className="bg-[#100020] rounded-xl p-4 space-y-2">
             <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest">How this works</p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              By betting on <span className="text-white font-semibold">both teams</span> across two different apps,
-              the math works out so that no matter who wins, you come out ahead.
+              {isThreeWay ? (
+                <>By betting on <span className="text-white font-semibold">all three results</span> (including the draw) across different apps,</>
+              ) : (
+                <>By betting on <span className="text-white font-semibold">both teams</span> across two different apps,</>
+              )}{' '}
+              the math works out so that no matter what happens, you come out ahead.
               This is called an <span className="text-purple-400 font-semibold">arbitrage opportunity</span> — rare, but real.
             </p>
           </div>
@@ -164,8 +189,21 @@ function ArbCard({
                     </p>
                   </div>
                 </div>
+                {isThreeWay && (
+                  <div className="flex items-start gap-3 rounded-xl p-3 pill-glow-white">
+                    <span className="w-6 h-6 rounded-full bg-white/10 border border-white/25 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(255,255,255,0.15)]">2</span>
+                    <div className="text-sm">
+                      <p className="text-white">Open <span className="text-white font-bold">{opp.bookCName}</span></p>
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        Bet <span className="text-white font-bold font-mono">${stakeC.toFixed(2)}</span> on{' '}
+                        <span className="text-white font-semibold">Draw</span>{' '}
+                        ({formatOdds(opp.oddsC!)})
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-start gap-3 rounded-xl p-3 pill-glow-purple">
-                  <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.6)]">2</span>
+                  <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.6)]">{isThreeWay ? 3 : 2}</span>
                   <div className="text-sm">
                     <p className="text-white">Open <span className="text-purple-300 font-bold">{opp.bookBName}</span></p>
                     <p className="text-slate-400 text-xs mt-0.5">
@@ -176,7 +214,7 @@ function ArbCard({
                   </div>
                 </div>
                 <div className="flex items-start gap-3 bg-[#180032] border border-purple-500/15 rounded-xl p-3">
-                  <span className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                  <span className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold flex items-center justify-center shrink-0">{isThreeWay ? 4 : 3}</span>
                   <div className="text-sm">
                     <p className="text-white">Sit back and collect 💰</p>
                     <p className="text-slate-400 text-xs mt-0.5">
@@ -198,7 +236,8 @@ function ArbCard({
                   onClick={() => {
                     // Determine which arb side is the hedge for this bet
                     const isHedgeA = matchingBet.opposingTeam === opp.teamA;
-                    const hedgeOdds = isHedgeA ? opp.oddsA : opp.oddsB;
+                    const isHedgeC = !isHedgeA && isThreeWay && matchingBet.opposingTeam === opp.teamC;
+                    const hedgeOdds = isHedgeA ? opp.oddsA : isHedgeC ? opp.oddsC! : opp.oddsB;
                     const hedgeDec = americanToDecimal(hedgeOdds);
                     const { hedgeStake, guaranteedProfit } = calcLiveHedge(
                       matchingBet.stake,
@@ -206,9 +245,9 @@ function ArbCard({
                       hedgeDec,
                     );
                     const newOpp = {
-                      hedgeTeam: isHedgeA ? opp.teamA : opp.teamB,
-                      hedgeBook: isHedgeA ? opp.bookAName : opp.bookBName,
-                      hedgeBookKey: isHedgeA ? opp.bookAKey : opp.bookBKey,
+                      hedgeTeam: isHedgeA ? opp.teamA : isHedgeC ? opp.teamC! : opp.teamB,
+                      hedgeBook: isHedgeA ? opp.bookAName : isHedgeC ? opp.bookCName! : opp.bookBName,
+                      hedgeBookKey: isHedgeA ? opp.bookAKey : isHedgeC ? opp.bookCKey! : opp.bookBKey,
                       hedgeStake,
                       hedgeOdds,
                       guaranteedProfit,
@@ -234,12 +273,18 @@ function ArbCard({
                 </button>
               )}
 
-              <button
-                onClick={() => onAddToTracker(stakeA, stakeB, profit)}
-                className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all btn-glow"
-              >
-                Add both bets to my tracker →
-              </button>
+              {isThreeWay ? (
+                <p className="text-center text-[11px] text-slate-500 px-2">
+                  3-way hedges (3 separate bets) aren't auto-tracked yet — place all three bets above, then log them manually in My Bets.
+                </p>
+              ) : (
+                <button
+                  onClick={() => onAddToTracker(stakeA, stakeB, profit)}
+                  className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all btn-glow"
+                >
+                  Add both bets to my tracker →
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -474,17 +519,34 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
   const [scanned, setScanned] = useState(false);
   const [hedgeReadyBets, setHedgeReadyBets] = useState<TrackedBet[]>([]);
   const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
+  const [showAllArbs, setShowAllArbs] = useState(false);
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
   const handledTrigger = useRef(0);
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
   const isConfigured = apiKey.length > 0 && userBooks.length > 0;
 
+  const favSports = getFavoriteSports();
+  const hasFavorites = favSports.length > 0;
+  const TOP_N = 10;
+  const UPCOMING_LIMIT = 6;
+  const sortedArbs = hasFavorites
+    ? [...arbs.filter(a => favSports.includes(a.event.sport_key)),
+       ...arbs.filter(a => !favSports.includes(a.event.sport_key))]
+    : arbs;
+  const visibleArbs = showAllArbs ? sortedArbs : sortedArbs.slice(0, TOP_N);
+  const hasMoreArbs = sortedArbs.length > TOP_N && !showAllArbs;
+  const visibleUpcoming = showAllUpcoming ? upcomingGames : upcomingGames.slice(0, UPCOMING_LIMIT);
+  const hasMoreUpcoming = upcomingGames.length > UPCOMING_LIMIT && !showAllUpcoming;
+
   async function scan() {
     setLoading(true);
     setError(null);
     setArbs([]);
     setUpcomingGames([]);
+    setShowAllArbs(false);
+    setShowAllUpcoming(false);
     try {
       const results = await Promise.allSettled(
         SCAN_SPORTS.map((s) => fetchOdds(s, apiKey, userBooks)),
@@ -530,7 +592,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
           return diff < 0; // include if already started (live)
         })
         .sort((a, b) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
-        .slice(0, 12);
+        .slice(0, 50);
       setUpcomingGames(foundUpcoming);
 
       setHedgeReadyBets(currentBets.filter((b) => b.status === 'hedge_ready' && b.eventId));
@@ -618,18 +680,19 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
       {!loading && scanned && (
         <div className="px-4 space-y-5">
           {/* True arbs */}
-          {arbs.length > 0 ? (
+          {sortedArbs.length > 0 ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                 <p className="text-xs font-bold text-purple-400 uppercase tracking-widest font-grotesk">
-                  {arbs.length} guaranteed profit opportunit{arbs.length !== 1 ? 'ies' : 'y'} found
+                  {sortedArbs.length} guaranteed profit opportunit{sortedArbs.length !== 1 ? 'ies' : 'y'} found
                 </p>
               </div>
-              {arbs.map((a) => (
+              {visibleArbs.map((a) => (
                 <ArbCard
                   key={a.event.id}
                   opp={a}
+                  isFavorite={hasFavorites && favSports.includes(a.event.sport_key)}
                   matchingBet={hedgeReadyBets.find((b) => b.eventId === a.event.id)}
                   onSwitchToMyBets={onSwitchToMyBets}
                   onAddToTracker={(scaledStakeA, scaledStakeB, scaledProfit) => {
@@ -659,6 +722,14 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                   }}
                 />
               ))}
+              {hasMoreArbs && (
+                <button
+                  onClick={() => setShowAllArbs(true)}
+                  className="w-full py-3 rounded-xl border border-purple-500/30 text-purple-400 text-xs font-semibold hover:border-purple-500/60 hover:text-purple-300 transition-all"
+                >
+                  Show {sortedArbs.length - TOP_N} more opportunit{sortedArbs.length - TOP_N !== 1 ? 'ies' : 'y'} ↓
+                </button>
+              )}
             </div>
           ) : (
             <div className="card p-5 text-center space-y-2">
@@ -676,9 +747,17 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest font-grotesk">Live & Upcoming Today</p>
                 <p className="text-xs text-slate-500 mt-0.5">Watch a team — get alerted the moment a hedge opportunity appears</p>
               </div>
-              {upcomingGames.map((e) => (
+              {visibleUpcoming.map((e) => (
                 <UpcomingGameCard key={e.id} event={e} userBooks={userBooks} />
               ))}
+              {hasMoreUpcoming && (
+                <button
+                  onClick={() => setShowAllUpcoming(true)}
+                  className="w-full py-3 rounded-xl border border-[#3D1A6E] text-slate-500 text-xs font-semibold hover:border-purple-500/30 hover:text-slate-400 transition-all"
+                >
+                  Show {upcomingGames.length - UPCOMING_LIMIT} more game{upcomingGames.length - UPCOMING_LIMIT !== 1 ? 's' : ''} ↓
+                </button>
+              )}
             </div>
           )}
         </div>
