@@ -1,7 +1,7 @@
 {
   "name": "Hedge — Lock In Your Profits",
   "short_name": "Hedge",
-  "description": "Calculate the perfect hedge bet to guarantee profits or minimize losses.",
+  "description": "Calculate the optimal hedge bet to lock in profits or minimize losses.",
   "start_url": "/Hedge/",
   "display": "standalone",
   "background_color": "#09000F",
