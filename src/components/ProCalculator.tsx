@@ -13,6 +13,9 @@ export interface CalcPrefill {
   hedgeOdds?: string;
   hedgeBook?: string;
   isParlay?: boolean;
+  label?: string;           // bet label, for Track Both Bets form
+  origBookKey?: string;     // original bet's sportsbook key, for Track Both Bets form
+  hedgeTeam?: string;       // hedge-side team/outcome, for Track Both Bets form
 }
 
 interface Props {
@@ -52,10 +55,11 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
     if (prefill.hedgeOdds !== undefined) setHedgeOdds(prefill.hedgeOdds);
     if (prefill.hedgeBook !== undefined) setHedgeBook(prefill.hedgeBook);
     if (prefill.isParlay !== undefined) setIsParlay(prefill.isParlay);
-    // Reset track form when new prefill arrives
+    if (prefill.origBookKey !== undefined) setOrigBook(prefill.origBookKey);
+    // Auto-fill track-both-bets form from known context, but still editable
     setShowTrackForm(false);
-    setTrackLabel('');
-    setTrackHedgeTeam('');
+    setTrackLabel(prefill.label ?? '');
+    setTrackHedgeTeam(prefill.hedgeTeam ?? '');
   }, [prefill]);
 
   // Parse original side

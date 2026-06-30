@@ -310,7 +310,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                     const hedgeOddsStr = fmt === 'american'
                                       ? (price >= 0 ? `+${price}` : `${price}`)
                                       : dec.toFixed(3);
-                                    onPrefill({ hedgeOdds: hedgeOddsStr, hedgeBook: bk.key });
+                                    onPrefill({ hedgeOdds: hedgeOddsStr, hedgeBook: bk.key, hedgeTeam: team, label: `${teams[1 - ti]} to win` });
                                   }}
                                   className={`px-1.5 py-0.5 rounded font-bold transition-colors ${
                                     isBest
@@ -341,7 +341,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                 const hedgeOddsStr = fmt === 'american'
                                   ? (bestPrices[ti]! >= 0 ? `+${bestPrices[ti]}` : `${bestPrices[ti]}`)
                                   : dec.toFixed(3);
-                                onPrefill({ hedgeOdds: hedgeOddsStr, hedgeBook: bst?.key ?? '' });
+                                onPrefill({ hedgeOdds: hedgeOddsStr, hedgeBook: bst?.key ?? '', hedgeTeam: team, label: `${teams[1 - ti]} to win` });
                               }}
                               className="text-purple-400 font-bold hover:text-purple-300 transition-colors"
                             >

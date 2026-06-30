@@ -297,6 +297,9 @@ function ArbCard({
                     originalStake: stakeA.toFixed(2),
                     hedgeOdds: formatOdds(opp.oddsB),
                     hedgeBook: opp.bookBName,
+                    label: `${opp.teamA} to win`,
+                    origBookKey: opp.bookAKey,
+                    hedgeTeam: opp.teamB,
                   })}
                   className="w-full py-2.5 rounded-xl border border-purple-500/30 text-purple-300 text-xs font-semibold hover:border-purple-500/60 hover:text-purple-200 transition-all"
                 >

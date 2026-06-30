@@ -239,6 +239,9 @@ export default function ProDashboard({ onOpenCalc, fmt, onSwitchToMyBets, scanTr
                 : o.hedgeDecOdds.toFixed(3),
               hedgeBook: o.hedgeBookKey,
               isParlay: true,
+              label: o.bet.label,
+              origBookKey: o.bet.sportsbook,
+              hedgeTeam: o.hedgeTeam,
             };
 
             return (
