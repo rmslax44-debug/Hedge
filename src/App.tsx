@@ -6,6 +6,7 @@ import ProSection from './components/ProSection';
 import FuturesTab from './components/FuturesTab';
 import SettingsPanel from './components/SettingsPanel';
 import { getApiKey, getSelectedBooks } from './utils/storage';
+import type { CalcPrefill } from './components/ProCalculator';
 
 export type Tab = 'bets' | 'opportunities' | 'pro' | 'futures' | 'settings';
 
@@ -19,6 +20,8 @@ export default function App() {
   const [proScanTrigger, setProScanTrigger] = useState(0);
   const [betsRefreshTrigger, setBetsRefreshTrigger] = useState(0);
   const [oppsRefreshTrigger, setOppsRefreshTrigger] = useState(0);
+  const [calcPrefill, setCalcPrefill] = useState<CalcPrefill | null>(null);
+  const [calcTrigger, setCalcTrigger] = useState(0);
 
   // Refresh data automatically whenever the user switches to these tabs
   useEffect(() => {
@@ -39,22 +42,30 @@ export default function App() {
     setProScanTrigger((n) => n + 1);
   }, []);
 
+  const goToProCalc = useCallback((prefill: CalcPrefill) => {
+    setCalcPrefill(prefill);
+    setTab('pro');
+    setCalcTrigger((n) => n + 1);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#09000F]">
       <main className="max-w-2xl mx-auto">
         {/* CSS-hidden tabs keep component state alive across tab switches */}
         <div className={tab === 'bets' ? '' : 'hidden'}>
-          <MyBets onBadgeChange={handleBadgeChange} onGoToProRadar={goToProRadar} refreshTrigger={betsRefreshTrigger} />
+          <MyBets onBadgeChange={handleBadgeChange} onGoToProRadar={goToProRadar} onSendToCalc={goToProCalc} refreshTrigger={betsRefreshTrigger} />
         </div>
 
         <div className={tab === 'opportunities' ? '' : 'hidden'}>
-          <Opportunities onSwitchToMyBets={() => setTab('bets')} refreshTrigger={oppsRefreshTrigger} />
+          <Opportunities onSwitchToMyBets={() => setTab('bets')} onSendToCalc={goToProCalc} refreshTrigger={oppsRefreshTrigger} />
         </div>
 
         <div className={tab === 'pro' ? '' : 'hidden'}>
           <ProSection
             onSwitchToMyBets={() => setTab('bets')}
             scanTrigger={proScanTrigger}
+            externalCalcPrefill={calcPrefill}
+            externalCalcTrigger={calcTrigger}
           />
         </div>
 

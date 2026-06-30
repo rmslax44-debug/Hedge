@@ -17,6 +17,7 @@ import { calcRisk } from '../utils/risk';
 import AddBetWizard from './AddBetWizard';
 import LinkEventModal from './LinkEventModal';
 import PortfolioView from './PortfolioView';
+import type { CalcPrefill } from './ProCalculator';
 
 // ─── Risk Bar (always visible in collapsed card header) ───────────────────────
 
@@ -236,7 +237,7 @@ function HedgeActionCard({
             <RadarPing />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-purple-300 uppercase tracking-wider">Better hedge detected</p>
-              <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed · Tap to scan Pro Radar now →</p>
+              <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} on the table · Tap to scan Pro Radar now →</p>
             </div>
           </button>
           <button
@@ -258,7 +259,7 @@ function HedgeActionCard({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Hedge value decreased</p>
-            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} guaranteed now · Lines moved since you found this</p>
+            <p className="text-xs text-slate-400 mt-0.5">+${opp.guaranteedProfit.toFixed(2)} available now · Lines moved since you found this</p>
           </div>
           <button
             onClick={() => {
@@ -360,7 +361,7 @@ function HedgeActionCard({
               : `${liveProfit >= 0 ? '+' : ''}$${liveProfit.toFixed(2)}`}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {isExpired ? 'odds expired · no longer available' : liveProfit < 0 ? 'would be a loss at current odds' : 'guaranteed profit'}
+            {isExpired ? 'odds expired · no longer available' : liveProfit < 0 ? 'would be a loss at current odds' : 'locked in across both outcomes'}
           </p>
         </div>
       )}
@@ -573,11 +574,13 @@ function BetCard({
   onDelete,
   onRefresh,
   onGoToProRadar,
+  onSendToCalc,
 }: {
   bet: TrackedBet;
   onDelete: () => void;
   onRefresh: () => void;
   onGoToProRadar?: () => void;
+  onSendToCalc?: (prefill: CalcPrefill) => void;
 }) {
   const [expanded, setExpanded] = useState(bet.status === 'hedge_ready');
 
@@ -827,6 +830,20 @@ function BetCard({
               </div>
             )}
 
+            {/* Send to Pro Calculator */}
+            {isActive && onSendToCalc && (
+              <button
+                onClick={() => onSendToCalc({
+                  originalStake: String(bet.stake),
+                  originalPayout: String(bet.potentialPayout),
+                  isParlay: bet.isParlay,
+                })}
+                className="w-full py-2.5 rounded-xl border border-purple-500/30 text-purple-300 text-xs font-semibold hover:border-purple-500/60 hover:text-purple-200 transition-all"
+              >
+                Send to Pro Calculator →
+              </button>
+            )}
+
             {/* Activate flow for watching bets */}
             {bet.status === 'watching' && !showActivate && (
               <button
@@ -975,7 +992,7 @@ function BetCard({
                       +${bet.hedgeOpportunity.guaranteedProfit.toFixed(2)}
                     </p>
                   )}
-                  <p className="text-xs text-slate-500">guaranteed no matter who wins</p>
+                  <p className="text-xs text-slate-500">locked in no matter who wins</p>
                 </div>
 
                 <button
@@ -1018,7 +1035,7 @@ function BetCard({
 
 // ─── My Bets Screen ───────────────────────────────────────────────────────────
 
-export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }: { onBadgeChange?: (count: number) => void; onGoToProRadar?: () => void; refreshTrigger?: number }) {
+export default function MyBets({ onBadgeChange, onGoToProRadar, onSendToCalc, refreshTrigger }: { onBadgeChange?: (count: number) => void; onGoToProRadar?: () => void; onSendToCalc?: (prefill: CalcPrefill) => void; refreshTrigger?: number }) {
   const [bets, setBets] = useState<TrackedBet[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'history'>('active');
@@ -1127,6 +1144,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
                       onGoToProRadar={onGoToProRadar}
+                      onSendToCalc={onSendToCalc}
                     />
                   ))}
                 </div>
@@ -1146,6 +1164,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
                       onGoToProRadar={onGoToProRadar}
+                      onSendToCalc={onSendToCalc}
                     />
                   ))}
                 </div>
@@ -1165,6 +1184,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
                       onGoToProRadar={onGoToProRadar}
+                      onSendToCalc={onSendToCalc}
                     />
                   ))}
                 </div>
@@ -1184,6 +1204,7 @@ export default function MyBets({ onBadgeChange, onGoToProRadar, refreshTrigger }
                       onDelete={() => { deleteBet(bet.id); refresh(); }}
                       onRefresh={refresh}
                       onGoToProRadar={onGoToProRadar}
+                      onSendToCalc={onSendToCalc}
                     />
                   ))}
                 </div>

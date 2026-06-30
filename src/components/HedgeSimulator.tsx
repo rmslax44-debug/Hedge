@@ -265,7 +265,7 @@ export default function HedgeSimulator() {
             >
               Lock in the hedge
               <span className="block text-xs font-normal opacity-75 mt-0.5">
-                Guaranteed {result.isGuaranteedProfit ? `+$${result.guaranteedProfit.toFixed(0)} profit` : 'reduced loss'}
+                Locks in {result.isGuaranteedProfit ? `+$${result.guaranteedProfit.toFixed(0)} profit` : 'a reduced loss'}
               </span>
             </button>
             <button

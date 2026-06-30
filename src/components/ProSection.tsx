@@ -15,9 +15,11 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
 interface ProSectionProps {
   onSwitchToMyBets?: () => void;
   scanTrigger?: number;
+  externalCalcPrefill?: CalcPrefill | null;
+  externalCalcTrigger?: number;
 }
 
-export default function ProSection({ onSwitchToMyBets, scanTrigger }: ProSectionProps) {
+export default function ProSection({ onSwitchToMyBets, scanTrigger, externalCalcPrefill, externalCalcTrigger }: ProSectionProps) {
   const [subTab, setSubTab] = useState<SubTab>('radar');
   const [calcPrefill, setCalcPrefill] = useState<CalcPrefill | null>(null);
   const [fmt, setFmt] = useState<OddsFormat>('american');
@@ -35,6 +37,14 @@ export default function ProSection({ onSwitchToMyBets, scanTrigger }: ProSection
   useEffect(() => {
     if (scanTrigger && scanTrigger > 0) setSubTab('radar');
   }, [scanTrigger]);
+
+  // When triggered from another tab's "send to calculator" button, load the prefill and switch to CALC
+  useEffect(() => {
+    if (externalCalcTrigger && externalCalcTrigger > 0) {
+      setCalcPrefill(externalCalcPrefill ?? null);
+      setSubTab('calc');
+    }
+  }, [externalCalcTrigger]);
 
   return (
     <div className="min-h-screen">
