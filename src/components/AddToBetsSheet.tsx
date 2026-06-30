@@ -7,6 +7,7 @@ export interface AddToBetsPrefill {
   sport: string;
   sportsbook: string;
   initialOdds?: number;
+  initialOpposingOdds?: number;
   isFutures?: boolean;
   futuresMarket?: string;
   isProp?: boolean;
@@ -58,6 +59,7 @@ export default function AddToBetsSheet({ prefill, onClose }: Props) {
       sport: prefill!.sport,
       sportsbook: prefill!.sportsbook,
       initialOdds: prefill!.initialOdds,
+      initialOpposingOdds: prefill!.initialOpposingOdds,
       isFutures: prefill!.isFutures,
       futuresMarket: prefill!.futuresMarket,
       isProp: prefill!.isProp,
@@ -79,6 +81,7 @@ export default function AddToBetsSheet({ prefill, onClose }: Props) {
       sport: prefill!.sport,
       sportsbook: prefill!.sportsbook,
       initialOdds: prefill!.initialOdds,
+      initialOpposingOdds: prefill!.initialOpposingOdds,
       isFutures: prefill!.isFutures,
       futuresMarket: prefill!.futuresMarket,
       isProp: prefill!.isProp,

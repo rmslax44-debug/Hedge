@@ -3,6 +3,7 @@ import { fetchOdds, getOddsForTeamAtBook, type OddsEvent } from '../utils/oddsAp
 import { getApiKey, getSelectedBooks, addWatchedBet } from '../utils/storage';
 import { US_SPORTSBOOKS, SPORTS } from '../utils/sportsbooks';
 import { americanToDecimal } from '../utils/arb';
+import { removeVig, impliedProbability } from '../utils/proMath';
 import type { CalcPrefill, OddsFormat } from './ProCalculator';
 import AddToBetsSheet, { type AddToBetsPrefill } from './AddToBetsSheet';
 
@@ -46,6 +47,9 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
   const [showImplied, setShowImplied] = useState(false);
   const [watchedKeys, setWatchedKeys] = useState<Set<string>>(new Set());
   const [sheetPrefill, setSheetPrefill] = useState<AddToBetsPrefill | null>(null);
+  // Line shopping: manual entry for a competing price when only one book covers an outcome
+  const [manualLines, setManualLines] = useState<Record<string, number>>({});
+  const [manualDraft, setManualDraft] = useState<Record<string, string>>({});
 
   const apiKey = getApiKey();
   const userBooks = getSelectedBooks();
@@ -71,6 +75,22 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
 
   const noApi = !apiKey || !userBooks.length;
 
+  function manualKey(eventId: string, team: string): string {
+    return `${eventId}-${team}`;
+  }
+
+  function realPriceCount(event: OddsEvent, team: string): number {
+    return userBooks.filter((bk) => getOddsForTeamAtBook(event, team, bk) !== null).length;
+  }
+
+  function commitManualLine(key: string) {
+    const raw = manualDraft[key];
+    const parsed = parseInt(raw ?? '', 10);
+    if (!raw || isNaN(parsed) || parsed === 0 || (parsed > -100 && parsed < 100)) return;
+    setManualLines((prev) => ({ ...prev, [key]: parsed }));
+    setManualDraft((prev) => ({ ...prev, [key]: '' }));
+  }
+
   function bestPrice(event: OddsEvent, team: string): number | null {
     let best: number | null = null;
     let bestDec = 0;
@@ -79,6 +99,13 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
       if (p === null) continue;
       const dec = americanToDecimal(p);
       if (dec > bestDec) { bestDec = dec; best = p; }
+    }
+    // Line shopping: a manually-entered competing line participates in the
+    // best-price comparison the same way a book's price would.
+    const manual = manualLines[manualKey(event.id, team)];
+    if (manual !== undefined) {
+      const dec = americanToDecimal(manual);
+      if (dec > bestDec) { bestDec = dec; best = manual; }
     }
     return best;
   }
@@ -174,6 +201,14 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
         const homeDecBest = bestPrices[0] !== null ? americanToDecimal(bestPrices[0]) : null;
         const awayDecBest = bestPrices[1] !== null ? americanToDecimal(bestPrices[1]) : null;
         const hold = holdPct(homeDecBest, awayDecBest);
+
+        // De-vigged fair probabilities from the two best lines, for the line-shopping fair % display
+        const fairProbs = (bestPrices[0] !== null && bestPrices[1] !== null)
+          ? removeVig([
+              impliedProbability(americanToDecimal(bestPrices[0])),
+              impliedProbability(americanToDecimal(bestPrices[1])),
+            ])
+          : null;
 
         const { isLive, isImminent, isSoon, minsAway } = gameStatus(event.commence_time);
         const cardGlow = isLive
@@ -310,9 +345,18 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                               }}
                               className="text-purple-400 font-bold hover:text-purple-300 transition-colors"
                             >
-                              {showImplied
-                                ? `${(1 / americanToDecimal(bestPrices[ti]!) * 100).toFixed(0)}%`
-                                : fmtPrice(bestPrices[ti]!, fmt)}
+                              {showImplied ? (
+                                <>
+                                  {(1 / americanToDecimal(bestPrices[ti]!) * 100).toFixed(0)}%
+                                  {fairProbs && (
+                                    <span className="text-slate-500 font-normal ml-1">
+                                      ({(fairProbs[ti] * 100).toFixed(0)}% fair)
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                fmtPrice(bestPrices[ti]!, fmt)
+                              )}
                             </button>
                           ) : (
                             <span className="text-slate-700">—</span>
@@ -376,6 +420,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                 stake: 0,
                                 potentialPayout: 0,
                                 initialOdds: bstPrice ?? undefined,
+                                initialOpposingOdds: bestPrices[1 - ti] ?? undefined,
                                 notifyHedge: false,
                                 eventStartTime: event.commence_time,
                               });
@@ -400,6 +445,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                                   eventId: event.id,
                                   sportsbook: bestBookKey,
                                   initialOdds: bstPrice ?? undefined,
+                                  initialOpposingOdds: bestPrices[1 - ti] ?? undefined,
                                 })
                               }
                               className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold border border-[#3D1A6E] text-slate-500 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
@@ -412,6 +458,55 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                       );
                     })}
                   </div>
+
+                  {/* Line shopping: manual competing-line entry when only one book covers an outcome */}
+                  {teams.map((team) => {
+                    const key = manualKey(event.id, team);
+                    const manual = manualLines[key];
+                    if (manual !== undefined) {
+                      return (
+                        <div key={`manual-${team}`} className="flex items-center gap-1.5 text-[10px] font-mono">
+                          <span className="text-slate-600 shrink-0">{team.split(' ').pop()} manual line:</span>
+                          <span className="text-purple-400 font-bold">{manual >= 0 ? `+${manual}` : manual}</span>
+                          <button
+                            onClick={() => setManualLines((prev) => {
+                              const next = { ...prev };
+                              delete next[key];
+                              return next;
+                            })}
+                            className="text-slate-600 hover:text-red-400 transition-colors"
+                            aria-label={`Remove manual line for ${team}`}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    }
+                    if (realPriceCount(event, team) !== 1) return null;
+                    return (
+                      <div key={`manual-${team}`} className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-600 font-mono shrink-0">
+                          {team.split(' ').pop()} only at 1 book —
+                        </span>
+                        <input
+                          type="text"
+                          value={manualDraft[key] ?? ''}
+                          onChange={(e) => setManualDraft((prev) => ({ ...prev, [key]: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === 'Enter') commitManualLine(key); }}
+                          placeholder="+150"
+                          className="input-field text-[11px] font-mono py-1 px-2 w-16"
+                          autoComplete="off"
+                        />
+                        <button
+                          onClick={() => commitManualLine(key)}
+                          className="text-[10px] font-mono text-purple-400 hover:text-purple-300 px-2 py-1 border border-[#3D1A6E] rounded-lg shrink-0"
+                        >
+                          Add competing line
+                        </button>
+                      </div>
+                    );
+                  })}
+
                   {/* Watch Both — visible only when neither team is tracked yet */}
                   {!teams.some((t) => watchedKeys.has(`${event.id}-${t}`)) && (
                     <button
@@ -432,6 +527,7 @@ export default function ProMarkets({ onPrefill, fmt }: Props) {
                             stake: 0,
                             potentialPayout: 0,
                             initialOdds: bstPrice ?? undefined,
+                            initialOpposingOdds: bestPrices[1 - ti] ?? undefined,
                             notifyHedge: false,
                             eventStartTime: event.commence_time,
                           });
