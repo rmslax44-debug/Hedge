@@ -311,7 +311,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
               <p className="text-lg font-bold font-mono text-white">${result.optimalHedgeStake.toFixed(2)}</p>
             </div>
             <div className={`card p-3 ${result.isGuaranteedProfit ? 'border-purple-500/30 bg-purple-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
-              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">Guaranteed P&L</p>
+              <p className="text-xs font-mono text-slate-500 uppercase tracking-wider">Locked-In P&L</p>
               <p className={`text-lg font-bold font-mono ${result.isGuaranteedProfit ? 'text-purple-400' : 'text-red-400'}`}>
                 {result.guaranteedProfit >= 0 ? '+' : ''}${result.guaranteedProfit.toFixed(2)}
               </p>
@@ -429,7 +429,7 @@ export default function ProCalculator({ prefill, onClearPrefill, fmt, onFmtChang
                     <span className="text-slate-300">${result.optimalHedgeStake.toFixed(2)} · {hedgeOdds} · {bookName ?? '—'}</span>
                   </div>
                   <div className="flex justify-between items-center border-t border-[#3D1A6E] pt-1.5">
-                    <span className="text-[#CCFF00] font-bold uppercase tracking-wide">Guaranteed Profit</span>
+                    <span className="text-[#CCFF00] font-bold uppercase tracking-wide">Locked-In Profit</span>
                     <span className="text-[#CCFF00] font-bold">+${result.guaranteedProfit.toFixed(2)}</span>
                   </div>
                 </div>

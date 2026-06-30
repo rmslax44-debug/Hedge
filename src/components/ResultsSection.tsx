@@ -107,7 +107,7 @@ export default function ResultsSection({
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                     <path d="M8.5 2L4 7.5 1.5 5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Guaranteed Profit
+                  Profit Lock
                 </span>
               ) : (
                 <span className="badge-loss">
@@ -120,12 +120,12 @@ export default function ResultsSection({
             </div>
             <p className="text-xs text-slate-500">
               {result.isGuaranteedProfit
-                ? 'No matter what happens, you profit.'
+                ? 'Both outcomes are covered — you come out ahead either way.'
                 : 'Hedge to reduce your maximum possible loss.'}
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs text-slate-500 mb-0.5">Guaranteed</p>
+            <p className="text-xs text-slate-500 mb-0.5">Locked-In</p>
             <ProfitValue value={displayResult.guaranteedProfit} size="lg" />
           </div>
         </div>

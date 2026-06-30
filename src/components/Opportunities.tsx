@@ -4,6 +4,7 @@ import { findArb, type ArbOpportunity, americanToDecimal, calcLiveHedge } from '
 import { findBestOddsForTeam } from '../utils/oddsApi';
 import { SPORTS } from '../utils/sportsbooks';
 import { getApiKey, getSelectedBooks, addBetWithHedge, addWatchedBet, getAllBets, updateBet, getFavoriteSports, type TrackedBet } from '../utils/storage';
+import type { CalcPrefill } from './ProCalculator';
 
 // Derived from the single source of truth — all sports the app supports
 const SCAN_SPORTS = SPORTS.map(s => s.key);
@@ -33,12 +34,14 @@ function ArbCard({
   isFavorite,
   onAddToTracker,
   onSwitchToMyBets,
+  onSendToCalc,
 }: {
   opp: ArbOpportunity;
   matchingBet?: TrackedBet;
   isFavorite?: boolean;
   onAddToTracker: (stakeA: number, stakeB: number, profit: number) => void;
   onSwitchToMyBets?: () => void;
+  onSendToCalc?: (prefill: CalcPrefill) => void;
 }) {
   const [expanded, setExpanded] = useState(!!matchingBet);
   const [betAmount, setBetAmount] = useState('100');
@@ -88,7 +91,7 @@ function ArbCard({
                   ⚡ {arbMinsAway}m
                 </span>
               ) : null}
-              <span className="badge-profit text-xs">Guaranteed Profit</span>
+              <span className="badge-profit text-xs">Profit Lock</span>
               <span className="text-emerald-400 font-bold text-sm font-mono">
                 +{(opp.profitPct * 100).toFixed(1)}%
               </span>
@@ -137,7 +140,7 @@ function ArbCard({
           </div>
         </div>
         {isThreeWay && (
-          <p className="text-[10px] text-amber-400/80">3-way market — all three results must be covered to guarantee profit</p>
+          <p className="text-[10px] text-amber-400/80">3-way market — all three results must be covered for the edge to hold</p>
         )}
       </button>
 
@@ -152,8 +155,9 @@ function ArbCard({
               ) : (
                 <>By betting on <span className="text-white font-semibold">both teams</span> across two different apps,</>
               )}{' '}
-              the math works out so that no matter what happens, you come out ahead.
-              This is called an <span className="text-purple-400 font-semibold">arbitrage opportunity</span> — rare, but real.
+              the math is set up to come out ahead regardless of the final score —
+              this is called an <span className="text-purple-400 font-semibold">arbitrage opportunity</span> — rare, but real.
+              As with any bet, odds can shift before you place it and sportsbooks can limit or void wagers, so place both legs quickly.
             </p>
           </div>
 
@@ -218,8 +222,8 @@ function ArbCard({
                   <div className="text-sm">
                     <p className="text-white">Sit back and collect 💰</p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Guaranteed <span className="text-emerald-400 font-bold drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]">+${profit.toFixed(2)}</span>{' '}
-                      profit no matter what happens
+                      <span className="text-emerald-400 font-bold drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]">+${profit.toFixed(2)}</span>{' '}
+                      locked in across every outcome, once both bets are placed
                     </p>
                   </div>
                 </div>
@@ -228,7 +232,7 @@ function ArbCard({
               <div className="text-center py-3 bg-emerald-500/8 rounded-xl border border-emerald-500/20 shadow-[0_0_18px_rgba(52,211,153,0.15)]">
                 <p className="text-xs text-slate-400">Total invested: <span className="text-white font-mono">${parsed.toFixed(2)}</span></p>
                 <p className="text-2xl font-bold text-emerald-400 mt-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">+${profit.toFixed(2)}</p>
-                <p className="text-xs text-slate-500">guaranteed return</p>
+                <p className="text-xs text-slate-500">locked-in edge across every outcome</p>
               </div>
 
               {matchingBet && (
@@ -283,6 +287,20 @@ function ArbCard({
                   className="w-full py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-all btn-glow"
                 >
                   Add both bets to my tracker →
+                </button>
+              )}
+
+              {onSendToCalc && (
+                <button
+                  onClick={() => onSendToCalc({
+                    originalOdds: formatOdds(opp.oddsA),
+                    originalStake: stakeA.toFixed(2),
+                    hedgeOdds: formatOdds(opp.oddsB),
+                    hedgeBook: opp.bookBName,
+                  })}
+                  className="w-full py-2.5 rounded-xl border border-purple-500/30 text-purple-300 text-xs font-semibold hover:border-purple-500/60 hover:text-purple-200 transition-all"
+                >
+                  Send to Pro Calculator →
                 </button>
               )}
             </div>
@@ -511,7 +529,7 @@ function UpcomingGameCard({ event, userBooks }: { event: OddsEvent; userBooks: s
 
 // ─── Opportunities Screen ─────────────────────────────────────────────────────
 
-export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { onSwitchToMyBets?: () => void; refreshTrigger?: number }) {
+export default function Opportunities({ onSwitchToMyBets, onSendToCalc, refreshTrigger }: { onSwitchToMyBets?: () => void; onSendToCalc?: (prefill: CalcPrefill) => void; refreshTrigger?: number }) {
   const [arbs, setArbs] = useState<ArbOpportunity[]>([]);
   const [upcomingGames, setUpcomingGames] = useState<OddsEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -656,7 +674,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
       <div className="px-4 pt-3">
         <div className="card p-3 border-blue-500/20 bg-blue-500/5">
           <p className="text-xs text-slate-400 leading-relaxed">
-            <span className="text-blue-300 font-semibold">How it works:</span> Different sportsbooks sometimes price the same game differently. When the difference is big enough, you can bet on BOTH sides and make money no matter who wins.
+            <span className="text-blue-300 font-semibold">How it works:</span> Different sportsbooks sometimes price the same game differently. When the gap is big enough, betting BOTH sides can lock in a profit regardless of the final score — though odds can move before you finish placing both bets, so speed matters.
           </p>
         </div>
       </div>
@@ -685,7 +703,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                 <p className="text-xs font-bold text-purple-400 uppercase tracking-widest font-grotesk">
-                  {sortedArbs.length} guaranteed profit opportunit{sortedArbs.length !== 1 ? 'ies' : 'y'} found
+                  {sortedArbs.length} profit-lock opportunit{sortedArbs.length !== 1 ? 'ies' : 'y'} found
                 </p>
               </div>
               {visibleArbs.map((a) => (
@@ -695,6 +713,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
                   isFavorite={hasFavorites && favSports.includes(a.event.sport_key)}
                   matchingBet={hedgeReadyBets.find((b) => b.eventId === a.event.id)}
                   onSwitchToMyBets={onSwitchToMyBets}
+                  onSendToCalc={onSendToCalc}
                   onAddToTracker={(scaledStakeA, scaledStakeB, scaledProfit) => {
                     addBetWithHedge({
                       label: `${a.teamA} to win`,
@@ -733,7 +752,7 @@ export default function Opportunities({ onSwitchToMyBets, refreshTrigger }: { on
             </div>
           ) : (
             <div className="card p-5 text-center space-y-2">
-              <p className="text-slate-300 font-semibold">No guaranteed profit opportunities right now</p>
+              <p className="text-slate-300 font-semibold">No profit-lock opportunities right now</p>
               <p className="text-xs text-slate-500 max-w-xs mx-auto">
                 These are rare — check back during peak betting hours or try different sports in Settings.
               </p>

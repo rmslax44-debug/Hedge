@@ -85,13 +85,27 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
   return (
     <div className="space-y-5 px-4 pt-2 pb-32">
 
+      {/* How this app works + risk disclosure */}
+      <div className="card p-5 space-y-2 border-amber-500/25 bg-amber-500/5">
+        <p className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+          How Hedge works
+        </p>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Hedge scans your sportsbooks for moments where the odds on opposite sides of the same game line up in your favor — betting both sides locks in an edge regardless of the final score, a strategy called arbitrage.
+        </p>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          This is still sports betting, and sports betting always carries risk. Odds can move before you finish placing both legs, sportsbooks can limit, void, or reject wagers, and timing or input mistakes can turn a good plan into a loss. Hedge shows you the math — placing the bets and managing that risk is on you.
+        </p>
+      </div>
+
       {/* Notifications */}
       <div className="card p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Hedge alerts</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Get notified the moment a guaranteed profit appears
+              Get notified the moment a profit-lock opportunity appears
             </p>
           </div>
           <button
@@ -171,7 +185,7 @@ export default function SettingsPanel({ onSave }: { onSave?: () => void }) {
         <div>
           <h2 className="text-sm font-semibold text-slate-200 font-grotesk">Your Betting Apps</h2>
           <p className="text-xs text-slate-500 mt-1">
-            Select every app you have an account with — the more you pick, the better your chances of finding a guaranteed profit.
+            Select every app you have an account with — the more you pick, the better your chances of finding a strong hedge.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2">
